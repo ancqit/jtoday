@@ -21,8 +21,8 @@ export class WelcomeModalComponent implements OnInit {
 
   readonly form = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.minLength(2)]],
-    cityId: ['', Validators.required],
-    localityId: ['', Validators.required],
+    cityName: ['', Validators.required],
+    localityName: ['', Validators.required],
   });
 
   ngOnInit(): void {
@@ -30,15 +30,15 @@ export class WelcomeModalComponent implements OnInit {
       this.cities = cities;
     });
 
-    this.form.controls.cityId.valueChanges.subscribe((cityId) => {
-      this.form.controls.localityId.setValue('');
+    this.form.controls.cityName.valueChanges.subscribe((cityName) => {
+      this.form.controls.localityName.setValue('');
       this.localities = [];
 
-      if (!cityId) {
+      if (!cityName) {
         return;
       }
 
-      const city = this.cities.find((item) => item.id === cityId);
+      const city = this.cities.find((item) => item.name === cityName);
       if (city) {
         this.locationPreview.emit({
           latitude: city.latitude,
@@ -47,14 +47,14 @@ export class WelcomeModalComponent implements OnInit {
         });
       }
 
-      this.locationsService.getLocalities(cityId).subscribe((localities) => {
+      this.locationsService.getLocalities(cityName).subscribe((localities) => {
         this.localities = localities;
       });
     });
 
-    this.form.controls.localityId.valueChanges.subscribe((localityId) => {
-      const city = this.cities.find((item) => item.id === this.form.controls.cityId.value);
-      const locality = this.localities.find((item) => item.id === localityId);
+    this.form.controls.localityName.valueChanges.subscribe((localityName) => {
+      const city = this.cities.find((item) => item.name === this.form.controls.cityName.value);
+      const locality = this.localities.find((item) => item.name === localityName);
 
       if (!city || !locality) {
         return;
@@ -74,9 +74,9 @@ export class WelcomeModalComponent implements OnInit {
       return;
     }
 
-    const { name, cityId, localityId } = this.form.getRawValue();
-    const city = this.cities.find((item) => item.id === cityId);
-    const locality = this.localities.find((item) => item.id === localityId);
+    const { name, cityName, localityName } = this.form.getRawValue();
+    const city = this.cities.find((item) => item.name === cityName);
+    const locality = this.localities.find((item) => item.name === localityName);
 
     if (!city || !locality) {
       return;

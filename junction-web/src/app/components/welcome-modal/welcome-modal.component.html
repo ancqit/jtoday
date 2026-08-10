@@ -15,26 +15,26 @@
 
       <label>
         <span>City</span>
-        <select formControlName="cityId">
+        <select formControlName="cityName">
           <option value="" disabled>Select a city</option>
           @for (city of cities; track city.id) {
-            <option [value]="city.id">{{ city.name }}</option>
+            <option [value]="city.name">{{ city.name }}</option>
           }
         </select>
-        @if (form.controls.cityId.touched && form.controls.cityId.invalid) {
+        @if (form.controls.cityName.touched && form.controls.cityName.invalid) {
           <small>Please choose a city.</small>
         }
       </label>
 
       <label>
         <span>Locality</span>
-        <select formControlName="localityId" [disabled]="!form.controls.cityId.value || localities.length === 0">
+        <select formControlName="localityName" [disabled]="!form.controls.cityName.value || localities.length === 0">
           <option value="" disabled>Select a locality</option>
           @for (locality of localities; track locality.id) {
-            <option [value]="locality.id">{{ locality.name }}</option>
+            <option [value]="locality.name">{{ locality.name }}</option>
           }
         </select>
-        @if (form.controls.localityId.touched && form.controls.localityId.invalid) {
+        @if (form.controls.localityName.touched && form.controls.localityName.invalid) {
           <small>Please choose a locality.</small>
         }
       </label>

@@ -24,18 +24,22 @@ Local API calls use same-origin `/api/*`, proxied to `https://junctionback.onren
 | Variable | Description |
 | --- | --- |
 | `MAPBOX_ACCESS_TOKEN` | Mapbox public access token for production maps |
-| `JUNCTION_API_BASE_URL` | Base URL for cities/localities API (defaults to `/api`) |
 
-Set these in the Vercel project dashboard for production deploys. The build script injects them into `environment.prod.ts` automatically.
+Set this in the Vercel project dashboard for production deploys. The build script injects it into `environment.prod.ts` automatically.
 
-## API contract
+## API (junctionBack)
 
-The locations service expects:
+Locations are loaded from [junctionBack](https://github.com/ancqit/junctionBack) using the same base URL pattern as [junctionFrontweb](https://github.com/ancqit/junctionFrontweb):
 
-- `GET /cities` → `City[]` or `{ cities: City[] }`
-- `GET /cities/:cityId/localities` → `Locality[]` or `{ localities: Locality[] }`
+- **Local dev:** `http://localhost:8000`
+- **Production:** `/api` (Vercel rewrites to `https://junctionback.onrender.com`)
 
-Each city/locality should include `id`, `name`, `latitude`, and `longitude`. If the API is unavailable, built-in fallback data is used for local development.
+| Method | Path | Response |
+| --- | --- | --- |
+| `GET` | `/locations/cities` | `{ "cities": ["Mumbai", "Bengaluru", ...] }` |
+| `GET` | `/locations/localities?city=Mumbai` | `{ "city": "Mumbai", "localities": ["Bandra", ...] }` |
+
+Map coordinates are resolved client-side from built-in lookups (junctionBack returns names only).
 
 ## Build
 
@@ -64,7 +68,6 @@ Do not set a separate Root Directory to `junction-web` — keep it at the reposi
 | Variable | Required | Purpose |
 | --- | --- | --- |
 | `MAPBOX_ACCESS_TOKEN` | Yes (for live map) | Injected into `environment.prod.ts` at build time |
-| `JUNCTION_API_BASE_URL` | No | Defaults to `/api` (proxied to junctionBack) |
 
 ### API proxy
 

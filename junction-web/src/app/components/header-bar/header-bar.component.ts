@@ -19,8 +19,8 @@ export class HeaderBarComponent implements OnInit {
   localities: Locality[] = [];
 
   readonly form = this.fb.nonNullable.group({
-    cityId: [''],
-    localityId: [''],
+    cityName: [''],
+    localityName: [''],
   });
 
   ngOnInit(): void {
@@ -29,40 +29,40 @@ export class HeaderBarComponent implements OnInit {
       this.syncFormFromSession();
     });
 
-    this.form.controls.cityId.valueChanges.subscribe((cityId) => {
-      if (!cityId) {
+    this.form.controls.cityName.valueChanges.subscribe((cityName) => {
+      if (!cityName) {
         this.localities = [];
         return;
       }
 
-      this.locationsService.getLocalities(cityId).subscribe((localities) => {
+      this.locationsService.getLocalities(cityName).subscribe((localities) => {
         this.localities = localities;
         const profile = this.session.userProfile();
-        if (profile?.city.id === cityId) {
-          this.form.controls.localityId.setValue(profile.locality.id, { emitEvent: false });
+        if (profile?.city.name === cityName) {
+          this.form.controls.localityName.setValue(profile.locality.name, { emitEvent: false });
         }
       });
     });
 
-    this.form.controls.localityId.valueChanges.subscribe((localityId) => {
+    this.form.controls.localityName.valueChanges.subscribe((localityName) => {
       const profile = this.session.userProfile();
-      if (!profile || !localityId) {
+      if (!profile || !localityName) {
         return;
       }
 
-      const city = this.cities.find((item) => item.id === this.form.controls.cityId.value);
-      const locality = this.localities.find((item) => item.id === localityId);
+      const city = this.cities.find((item) => item.name === this.form.controls.cityName.value);
+      const locality = this.localities.find((item) => item.name === localityName);
 
       if (!city || !locality) {
         return;
       }
 
-      if (city.id !== profile.city.id) {
+      if (city.name !== profile.city.name) {
         this.session.updateCity(city, locality);
         return;
       }
 
-      if (locality.id !== profile.locality.id) {
+      if (locality.name !== profile.locality.name) {
         this.session.updateLocality(locality);
       }
     });
@@ -76,13 +76,13 @@ export class HeaderBarComponent implements OnInit {
 
     this.form.patchValue(
       {
-        cityId: profile.city.id,
-        localityId: profile.locality.id,
+        cityName: profile.city.name,
+        localityName: profile.locality.name,
       },
       { emitEvent: false },
     );
 
-    this.locationsService.getLocalities(profile.city.id).subscribe((localities) => {
+    this.locationsService.getLocalities(profile.city.name).subscribe((localities) => {
       this.localities = localities;
     });
   }

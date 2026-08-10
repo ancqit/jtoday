@@ -10,12 +10,9 @@ const targetFile = join(
 );
 
 const mapboxAccessToken = process.env.MAPBOX_ACCESS_TOKEN ?? '';
-const apiBaseUrl = process.env.JUNCTION_API_BASE_URL ?? '/api';
 
 let contents = readFileSync(targetFile, 'utf8');
-contents = contents
-  .replace(/mapboxAccessToken:\s*'[^']*'/, `mapboxAccessToken: '${mapboxAccessToken}'`)
-  .replace(/apiBaseUrl:\s*'[^']*'/, `apiBaseUrl: '${apiBaseUrl}'`);
+contents = contents.replace(/mapboxAccessToken:\s*'[^']*'/, `mapboxAccessToken: '${mapboxAccessToken}'`);
 
 writeFileSync(targetFile, contents);
 

@@ -14,18 +14,18 @@
       <form [formGroup]="form" class="location-selectors">
         <label>
           <span class="sr-only">City</span>
-          <select formControlName="cityId" aria-label="City">
+          <select formControlName="cityName" aria-label="City">
             @for (city of cities; track city.id) {
-              <option [value]="city.id">{{ city.name }}</option>
+              <option [value]="city.name">{{ city.name }}</option>
             }
           </select>
         </label>
 
         <label>
           <span class="sr-only">Locality</span>
-          <select formControlName="localityId" aria-label="Locality">
+          <select formControlName="localityName" aria-label="Locality">
             @for (locality of localities; track locality.id) {
-              <option [value]="locality.id">{{ locality.name }}</option>
+              <option [value]="locality.name">{{ locality.name }}</option>
             }
           </select>
         </label>
