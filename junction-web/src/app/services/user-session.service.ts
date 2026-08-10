@@ -9,6 +9,14 @@ export class UserSessionService {
   readonly userProfile = this.profile.asReadonly();
   readonly hasCompletedWelcome = this.welcomeComplete.asReadonly();
   readonly displayName = computed(() => this.profile()?.name ?? '');
+  readonly junctionLabel = computed(() => {
+    const profile = this.profile();
+    if (!profile) {
+      return '';
+    }
+
+    return `${profile.locality.name}, ${profile.city.name}`;
+  });
 
   completeWelcome(name: string, city: City, locality: Locality): void {
     this.profile.set({ name: name.trim(), city, locality });

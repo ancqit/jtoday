@@ -9,6 +9,10 @@
   height: 100%;
 }
 
+:host(.map--disabled) {
+  pointer-events: none;
+}
+
 :host(.map--disabled) .map-canvas {
   filter: saturate(0.75) brightness(0.82);
 }
@@ -18,7 +22,6 @@
   position: absolute;
   inset: 0;
   background: rgba(15, 23, 42, 0.18);
-  pointer-events: none;
 }
 
 .map-fallback {

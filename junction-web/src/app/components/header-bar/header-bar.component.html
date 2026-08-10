@@ -9,11 +9,14 @@
 
   @if (session.hasCompletedWelcome()) {
     <div class="session-controls">
-      <p class="welcome-name">Hello, {{ session.displayName() }}</p>
+      <div class="session-copy">
+        <p class="welcome-name">Hello, {{ session.displayName() }}</p>
+        <p class="junction-label">Your Junction · {{ session.junctionLabel() }}</p>
+      </div>
 
-      <form [formGroup]="form" class="location-selectors">
+      <form [formGroup]="form" class="location-selectors" aria-label="Your Junction location">
         <label>
-          <span class="sr-only">City</span>
+          <span class="field-label">City</span>
           <select formControlName="cityName" aria-label="City">
             @for (city of cities; track city.id) {
               <option [value]="city.name">{{ city.name }}</option>
@@ -22,8 +25,13 @@
         </label>
 
         <label>
-          <span class="sr-only">Locality</span>
-          <select formControlName="localityName" aria-label="Locality">
+          <span class="field-label">Locality</span>
+          <select
+            formControlName="localityName"
+            aria-label="Locality"
+            [attr.aria-disabled]="form.controls.localityName.disabled"
+          >
+            <option value="" disabled>Select a locality</option>
             @for (locality of localities; track locality.id) {
               <option [value]="locality.name">{{ locality.name }}</option>
             }
