@@ -1,6 +1,6 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, effect, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
-import { City, Locality } from '../../models/location.model';
+import { City, Locality, UserProfile } from '../../models/location.model';
 import { LocationsService } from '../../services/locations.service';
 import { UserSessionService } from '../../services/user-session.service';
 
@@ -17,43 +17,63 @@ export class HeaderBarComponent implements OnInit {
 
   cities: City[] = [];
   localities: Locality[] = [];
+  private profileInitialized = false;
 
   readonly form = this.fb.nonNullable.group({
     cityName: [''],
-    localityName: [''],
+    localityName: [{ value: '', disabled: true }],
   });
+
+  constructor() {
+    effect(() => {
+      if (!this.session.hasCompletedWelcome()) {
+        return;
+      }
+
+      const profile = this.session.userProfile();
+      if (!profile || this.cities.length === 0 || this.profileInitialized) {
+        return;
+      }
+
+      this.initializeFromProfile(profile);
+    });
+  }
 
   ngOnInit(): void {
     this.locationsService.getCities().subscribe((cities) => {
       this.cities = cities;
-      this.syncFormFromSession();
+
+      const profile = this.session.userProfile();
+      if (profile && !this.profileInitialized) {
+        this.initializeFromProfile(profile);
+      }
     });
 
     this.form.controls.cityName.valueChanges.subscribe((cityName) => {
+      this.setLocalityEnabled(false);
+      this.form.controls.localityName.setValue('', { emitEvent: false });
+      this.localities = [];
+
       if (!cityName) {
-        this.localities = [];
         return;
       }
 
       this.locationsService.getLocalities(cityName).subscribe((localities) => {
         this.localities = localities;
-        const profile = this.session.userProfile();
-        if (profile?.city.name === cityName) {
-          this.form.controls.localityName.setValue(profile.locality.name, { emitEvent: false });
-        }
+        this.setLocalityEnabled(localities.length > 0);
       });
     });
 
     this.form.controls.localityName.valueChanges.subscribe((localityName) => {
-      const profile = this.session.userProfile();
-      if (!profile || !localityName) {
+      if (!localityName) {
         return;
       }
 
       const city = this.cities.find((item) => item.name === this.form.controls.cityName.value);
       const locality = this.localities.find((item) => item.name === localityName);
+      const profile = this.session.userProfile();
 
-      if (!city || !locality) {
+      if (!city || !locality || !profile) {
         return;
       }
 
@@ -68,22 +88,25 @@ export class HeaderBarComponent implements OnInit {
     });
   }
 
-  private syncFormFromSession(): void {
-    const profile = this.session.userProfile();
-    if (!profile) {
-      return;
-    }
-
-    this.form.patchValue(
-      {
-        cityName: profile.city.name,
-        localityName: profile.locality.name,
-      },
-      { emitEvent: false },
-    );
+  private initializeFromProfile(profile: UserProfile): void {
+    this.profileInitialized = true;
+    this.form.controls.cityName.setValue(profile.city.name, { emitEvent: false });
 
     this.locationsService.getLocalities(profile.city.name).subscribe((localities) => {
       this.localities = localities;
+      this.form.controls.localityName.setValue(profile.locality.name, { emitEvent: false });
+      this.setLocalityEnabled(localities.length > 0);
     });
+  }
+
+  private setLocalityEnabled(enabled: boolean): void {
+    const control = this.form.controls.localityName;
+
+    if (enabled) {
+      control.enable({ emitEvent: false });
+      return;
+    }
+
+    control.disable({ emitEvent: false });
   }
 }

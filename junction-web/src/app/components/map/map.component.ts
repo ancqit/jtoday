@@ -45,19 +45,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     effect(() => {
       const enabled = this.interactive();
       this.host.nativeElement.classList.toggle('map--disabled', !enabled);
-      this.map?.scrollZoom.enable();
-      this.map?.dragPan.enable();
-      this.map?.boxZoom.enable();
-      this.map?.doubleClickZoom.enable();
-      this.map?.touchZoomRotate.enable();
-
-      if (!enabled) {
-        this.map?.scrollZoom.disable();
-        this.map?.dragPan.disable();
-        this.map?.boxZoom.disable();
-        this.map?.doubleClickZoom.disable();
-        this.map?.touchZoomRotate.disable();
-      }
+      this.applyInteractionState(enabled);
     });
   }
 
@@ -81,6 +69,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     });
 
     this.map.addControl(new mapboxgl.NavigationControl({ visualizePitch: true }), 'bottom-right');
+    this.applyInteractionState(this.interactive());
 
     this.map.on('load', () => {
       const initialTarget = this.target();
@@ -93,6 +82,36 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   ngOnDestroy(): void {
     this.marker?.remove();
     this.map?.remove();
+  }
+
+  private applyInteractionState(enabled: boolean): void {
+    if (!this.map) {
+      return;
+    }
+
+    const controls = [
+      this.map.scrollZoom,
+      this.map.dragPan,
+      this.map.boxZoom,
+      this.map.doubleClickZoom,
+      this.map.touchZoomRotate,
+      this.map.keyboard,
+    ];
+
+    for (const control of controls) {
+      if (enabled) {
+        control.enable();
+      } else {
+        control.disable();
+      }
+    }
+
+    const navContainer = this.map
+      .getContainer()
+      .querySelector('.mapboxgl-ctrl-top-right, .mapboxgl-ctrl-bottom-right');
+    if (navContainer instanceof HTMLElement) {
+      navContainer.style.display = enabled ? '' : 'none';
+    }
   }
 
   private flyToTarget(target: MapTarget): void {

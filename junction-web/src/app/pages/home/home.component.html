@@ -3,7 +3,7 @@
 
   <main class="map-stage">
     <app-map
-      [interactive]="hasCompletedWelcome()"
+      [interactive]="!hasCompletedWelcome()"
       [target]="mapTarget()"
     />
   </main>
