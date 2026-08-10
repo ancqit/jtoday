@@ -8,7 +8,7 @@
 .map-stage {
   position: fixed;
   inset: 0;
-  top: 4.5rem;
+  top: calc(max(0.75rem, env(safe-area-inset-top, 0px)) + 3.25rem + 1.5rem);
 }
 
 .app-shell.welcome-active .map-stage {
