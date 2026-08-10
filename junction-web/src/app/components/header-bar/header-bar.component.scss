@@ -10,11 +10,10 @@
   gap: 1rem;
   min-height: 4.5rem;
   padding: 0.75rem 1.25rem;
-  background: rgba(255, 255, 255, 0.14);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.22);
-  color: rgba(248, 250, 252, 0.96);
+  background: #eef2f6;
+  border-bottom: 1px solid #dbe2ea;
+  color: #475569;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
 .brand {
@@ -29,10 +28,9 @@
   width: 2.5rem;
   height: 2.5rem;
   border-radius: 0.85rem;
-  background: linear-gradient(135deg, rgba(20, 184, 166, 0.85), rgba(15, 118, 110, 0.8));
-  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: linear-gradient(135deg, #14b8a6, #0f766e);
+  color: #fff;
   font-weight: 800;
-  box-shadow: 0 8px 24px rgba(15, 118, 110, 0.25);
 }
 
 .brand-title {
@@ -40,7 +38,7 @@
   font-size: 1.1rem;
   font-weight: 700;
   line-height: 1.1;
-  text-shadow: 0 1px 8px rgba(15, 23, 42, 0.35);
+  color: #334155;
 }
 
 .brand-subtitle {
@@ -48,7 +46,7 @@
   font-size: 0.75rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(226, 232, 240, 0.78);
+  color: #94a3b8;
 }
 
 .session-controls {
@@ -69,15 +67,14 @@
   margin: 0;
   font-weight: 600;
   white-space: nowrap;
-  text-shadow: 0 1px 8px rgba(15, 23, 42, 0.35);
+  color: #334155;
 }
 
 .junction-label {
   margin: 0;
   font-size: 0.8rem;
-  color: rgba(226, 232, 240, 0.82);
+  color: #64748b;
   white-space: nowrap;
-  text-shadow: 0 1px 6px rgba(15, 23, 42, 0.35);
 }
 
 .settings-anchor {
@@ -90,20 +87,18 @@
   width: 2.5rem;
   height: 2.5rem;
   padding: 0;
-  border: 1px solid rgba(255, 255, 255, 0.28);
+  border: 1px solid #cbd5e1;
   border-radius: 0.75rem;
-  background: rgba(255, 255, 255, 0.16);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  color: rgba(248, 250, 252, 0.95);
+  background: #f8fafc;
+  color: #0f766e;
   cursor: pointer;
   transition: background 0.15s ease, border-color 0.15s ease;
 }
 
 .settings-button:hover,
 .settings-button[aria-expanded='true'] {
-  background: rgba(255, 255, 255, 0.24);
-  border-color: rgba(255, 255, 255, 0.4);
+  background: #ffffff;
+  border-color: #94a3b8;
 }
 
 .settings-button svg {
@@ -120,19 +115,16 @@
   width: min(18rem, calc(100vw - 2rem));
   padding: 1rem;
   border-radius: 1rem;
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  box-shadow: 0 16px 48px rgba(15, 23, 42, 0.18);
+  background: linear-gradient(160deg, #0f766e, #14b8a6);
+  border: 1px solid #5eead4;
+  box-shadow: 0 12px 28px rgba(15, 118, 110, 0.22);
 }
 
 .settings-title {
   margin: 0 0 0.85rem;
   font-size: 0.85rem;
   font-weight: 600;
-  color: rgba(248, 250, 252, 0.95);
-  text-shadow: 0 1px 6px rgba(15, 23, 42, 0.35);
+  color: #ffffff;
 }
 
 .settings-form {
@@ -144,21 +136,22 @@
   display: grid;
   gap: 0.35rem;
   font-size: 0.78rem;
-  color: rgba(241, 245, 249, 0.88);
+  color: #ecfdf5;
 }
 
 .settings-form select {
   width: 100%;
   padding: 0.6rem 0.75rem;
-  border: 1px solid rgba(255, 255, 255, 0.28);
+  border: 1px solid #99f6e4;
   border-radius: 0.65rem;
-  background: rgba(255, 255, 255, 0.14);
-  color: rgba(248, 250, 252, 0.95);
+  background: #f8fafc;
+  color: #0f172a;
   font: inherit;
 }
 
 .settings-form select:disabled {
-  opacity: 0.6;
+  background: #e2e8f0;
+  color: #64748b;
   cursor: not-allowed;
 }
 
@@ -168,7 +161,7 @@
 }
 
 .settings-form select:focus {
-  outline: 2px solid rgba(20, 184, 166, 0.7);
+  outline: 2px solid #ccfbf1;
   outline-offset: 1px;
 }
 
@@ -190,15 +183,15 @@
 }
 
 .btn-secondary {
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  background: rgba(255, 255, 255, 0.1);
-  color: rgba(248, 250, 252, 0.92);
+  border: 1px solid #99f6e4;
+  background: transparent;
+  color: #ffffff;
 }
 
 .btn-primary {
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  background: linear-gradient(135deg, rgba(15, 118, 110, 0.82), rgba(20, 184, 166, 0.78));
-  color: rgba(255, 255, 255, 0.96);
+  border: 1px solid #ffffff;
+  background: #ffffff;
+  color: #0f766e;
 }
 
 .btn-primary:disabled {
