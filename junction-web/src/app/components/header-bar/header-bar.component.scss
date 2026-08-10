@@ -10,10 +10,11 @@
   gap: 1rem;
   min-height: 4.5rem;
   padding: 0.75rem 1.25rem;
-  background: rgba(15, 23, 42, 0.82);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(148, 163, 184, 0.25);
-  color: #f8fafc;
+  background: rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.22);
+  color: rgba(248, 250, 252, 0.96);
 }
 
 .brand {
@@ -28,8 +29,10 @@
   width: 2.5rem;
   height: 2.5rem;
   border-radius: 0.85rem;
-  background: linear-gradient(135deg, #14b8a6, #0f766e);
+  background: linear-gradient(135deg, rgba(20, 184, 166, 0.85), rgba(15, 118, 110, 0.8));
+  border: 1px solid rgba(255, 255, 255, 0.28);
   font-weight: 800;
+  box-shadow: 0 8px 24px rgba(15, 118, 110, 0.25);
 }
 
 .brand-title {
@@ -37,6 +40,7 @@
   font-size: 1.1rem;
   font-weight: 700;
   line-height: 1.1;
+  text-shadow: 0 1px 8px rgba(15, 23, 42, 0.35);
 }
 
 .brand-subtitle {
@@ -44,13 +48,13 @@
   font-size: 0.75rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #94a3b8;
+  color: rgba(226, 232, 240, 0.78);
 }
 
 .session-controls {
   display: flex;
   align-items: center;
-  gap: 1.25rem;
+  gap: 1rem;
   flex-wrap: wrap;
   justify-content: flex-end;
 }
@@ -65,66 +69,141 @@
   margin: 0;
   font-weight: 600;
   white-space: nowrap;
+  text-shadow: 0 1px 8px rgba(15, 23, 42, 0.35);
 }
 
 .junction-label {
   margin: 0;
   font-size: 0.8rem;
-  color: #94a3b8;
+  color: rgba(226, 232, 240, 0.82);
   white-space: nowrap;
+  text-shadow: 0 1px 6px rgba(15, 23, 42, 0.35);
 }
 
-.location-selectors {
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
+.settings-anchor {
+  position: relative;
 }
 
-.location-selectors label {
+.settings-button {
   display: grid;
-  gap: 0.25rem;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: rgba(248, 250, 252, 0.95);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
 }
 
-.field-label {
-  font-size: 0.7rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #94a3b8;
+.settings-button:hover,
+.settings-button[aria-expanded='true'] {
+  background: rgba(255, 255, 255, 0.24);
+  border-color: rgba(255, 255, 255, 0.4);
 }
 
-select {
-  min-width: 9rem;
-  padding: 0.55rem 0.75rem;
-  border: 1px solid rgba(148, 163, 184, 0.45);
+.settings-button svg {
+  width: 1.2rem;
+  height: 1.2rem;
+  fill: currentColor;
+}
+
+.settings-panel {
+  position: absolute;
+  top: calc(100% + 0.6rem);
+  right: 0;
+  z-index: 40;
+  width: min(18rem, calc(100vw - 2rem));
+  padding: 1rem;
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  box-shadow: 0 16px 48px rgba(15, 23, 42, 0.18);
+}
+
+.settings-title {
+  margin: 0 0 0.85rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgba(248, 250, 252, 0.95);
+  text-shadow: 0 1px 6px rgba(15, 23, 42, 0.35);
+}
+
+.settings-form {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.settings-form label {
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  color: rgba(241, 245, 249, 0.88);
+}
+
+.settings-form select {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.28);
   border-radius: 0.65rem;
-  background: rgba(15, 23, 42, 0.65);
-  color: #f8fafc;
+  background: rgba(255, 255, 255, 0.14);
+  color: rgba(248, 250, 252, 0.95);
   font: inherit;
 }
 
-select:disabled {
-  opacity: 0.55;
+.settings-form select:disabled {
+  opacity: 0.6;
   cursor: not-allowed;
-  border-color: rgba(148, 163, 184, 0.25);
-  background: rgba(15, 23, 42, 0.45);
-  color: #94a3b8;
 }
 
-select:focus {
-  outline: 2px solid #14b8a6;
+.settings-form select option {
+  color: #0f172a;
+  background: #f8fafc;
+}
+
+.settings-form select:focus {
+  outline: 2px solid rgba(20, 184, 166, 0.7);
   outline-offset: 1px;
 }
 
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
+.settings-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.btn-primary,
+.btn-secondary {
+  padding: 0.55rem 0.85rem;
+  border-radius: 0.65rem;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-secondary {
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(248, 250, 252, 0.92);
+}
+
+.btn-primary {
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: linear-gradient(135deg, rgba(15, 118, 110, 0.82), rgba(20, 184, 166, 0.78));
+  color: rgba(255, 255, 255, 0.96);
+}
+
+.btn-primary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 @media (max-width: 720px) {
@@ -136,5 +215,10 @@ select:focus {
   .session-controls {
     width: 100%;
     justify-content: space-between;
+  }
+
+  .settings-panel {
+    right: 0;
+    left: auto;
   }
 }
