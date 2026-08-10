@@ -2,6 +2,8 @@
 
 Angular app with a full-screen Mapbox map, welcome modal, and city/locality selection.
 
+The Angular source lives in `junction-web/` (same pattern as `frontend/` in [jWeb](https://github.com/ancqit/jWeb) and the repo-root layout in [junctionFrontweb](https://github.com/ancqit/junctionFrontweb)).
+
 ## Local development
 
 ```bash
@@ -15,7 +17,7 @@ Open `http://localhost:4200`.
 
 Without `MAPBOX_ACCESS_TOKEN`, the app still builds and runs, but the map area shows a placeholder until a token is provided.
 
-Local API calls use same-origin `/api/*`, proxied to `https://junctionback.onrender.com` via `junction-web/proxy.conf.json` (same pattern as [jWeb](https://github.com/ancqit/jWeb)).
+Local API calls use same-origin `/api/*`, proxied to `https://junctionback.onrender.com` via `junction-web/proxy.conf.json`.
 
 ## Environment variables
 
@@ -42,22 +44,22 @@ cd junction-web
 npm run build
 ```
 
-Static output (what Vercel publishes): `junction-web/dist/junction-web/browser`
+Static output: `junction-web/dist/junction-web/browser`
 
 ## Deploy on Vercel
 
-Set **Root Directory** to `junction-web` in the Vercel project (recommended — matches the app). Vercel reads `junction-web/vercel.json`:
+Deployment is configured in the repo-root `vercel.json` (same approach as junctionFrontweb).
 
 | Setting | Value |
 | --- | --- |
-| **Root Directory** | `junction-web` |
-| **Install command** | `npm install` |
-| **Build command** | `npm run build` (runs `prebuild` to inject env vars) |
-| **Output directory** | `dist/junction-web/browser` |
+| **Root Directory** | `.` (repository root) |
+| **Install command** | `npm install --prefix junction-web` |
+| **Build command** | `npm run build --prefix junction-web` |
+| **Output directory** | `junction-web/dist/junction-web/browser` |
 
-Alternatively, keep **Root Directory** at `.` and use the repo-root `vercel.json` (same behavior, paths prefixed with `junction-web/`).
+Do not set a separate Root Directory to `junction-web` — keep it at the repository root so Vercel picks up `vercel.json` correctly.
 
-### Environment variables
+### Environment variables on Vercel
 
 | Variable | Required | Purpose |
 | --- | --- | --- |
