@@ -1,0 +1,45 @@
+<div class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="welcome-title">
+  <section class="modal-card">
+    <p class="eyebrow">Junction Today</p>
+    <h1 id="welcome-title">Welcome</h1>
+    <p class="subtitle">Tell us where you are so we can place you on the map.</p>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+      <label>
+        <span>Your name</span>
+        <input type="text" formControlName="name" placeholder="Enter your name" autocomplete="name" />
+        @if (form.controls.name.touched && form.controls.name.invalid) {
+          <small>Please enter your name.</small>
+        }
+      </label>
+
+      <label>
+        <span>City</span>
+        <select formControlName="cityName">
+          <option value="" disabled>Select a city</option>
+          @for (city of cities; track city.id) {
+            <option [value]="city.name">{{ city.name }}</option>
+          }
+        </select>
+        @if (form.controls.cityName.touched && form.controls.cityName.invalid) {
+          <small>Please choose a city.</small>
+        }
+      </label>
+
+      <label>
+        <span>Locality</span>
+        <select formControlName="localityName" [disabled]="!form.controls.cityName.value || localities.length === 0">
+          <option value="" disabled>Select a locality</option>
+          @for (locality of localities; track locality.id) {
+            <option [value]="locality.name">{{ locality.name }}</option>
+          }
+        </select>
+        @if (form.controls.localityName.touched && form.controls.localityName.invalid) {
+          <small>Please choose a locality.</small>
+        }
+      </label>
+
+      <button type="submit">Continue</button>
+    </form>
+  </section>
+</div>

@@ -1,0 +1,35 @@
+<header class="header-bar">
+  <div class="brand">
+    <span class="brand-mark">J</span>
+    <div>
+      <p class="brand-title">Junction</p>
+      <p class="brand-subtitle">Today</p>
+    </div>
+  </div>
+
+  @if (session.hasCompletedWelcome()) {
+    <div class="session-controls">
+      <p class="welcome-name">Hello, {{ session.displayName() }}</p>
+
+      <form [formGroup]="form" class="location-selectors">
+        <label>
+          <span class="sr-only">City</span>
+          <select formControlName="cityName" aria-label="City">
+            @for (city of cities; track city.id) {
+              <option [value]="city.name">{{ city.name }}</option>
+            }
+          </select>
+        </label>
+
+        <label>
+          <span class="sr-only">Locality</span>
+          <select formControlName="localityName" aria-label="Locality">
+            @for (locality of localities; track locality.id) {
+              <option [value]="locality.name">{{ locality.name }}</option>
+            }
+          </select>
+        </label>
+      </form>
+    </div>
+  }
+</header>
