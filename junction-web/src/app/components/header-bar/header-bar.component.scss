@@ -27,7 +27,14 @@
 }
 
 .greeting {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  margin: 0;
   white-space: nowrap;
+}
+
+.greeting-hey {
   font-size: 1rem;
 }
 
