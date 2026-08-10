@@ -20,7 +20,7 @@
           class="settings-button"
           aria-label="Change Junction location"
           [attr.aria-expanded]="settingsOpen()"
-          (click)="toggleSettings()"
+          (click)="$event.stopPropagation(); toggleSettings()"
         >
           <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
             <path
