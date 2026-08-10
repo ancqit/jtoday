@@ -21,27 +21,25 @@
   pointer-events: auto;
 }
 
-.eyebrow {
-  margin: 0 0 0.35rem;
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: rgba(153, 246, 228, 0.92);
-  text-shadow: 0 1px 8px rgba(15, 23, 42, 0.45);
+.welcome-wordmark {
+  display: grid;
+  gap: 0.35rem;
+  margin-bottom: 1.5rem;
 }
 
-h1 {
-  margin: 0;
+.welcome-wordmark .wordmark-primary {
   font-size: 2rem;
   color: rgba(248, 250, 252, 0.95);
   text-shadow: 0 2px 12px rgba(15, 23, 42, 0.5);
 }
 
-.subtitle {
-  margin: 0.5rem 0 1.5rem;
-  color: rgba(226, 232, 240, 0.82);
-  line-height: 1.5;
+.welcome-prompt {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(153, 246, 228, 0.92);
   text-shadow: 0 1px 8px rgba(15, 23, 42, 0.45);
 }
 

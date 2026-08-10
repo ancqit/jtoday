@@ -1,5 +1,7 @@
-<div class="app-shell">
-  <app-header-bar />
+<div class="app-shell" [class.welcome-active]="!hasCompletedWelcome()">
+  @if (hasCompletedWelcome()) {
+    <app-header-bar />
+  }
 
   <main class="map-stage">
     <app-map

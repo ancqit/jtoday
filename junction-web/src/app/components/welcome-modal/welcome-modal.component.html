@@ -1,8 +1,9 @@
 <div class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="welcome-title">
   <section class="modal-card">
-    <p class="eyebrow">Junction Today</p>
-    <h1 id="welcome-title">Welcome</h1>
-    <p class="subtitle">Tell us where you are so we can place you on the map.</p>
+    <div class="welcome-wordmark">
+      <h1 id="welcome-title" class="wordmark-primary">Welcome</h1>
+      <p class="welcome-prompt">Select your Junction.</p>
+    </div>
 
     <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
       <label>
