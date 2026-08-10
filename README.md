@@ -46,11 +46,34 @@ Static output (what Vercel publishes): `junction-web/dist/junction-web/browser`
 
 ## Deploy on Vercel
 
-This repo includes a root `vercel.json` (aligned with [ancqit/jWeb](https://github.com/ancqit/jWeb)) that installs/builds `junction-web/` and publishes the Angular browser bundle.
+This repo supports **two** valid Vercel setups. Pick one and keep dashboard settings aligned with it — mixing them causes `NOT_FOUND` (404).
 
-In the Vercel project:
+### Option A — Repo root (recommended, matches jWeb)
 
-1. **Root Directory** = repository root (`.`)
+| Setting | Value |
+| --- | --- |
+| **Root Directory** | `.` (repository root) |
+| **Config file** | `vercel.json` at repo root |
+| **Output directory** | `junction-web/dist/junction-web/browser` (set in root `vercel.json`) |
+
+### Option B — App subfolder
+
+| Setting | Value |
+| --- | --- |
+| **Root Directory** | `junction-web` |
+| **Config file** | `junction-web/vercel.json` |
+| **Output directory** | `dist/junction-web/browser` (set in `junction-web/vercel.json`) |
+
+### Common `NOT_FOUND` causes
+
+1. **Root Directory mismatch** — e.g. Root Directory = `junction-web` but only the repo-root `vercel.json` exists. Vercel reads `vercel.json` from the Root Directory, not the repo root.
+2. **Wrong output path** — Angular 19 publishes to `dist/junction-web/browser`, not `dist/junction-web` alone.
+3. **Dashboard overrides** — If Output Directory is set manually in Vercel Project Settings, it overrides `vercel.json`. Clear it or match the table above.
+4. **Missing build artifacts** — Check deployment build logs; a failed `npm run build` leaves nothing to serve.
+
+### Steps
+
+1. Choose Option A or B and set **Root Directory** accordingly
 2. Set environment variables: `MAPBOX_ACCESS_TOKEN` (and optionally `JUNCTION_API_BASE_URL`)
 3. Redeploy after pushing `vercel.json`
 

@@ -22,4 +22,11 @@ Vercel publishes: `dist/junction-web/browser`
 
 ## Deploy
 
-Deployment is configured at the repository root in `vercel.json`. See the root [README](../README.md) for Vercel setup and environment variables.
+Deployment is configured for Vercel in two places — use the file that matches your Vercel **Root Directory**:
+
+| Vercel Root Directory | Config file | Output directory |
+| --- | --- | --- |
+| `.` (repo root) | [`../vercel.json`](../vercel.json) | `junction-web/dist/junction-web/browser` |
+| `junction-web` | [`vercel.json`](./vercel.json) | `dist/junction-web/browser` |
+
+See the root [README](../README.md) for full Vercel troubleshooting (including `NOT_FOUND` / 404 fixes).
