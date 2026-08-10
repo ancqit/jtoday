@@ -28,8 +28,16 @@
 
       <label>
         <span>Locality</span>
-        <select formControlName="localityName" [disabled]="!form.controls.cityName.value || localities.length === 0">
-          <option value="" disabled>Select a locality</option>
+        <select formControlName="localityName" aria-label="Locality">
+          <option value="" disabled>
+            @if (localitiesLoading) {
+              Loading localities...
+            } @else if (!form.controls.cityName.value) {
+              Select a city first
+            } @else {
+              Select a locality
+            }
+          </option>
           @for (locality of localities; track locality.id) {
             <option [value]="locality.name">{{ locality.name }}</option>
           }

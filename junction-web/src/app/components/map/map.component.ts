@@ -14,6 +14,7 @@ export interface MapTarget {
   latitude: number;
   longitude: number;
   label: string;
+  zoom?: number;
 }
 
 const TILE_URL = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
@@ -114,8 +115,9 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     }
 
     const center = L.latLng(target.latitude, target.longitude);
+    const zoom = target.zoom ?? 13;
 
-    this.map.flyTo(center, 13, {
+    this.map.flyTo(center, zoom, {
       animate: true,
       duration: 2.4,
     });

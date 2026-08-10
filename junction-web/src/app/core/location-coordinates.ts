@@ -87,5 +87,32 @@ export function resolveCityCoordinates(cityName: string): Coordinates {
 }
 
 export function resolveLocalityCoordinates(cityName: string, localityName: string): Coordinates {
-  return LOCALITY_COORDINATES[cityName]?.[localityName] ?? resolveCityCoordinates(cityName);
+  const cityLocalities = findCityLocalities(cityName);
+  if (!cityLocalities) {
+    return resolveCityCoordinates(cityName);
+  }
+
+  const normalizedLocality = normalizeLocationName(localityName);
+  const match = Object.entries(cityLocalities).find(
+    ([name]) => normalizeLocationName(name) === normalizedLocality,
+  );
+
+  return match?.[1] ?? resolveCityCoordinates(cityName);
+}
+
+function findCityLocalities(cityName: string): Record<string, Coordinates> | undefined {
+  const normalizedCity = normalizeLocationName(cityName);
+  const entry = Object.entries(LOCALITY_COORDINATES).find(
+    ([name]) => normalizeLocationName(name) === normalizedCity,
+  );
+
+  return entry?.[1];
+}
+
+function normalizeLocationName(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/\./g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
