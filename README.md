@@ -1,6 +1,6 @@
 # Junction Today (junction.web)
 
-Angular app with a full-screen Mapbox map, welcome modal, and city/locality selection.
+Angular app with a full-screen Leaflet map, welcome modal, and city/locality selection.
 
 The Angular source lives in `junction-web/` (same pattern as `frontend/` in [jWeb](https://github.com/ancqit/jWeb) and the repo-root layout in [junctionFrontweb](https://github.com/ancqit/junctionFrontweb)).
 
@@ -9,23 +9,14 @@ The Angular source lives in `junction-web/` (same pattern as `frontend/` in [jWe
 ```bash
 cd junction-web
 npm install
-export MAPBOX_ACCESS_TOKEN=your_mapbox_token   # optional for local map rendering
 npm start
 ```
 
 Open `http://localhost:4200`.
 
-Without `MAPBOX_ACCESS_TOKEN`, the app still builds and runs, but the map area shows a placeholder until a token is provided.
+The map uses **Leaflet** with CARTO Voyager raster tiles — no API key required.
 
 Local API calls use same-origin `/api/*`, proxied to `https://junctionback.onrender.com` via `junction-web/proxy.conf.json`.
-
-## Environment variables
-
-| Variable | Description |
-| --- | --- |
-| `MAPBOX_ACCESS_TOKEN` | Mapbox public access token for production maps |
-
-Set this in the Vercel project dashboard for production deploys. The build script injects it into `environment.prod.ts` automatically.
 
 ## API (junctionBack)
 
@@ -62,12 +53,6 @@ Deployment is configured in the repo-root `vercel.json` (same approach as juncti
 | **Output directory** | `junction-web/dist/junction-web/browser` |
 
 Do not set a separate Root Directory to `junction-web` — keep it at the repository root so Vercel picks up `vercel.json` correctly.
-
-### Environment variables on Vercel
-
-| Variable | Required | Purpose |
-| --- | --- | --- |
-| `MAPBOX_ACCESS_TOKEN` | Yes (for live map) | Injected into `environment.prod.ts` at build time |
 
 ### API proxy
 

@@ -8,14 +8,17 @@ import {
   inject,
   input,
 } from '@angular/core';
-import mapboxgl from 'mapbox-gl';
-import { environment } from '../../../environments/environment';
+import * as L from 'leaflet';
 
 export interface MapTarget {
   latitude: number;
   longitude: number;
   label: string;
 }
+
+const TILE_URL = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+const TILE_ATTRIBUTION =
+  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
 
 @Component({
   selector: 'app-map',
@@ -28,8 +31,8 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   readonly interactive = input(true);
   readonly target = input<MapTarget | null>(null);
 
-  private map: mapboxgl.Map | null = null;
-  private marker: mapboxgl.Marker | null = null;
+  private map: L.Map | null = null;
+  private marker: L.Marker | null = null;
   private readonly host = inject(ElementRef<HTMLElement>);
 
   constructor() {
@@ -50,33 +53,26 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    const token = environment.mapboxAccessToken;
-
-    if (!token) {
-      this.mapContainer.nativeElement.innerHTML =
-        '<div class="map-fallback">Add MAPBOX_ACCESS_TOKEN to enable the production map.</div>';
-      return;
-    }
-
-    mapboxgl.accessToken = token;
-
-    this.map = new mapboxgl.Map({
-      container: this.mapContainer.nativeElement,
-      style: 'mapbox://styles/mapbox/streets-v12',
-      center: [78.9629, 20.5937],
-      zoom: 4.2,
+    this.map = L.map(this.mapContainer.nativeElement, {
+      center: [20.5937, 78.9629],
+      zoom: 4,
+      zoomControl: false,
       attributionControl: true,
     });
 
-    this.map.addControl(new mapboxgl.NavigationControl({ visualizePitch: true }), 'bottom-right');
+    L.tileLayer(TILE_URL, {
+      attribution: TILE_ATTRIBUTION,
+      subdomains: 'abcd',
+      maxZoom: 20,
+    }).addTo(this.map);
+
+    L.control.zoom({ position: 'bottomright' }).addTo(this.map);
     this.applyInteractionState(this.interactive());
 
-    this.map.on('load', () => {
-      const initialTarget = this.target();
-      if (initialTarget) {
-        this.flyToTarget(initialTarget);
-      }
-    });
+    const initialTarget = this.target();
+    if (initialTarget) {
+      this.flyToTarget(initialTarget);
+    }
   }
 
   ngOnDestroy(): void {
@@ -89,28 +85,26 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       return;
     }
 
-    const controls = [
-      this.map.scrollZoom,
-      this.map.dragPan,
-      this.map.boxZoom,
+    const handlers: Array<{ enable: () => void; disable: () => void }> = [
+      this.map.dragging,
+      this.map.touchZoom,
       this.map.doubleClickZoom,
-      this.map.touchZoomRotate,
+      this.map.scrollWheelZoom,
+      this.map.boxZoom,
       this.map.keyboard,
     ];
 
-    for (const control of controls) {
+    for (const handler of handlers) {
       if (enabled) {
-        control.enable();
+        handler.enable();
       } else {
-        control.disable();
+        handler.disable();
       }
     }
 
-    const navContainer = this.map
-      .getContainer()
-      .querySelector('.mapboxgl-ctrl-top-right, .mapboxgl-ctrl-bottom-right');
-    if (navContainer instanceof HTMLElement) {
-      navContainer.style.display = enabled ? '' : 'none';
+    const zoomControl = this.map.zoomControl?.getContainer();
+    if (zoomControl instanceof HTMLElement) {
+      zoomControl.style.display = enabled ? '' : 'none';
     }
   }
 
@@ -119,21 +113,26 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       return;
     }
 
-    const center: [number, number] = [target.longitude, target.latitude];
+    const center = L.latLng(target.latitude, target.longitude);
 
-    this.map.flyTo({
-      center,
-      zoom: 13.5,
-      pitch: 45,
-      bearing: -12,
-      duration: 2400,
-      essential: true,
+    this.map.flyTo(center, 13, {
+      animate: true,
+      duration: 2.4,
     });
 
     if (!this.marker) {
-      this.marker = new mapboxgl.Marker({ color: '#0f766e' }).setLngLat(center).addTo(this.map);
+      this.marker = L.marker(center, { icon: this.createMarkerIcon() }).addTo(this.map);
     } else {
-      this.marker.setLngLat(center);
+      this.marker.setLatLng(center);
     }
+  }
+
+  private createMarkerIcon(): L.DivIcon {
+    return L.divIcon({
+      className: 'junction-marker',
+      html: '<span class="junction-marker__pin" aria-hidden="true"></span>',
+      iconSize: [28, 36],
+      iconAnchor: [14, 36],
+    });
   }
 }
