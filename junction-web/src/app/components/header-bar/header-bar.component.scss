@@ -1,41 +1,49 @@
-.header-bar {
+.header-shell {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   z-index: 20;
+  padding: 0.75rem 1rem;
+  padding-top: max(0.75rem, env(safe-area-inset-top, 0px));
+  pointer-events: none;
+}
+
+.header-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  min-height: 4.5rem;
-  padding: 1rem 1.25rem;
-  padding-top: max(1rem, env(safe-area-inset-top, 0px));
+  gap: 0.75rem;
+  min-height: 3.25rem;
+  padding: 0.6rem 1rem;
+  border-radius: 1rem;
   background: #eef2f6;
-  border-bottom: 1px solid #dbe2ea;
+  border: 1px solid #dbe2ea;
   color: #475569;
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.1);
+  pointer-events: auto;
 }
 
 .greeting {
   white-space: nowrap;
+  font-size: 1rem;
 }
 
 .junction-controls {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.65rem;
   flex-shrink: 0;
 }
 
 .junction-copy {
   display: grid;
-  gap: 0.15rem;
+  gap: 0.1rem;
   text-align: right;
 }
 
 .junction-name {
-  font-size: 1rem;
+  font-size: 0.95rem;
   white-space: nowrap;
 }
 
@@ -46,11 +54,11 @@
 .settings-button {
   display: grid;
   place-items: center;
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 2.25rem;
+  height: 2.25rem;
   padding: 0;
   border: 1px solid #cbd5e1;
-  border-radius: 0.75rem;
+  border-radius: 0.65rem;
   background: #f8fafc;
   color: #0f766e;
   cursor: pointer;
@@ -64,8 +72,8 @@
 }
 
 .settings-button svg {
-  width: 1.2rem;
-  height: 1.2rem;
+  width: 1.1rem;
+  height: 1.1rem;
   fill: currentColor;
 }
 
@@ -162,10 +170,14 @@
 }
 
 @media (max-width: 720px) {
+  .header-shell {
+    padding-inline: 0.75rem;
+  }
+
   .header-bar {
     align-items: flex-start;
     flex-wrap: wrap;
-    gap: 0.75rem;
+    gap: 0.65rem;
   }
 
   .junction-controls {
