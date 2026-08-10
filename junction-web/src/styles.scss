@@ -1,0 +1,25 @@
+@import 'mapbox-gl/dist/mapbox-gl.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  color: #0f172a;
+  background: #020617;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}

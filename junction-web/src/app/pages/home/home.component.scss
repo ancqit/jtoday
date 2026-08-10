@@ -1,0 +1,12 @@
+.app-shell {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+.map-stage {
+  position: fixed;
+  inset: 0;
+  top: 4.5rem;
+}

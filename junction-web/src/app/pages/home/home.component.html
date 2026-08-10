@@ -1,0 +1,17 @@
+<div class="app-shell">
+  <app-header-bar />
+
+  <main class="map-stage">
+    <app-map
+      [interactive]="hasCompletedWelcome()"
+      [target]="mapTarget()"
+    />
+  </main>
+
+  @if (!hasCompletedWelcome()) {
+    <app-welcome-modal
+      (submitted)="onWelcomeSubmitted($event)"
+      (locationPreview)="onLocationPreview($event)"
+    />
+  }
+</div>
