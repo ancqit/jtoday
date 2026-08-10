@@ -69,22 +69,24 @@ export class HeaderBarComponent implements OnInit {
         return;
       }
 
-      const city = this.cities.find((item) => item.name === this.form.controls.cityName.value);
-      const locality = this.localities.find((item) => item.name === localityName);
+      const cityName = this.form.controls.cityName.value;
+      const city = this.cities.find((item) => item.name === cityName);
       const profile = this.session.userProfile();
 
-      if (!city || !locality || !profile) {
+      if (!city || !profile) {
         return;
       }
 
-      if (city.name !== profile.city.name) {
-        this.session.updateCity(city, locality);
-        return;
-      }
+      this.locationsService.resolveLocality(cityName, localityName).subscribe((locality) => {
+        if (city.name !== profile.city.name) {
+          this.session.updateCity(city, locality);
+          return;
+        }
 
-      if (locality.name !== profile.locality.name) {
-        this.session.updateLocality(locality);
-      }
+        if (locality.name !== profile.locality.name) {
+          this.session.updateLocality(locality);
+        }
+      });
     });
   }
 

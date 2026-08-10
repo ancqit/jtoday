@@ -14,15 +14,21 @@ export class WelcomeModalComponent implements OnInit {
   private readonly locationsService = inject(LocationsService);
 
   readonly submitted = output<{ name: string; city: City; locality: Locality }>();
-  readonly locationPreview = output<{ latitude: number; longitude: number; label: string }>();
+  readonly locationPreview = output<{
+    latitude: number;
+    longitude: number;
+    label: string;
+    zoom: number;
+  }>();
 
   cities: City[] = [];
   localities: Locality[] = [];
+  localitiesLoading = false;
 
   readonly form = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.minLength(2)]],
     cityName: ['', Validators.required],
-    localityName: ['', Validators.required],
+    localityName: [{ value: '', disabled: true }, Validators.required],
   });
 
   ngOnInit(): void {
@@ -31,39 +37,35 @@ export class WelcomeModalComponent implements OnInit {
     });
 
     this.form.controls.cityName.valueChanges.subscribe((cityName) => {
-      this.form.controls.localityName.setValue('');
+      this.setLocalityEnabled(false);
+      this.form.controls.localityName.setValue('', { emitEvent: false });
       this.localities = [];
 
       if (!cityName) {
+        this.localitiesLoading = false;
         return;
       }
 
-      const city = this.cities.find((item) => item.name === cityName);
-      if (city) {
-        this.locationPreview.emit({
-          latitude: city.latitude,
-          longitude: city.longitude,
-          label: city.name,
-        });
-      }
+      this.locationsService.resolveCityTarget(cityName).subscribe((target) => {
+        this.locationPreview.emit(target);
+      });
 
+      this.localitiesLoading = true;
       this.locationsService.getLocalities(cityName).subscribe((localities) => {
         this.localities = localities;
+        this.localitiesLoading = false;
+        this.setLocalityEnabled(localities.length > 0);
       });
     });
 
     this.form.controls.localityName.valueChanges.subscribe((localityName) => {
-      const city = this.cities.find((item) => item.name === this.form.controls.cityName.value);
-      const locality = this.localities.find((item) => item.name === localityName);
-
-      if (!city || !locality) {
+      const cityName = this.form.controls.cityName.value;
+      if (!cityName || !localityName) {
         return;
       }
 
-      this.locationPreview.emit({
-        latitude: locality.latitude,
-        longitude: locality.longitude,
-        label: `${locality.name}, ${city.name}`,
+      this.locationsService.resolveLocalityTarget(cityName, localityName).subscribe((target) => {
+        this.locationPreview.emit(target);
       });
     });
   }
@@ -76,12 +78,24 @@ export class WelcomeModalComponent implements OnInit {
 
     const { name, cityName, localityName } = this.form.getRawValue();
     const city = this.cities.find((item) => item.name === cityName);
-    const locality = this.localities.find((item) => item.name === localityName);
 
-    if (!city || !locality) {
+    if (!city || !localityName) {
       return;
     }
 
-    this.submitted.emit({ name, city, locality });
+    this.locationsService.resolveLocality(cityName, localityName).subscribe((locality) => {
+      this.submitted.emit({ name, city, locality });
+    });
+  }
+
+  private setLocalityEnabled(enabled: boolean): void {
+    const control = this.form.controls.localityName;
+
+    if (enabled) {
+      control.enable({ emitEvent: false });
+      return;
+    }
+
+    control.disable({ emitEvent: false });
   }
 }
