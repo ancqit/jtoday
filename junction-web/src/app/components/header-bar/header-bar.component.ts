@@ -1,4 +1,12 @@
-import { Component, OnInit, effect, inject } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  HostListener,
+  OnInit,
+  effect,
+  inject,
+  signal,
+} from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { City, Locality, UserProfile } from '../../models/location.model';
 import { LocationsService } from '../../services/locations.service';
@@ -13,10 +21,13 @@ import { UserSessionService } from '../../services/user-session.service';
 export class HeaderBarComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly locationsService = inject(LocationsService);
+  private readonly host = inject(ElementRef<HTMLElement>);
   readonly session = inject(UserSessionService);
 
   cities: City[] = [];
   localities: Locality[] = [];
+  localitiesLoading = false;
+  readonly settingsOpen = signal(false);
   private profileInitialized = false;
 
   readonly form = this.fb.nonNullable.group({
@@ -55,41 +66,88 @@ export class HeaderBarComponent implements OnInit {
       this.localities = [];
 
       if (!cityName) {
+        this.localitiesLoading = false;
         return;
       }
 
+      this.localitiesLoading = true;
       this.locationsService.getLocalities(cityName).subscribe((localities) => {
         this.localities = localities;
+        this.localitiesLoading = false;
         this.setLocalityEnabled(localities.length > 0);
       });
     });
+  }
 
-    this.form.controls.localityName.valueChanges.subscribe((localityName) => {
-      if (!localityName) {
-        return;
-      }
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (!this.settingsOpen()) {
+      return;
+    }
 
-      const city = this.cities.find((item) => item.name === this.form.controls.cityName.value);
-      const locality = this.localities.find((item) => item.name === localityName);
+    const target = event.target;
+    if (target instanceof Node && !this.host.nativeElement.contains(target)) {
+      this.closeSettings();
+    }
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    this.closeSettings();
+  }
+
+  toggleSettings(): void {
+    if (this.settingsOpen()) {
+      this.closeSettings();
+      return;
+    }
+
+    const profile = this.session.userProfile();
+    if (profile) {
+      this.syncFormFromProfile(profile);
+    }
+
+    this.settingsOpen.set(true);
+  }
+
+  closeSettings(): void {
+    this.settingsOpen.set(false);
+    const profile = this.session.userProfile();
+    if (profile) {
+      this.syncFormFromProfile(profile);
+    }
+  }
+
+  applyJunctionChange(): void {
+    const { cityName, localityName } = this.form.getRawValue();
+    const city = this.cities.find((item) => item.name === cityName);
+
+    if (!city || !localityName) {
+      return;
+    }
+
+    this.locationsService.resolveLocality(cityName, localityName).subscribe((locality) => {
       const profile = this.session.userProfile();
-
-      if (!city || !locality || !profile) {
+      if (!profile) {
         return;
       }
 
       if (city.name !== profile.city.name) {
         this.session.updateCity(city, locality);
-        return;
-      }
-
-      if (locality.name !== profile.locality.name) {
+      } else if (locality.name !== profile.locality.name) {
         this.session.updateLocality(locality);
       }
+
+      this.settingsOpen.set(false);
     });
   }
 
   private initializeFromProfile(profile: UserProfile): void {
     this.profileInitialized = true;
+    this.syncFormFromProfile(profile);
+  }
+
+  private syncFormFromProfile(profile: UserProfile): void {
     this.form.controls.cityName.setValue(profile.city.name, { emitEvent: false });
 
     this.locationsService.getLocalities(profile.city.name).subscribe((localities) => {

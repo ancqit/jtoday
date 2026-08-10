@@ -5,17 +5,20 @@
   display: grid;
   place-items: center;
   padding: 1.5rem;
-  background: rgba(2, 6, 23, 0.55);
-  backdrop-filter: blur(6px);
+  background: transparent;
+  pointer-events: none;
 }
 
 .modal-card {
   width: min(100%, 28rem);
   padding: 2rem;
   border-radius: 1.25rem;
-  background: rgba(255, 255, 255, 0.96);
-  box-shadow: 0 24px 80px rgba(15, 23, 42, 0.35);
-  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(15, 23, 42, 0.18);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  pointer-events: auto;
 }
 
 .eyebrow {
@@ -24,19 +27,22 @@
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #0f766e;
+  color: rgba(153, 246, 228, 0.92);
+  text-shadow: 0 1px 8px rgba(15, 23, 42, 0.45);
 }
 
 h1 {
   margin: 0;
   font-size: 2rem;
-  color: #0f172a;
+  color: rgba(248, 250, 252, 0.95);
+  text-shadow: 0 2px 12px rgba(15, 23, 42, 0.5);
 }
 
 .subtitle {
   margin: 0.5rem 0 1.5rem;
-  color: #475569;
+  color: rgba(226, 232, 240, 0.82);
   line-height: 1.5;
+  text-shadow: 0 1px 8px rgba(15, 23, 42, 0.45);
 }
 
 form {
@@ -48,7 +54,8 @@ label {
   display: grid;
   gap: 0.4rem;
   font-size: 0.9rem;
-  color: #334155;
+  color: rgba(241, 245, 249, 0.88);
+  text-shadow: 0 1px 6px rgba(15, 23, 42, 0.4);
 }
 
 input,
@@ -61,35 +68,55 @@ input,
 select {
   width: 100%;
   padding: 0.75rem 0.9rem;
-  border: 1px solid #cbd5e1;
+  border: 1px solid rgba(255, 255, 255, 0.28);
   border-radius: 0.75rem;
-  background: #fff;
-  color: #0f172a;
+  background: rgba(15, 23, 42, 0.42);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: rgba(248, 250, 252, 0.95);
+}
+
+input::placeholder {
+  color: rgba(226, 232, 240, 0.55);
 }
 
 input:focus,
 select:focus {
-  outline: 2px solid #14b8a6;
+  outline: 2px solid rgba(20, 184, 166, 0.75);
   outline-offset: 1px;
+  background: rgba(15, 23, 42, 0.52);
+}
+
+select:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+select option {
+  color: #0f172a;
+  background: #f8fafc;
 }
 
 small {
-  color: #b91c1c;
+  color: rgba(252, 165, 165, 0.95);
+  text-shadow: 0 1px 4px rgba(15, 23, 42, 0.5);
 }
 
 button {
   margin-top: 0.25rem;
   padding: 0.85rem 1rem;
-  border: 0;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 0.75rem;
-  background: linear-gradient(135deg, #0f766e, #14b8a6);
-  color: #fff;
+  background: linear-gradient(135deg, rgba(15, 118, 110, 0.82), rgba(20, 184, 166, 0.78));
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  color: rgba(255, 255, 255, 0.96);
   font-weight: 600;
   cursor: pointer;
 }
 
 button:hover {
-  filter: brightness(1.05);
+  background: linear-gradient(135deg, rgba(15, 118, 110, 0.92), rgba(20, 184, 166, 0.88));
 }
 
 button:disabled {

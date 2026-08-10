@@ -15,7 +15,7 @@
 }
 
 :host(.map--disabled) .map-canvas {
-  filter: saturate(0.75) brightness(0.82);
+  filter: saturate(0.92) brightness(0.96);
 }
 
 :host(.map--disabled)::after {
@@ -23,7 +23,7 @@
   position: absolute;
   inset: 0;
   z-index: 1;
-  background: rgba(15, 23, 42, 0.18);
+  background: rgba(15, 23, 42, 0.06);
 }
 
 :host ::ng-deep .junction-marker {
