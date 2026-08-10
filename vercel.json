@@ -6,8 +6,8 @@
   "framework": null,
   "rewrites": [
     {
-      "source": "/api/(.*)",
-      "destination": "https://junctionback.onrender.com/$1"
+      "source": "/api/:path*",
+      "destination": "https://junctionback.onrender.com/:path*"
     },
     {
       "source": "/((?!.*\\.).*)",

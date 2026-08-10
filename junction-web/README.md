@@ -22,11 +22,10 @@ Vercel publishes: `dist/junction-web/browser`
 
 ## Deploy
 
-Deployment is configured for Vercel in two places — use the file that matches your Vercel **Root Directory**:
+Set Vercel **Root Directory** to `junction-web` and use [`vercel.json`](./vercel.json):
 
-| Vercel Root Directory | Config file | Output directory |
-| --- | --- | --- |
-| `.` (repo root) | [`../vercel.json`](../vercel.json) | `junction-web/dist/junction-web/browser` |
-| `junction-web` | [`vercel.json`](./vercel.json) | `dist/junction-web/browser` |
+- **Output:** `dist/junction-web/browser`
+- **Build:** `npm run build` (includes env injection via `prebuild`)
+- **API:** `/api/*` → `https://junctionback.onrender.com/*`
 
-See the root [README](../README.md) for full Vercel troubleshooting (including `NOT_FOUND` / 404 fixes).
+See the root [README](../README.md) for environment variables and troubleshooting.
