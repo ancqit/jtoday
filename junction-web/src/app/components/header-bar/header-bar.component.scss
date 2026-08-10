@@ -10,11 +10,10 @@
   gap: 1rem;
   min-height: 4.5rem;
   padding: 0.75rem 1.25rem;
-  background: rgba(241, 245, 249, 0.78);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border-bottom: 1px solid rgba(203, 213, 225, 0.85);
-  color: #334155;
+  background: #eef2f6;
+  border-bottom: 1px solid #dbe2ea;
+  color: #475569;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
 .brand {
@@ -30,10 +29,8 @@
   height: 2.5rem;
   border-radius: 0.85rem;
   background: linear-gradient(135deg, #14b8a6, #0f766e);
-  border: 1px solid rgba(255, 255, 255, 0.45);
   color: #fff;
   font-weight: 800;
-  box-shadow: 0 6px 18px rgba(15, 118, 110, 0.22);
 }
 
 .brand-title {
@@ -41,7 +38,7 @@
   font-size: 1.1rem;
   font-weight: 700;
   line-height: 1.1;
-  color: #1e293b;
+  color: #334155;
 }
 
 .brand-subtitle {
@@ -49,7 +46,7 @@
   font-size: 0.75rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #64748b;
+  color: #94a3b8;
 }
 
 .session-controls {
@@ -70,7 +67,7 @@
   margin: 0;
   font-weight: 600;
   white-space: nowrap;
-  color: #1e293b;
+  color: #334155;
 }
 
 .junction-label {
@@ -90,19 +87,18 @@
   width: 2.5rem;
   height: 2.5rem;
   padding: 0;
-  border: 1px solid rgba(148, 163, 184, 0.55);
+  border: 1px solid #cbd5e1;
   border-radius: 0.75rem;
-  background: rgba(255, 255, 255, 0.72);
+  background: #f8fafc;
   color: #0f766e;
   cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  transition: background 0.15s ease, border-color 0.15s ease;
 }
 
 .settings-button:hover,
 .settings-button[aria-expanded='true'] {
-  background: rgba(255, 255, 255, 0.95);
-  border-color: rgba(20, 184, 166, 0.55);
-  color: #0d9488;
+  background: #ffffff;
+  border-color: #94a3b8;
 }
 
 .settings-button svg {
@@ -119,16 +115,16 @@
   width: min(18rem, calc(100vw - 2rem));
   padding: 1rem;
   border-radius: 1rem;
-  background: linear-gradient(155deg, rgba(15, 118, 110, 0.96), rgba(20, 184, 166, 0.92));
-  border: 1px solid rgba(167, 243, 208, 0.45);
-  box-shadow: 0 16px 40px rgba(15, 118, 110, 0.28);
+  background: linear-gradient(160deg, #0f766e, #14b8a6);
+  border: 1px solid #5eead4;
+  box-shadow: 0 12px 28px rgba(15, 118, 110, 0.22);
 }
 
 .settings-title {
   margin: 0 0 0.85rem;
   font-size: 0.85rem;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.98);
+  color: #ffffff;
 }
 
 .settings-form {
@@ -140,21 +136,22 @@
   display: grid;
   gap: 0.35rem;
   font-size: 0.78rem;
-  color: rgba(236, 253, 245, 0.95);
+  color: #ecfdf5;
 }
 
 .settings-form select {
   width: 100%;
   padding: 0.6rem 0.75rem;
-  border: 1px solid rgba(255, 255, 255, 0.28);
+  border: 1px solid #99f6e4;
   border-radius: 0.65rem;
-  background: rgba(255, 255, 255, 0.16);
-  color: #f8fafc;
+  background: #f8fafc;
+  color: #0f172a;
   font: inherit;
 }
 
 .settings-form select:disabled {
-  opacity: 0.65;
+  background: #e2e8f0;
+  color: #64748b;
   cursor: not-allowed;
 }
 
@@ -164,9 +161,8 @@
 }
 
 .settings-form select:focus {
-  outline: 2px solid rgba(204, 251, 241, 0.85);
+  outline: 2px solid #ccfbf1;
   outline-offset: 1px;
-  background: rgba(255, 255, 255, 0.22);
 }
 
 .settings-actions {
@@ -187,14 +183,14 @@
 }
 
 .btn-secondary {
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  background: rgba(255, 255, 255, 0.12);
-  color: rgba(255, 255, 255, 0.95);
+  border: 1px solid #99f6e4;
+  background: transparent;
+  color: #ffffff;
 }
 
 .btn-primary {
-  border: 1px solid rgba(255, 255, 255, 0.45);
-  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #ffffff;
+  background: #ffffff;
   color: #0f766e;
 }
 
