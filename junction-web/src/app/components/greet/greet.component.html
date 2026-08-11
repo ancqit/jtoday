@@ -69,8 +69,11 @@
     addSectionLabel="Add a new locality"
     [options]="localityPickerOptions"
     [loading]="localitiesLoading"
+    [validating]="localityValidating()"
+    [errorMessage]="localityGeocodeError()"
     emptyMessage="No localities available for this city."
     (picked)="onLocalityPicked($event)"
     (dismissed)="closePicker()"
+    (errorCleared)="clearLocalityGeocodeError()"
   />
 }

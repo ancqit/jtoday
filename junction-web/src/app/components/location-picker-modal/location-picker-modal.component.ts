@@ -18,9 +18,12 @@ export class LocationPickerModalComponent {
   readonly loading = input(false);
   readonly emptyMessage = input('Nothing to show yet.');
   readonly addSectionLabel = input('Add a new one');
+  readonly errorMessage = input<string | null>(null);
+  readonly validating = input(false);
 
   readonly picked = output<string>();
   readonly dismissed = output<void>();
+  readonly errorCleared = output<void>();
 
   readonly searchQuery = signal('');
   readonly newEntryName = signal('');
@@ -43,10 +46,12 @@ export class LocationPickerModalComponent {
   onSearchChange(value: string): void {
     this.searchQuery.set(value);
     this.newEntryName.set(value);
+    this.errorCleared.emit();
   }
 
   onNewEntryChange(value: string): void {
     this.newEntryName.set(value);
+    this.errorCleared.emit();
   }
 
   onPick(label: string): void {

@@ -36,6 +36,9 @@
 
       <section class="picker-add">
         <p class="picker-add-label wordmark-prompt">{{ addSectionLabel() }}</p>
+        @if (errorMessage()) {
+          <p class="picker-error">{{ errorMessage() }}</p>
+        }
         <div class="picker-add-row">
           <input
             type="text"
@@ -43,8 +46,17 @@
             [ngModel]="newEntryName()"
             (ngModelChange)="onNewEntryChange($event)"
           />
-          <button type="button" class="picker-add-button" [disabled]="!newEntryName().trim()" (click)="onAddCustom()">
-            Add
+          <button
+            type="button"
+            class="picker-add-button"
+            [disabled]="!newEntryName().trim() || validating()"
+            (click)="onAddCustom()"
+          >
+            @if (validating()) {
+              Checking...
+            } @else {
+              Add
+            }
           </button>
         </div>
       </section>

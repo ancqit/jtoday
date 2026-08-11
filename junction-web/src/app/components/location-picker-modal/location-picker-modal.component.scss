@@ -82,11 +82,17 @@
 }
 
 .picker-status,
-.picker-hint {
+.picker-hint,
+.picker-error {
   margin: 0;
   color: rgba(226, 232, 240, 0.82);
   text-align: center;
   font-size: 0.85rem;
+}
+
+.picker-error {
+  color: rgba(252, 165, 165, 0.95);
+  text-align: left;
 }
 
 .picker-tags {

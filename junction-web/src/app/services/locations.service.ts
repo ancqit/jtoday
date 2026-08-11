@@ -103,4 +103,23 @@ export class LocationsService {
       })),
     );
   }
+
+  tryResolveLocality(cityName: string, localityName: string): Observable<Locality | null> {
+    const cityId = slugifyLocationName(cityName);
+
+    return this.geocoding.tryGeocodeLocality(cityName, localityName).pipe(
+      map((coordinates) => {
+        if (!coordinates) {
+          return null;
+        }
+
+        return {
+          id: slugifyLocationName(localityName),
+          cityId,
+          name: localityName.trim(),
+          ...coordinates,
+        };
+      }),
+    );
+  }
 }

@@ -9,6 +9,9 @@ import {
 
 type ActivePicker = 'city' | 'locality' | null;
 
+const LOCALITY_GEOCODE_ERROR =
+  'If the geocoding function fails, please enter a real locality or a prominent locality.';
+
 @Component({
   selector: 'app-greet',
   imports: [ReactiveFormsModule, LocationPickerModalComponent],
@@ -34,6 +37,8 @@ export class GreetComponent implements OnInit {
   readonly activePicker = signal<ActivePicker>(null);
   readonly selectedCity = signal<City | null>(null);
   readonly selectedLocality = signal<Locality | null>(null);
+  readonly localityGeocodeError = signal<string | null>(null);
+  readonly localityValidating = signal(false);
 
   readonly form = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.minLength(2)]],
@@ -62,11 +67,18 @@ export class GreetComponent implements OnInit {
       return;
     }
 
+    this.localityGeocodeError.set(null);
     this.activePicker.set('locality');
   }
 
   closePicker(): void {
     this.activePicker.set(null);
+    this.localityGeocodeError.set(null);
+    this.localityValidating.set(false);
+  }
+
+  clearLocalityGeocodeError(): void {
+    this.localityGeocodeError.set(null);
   }
 
   onCityPicked(cityName: string): void {
@@ -102,11 +114,22 @@ export class GreetComponent implements OnInit {
     );
 
     if (knownLocality) {
+      this.localityGeocodeError.set(null);
       this.applyLocalitySelection(knownLocality);
       return;
     }
 
-    this.locationsService.resolveLocality(city.name, trimmed).subscribe((locality) => {
+    this.localityValidating.set(true);
+    this.localityGeocodeError.set(null);
+
+    this.locationsService.tryResolveLocality(city.name, trimmed).subscribe((locality) => {
+      this.localityValidating.set(false);
+
+      if (!locality) {
+        this.localityGeocodeError.set(LOCALITY_GEOCODE_ERROR);
+        return;
+      }
+
       this.applyLocalitySelection(locality);
     });
   }
@@ -151,6 +174,7 @@ export class GreetComponent implements OnInit {
       return;
     }
 
+    this.localityGeocodeError.set(null);
     this.selectedLocality.set(locality);
     this.closePicker();
 
