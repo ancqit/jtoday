@@ -1,5 +1,8 @@
 <div class="app-shell" [class.welcome-active]="!hasCompletedWelcome()">
   @if (hasCompletedWelcome()) {
+    <button type="button" class="marketplace-launcher" (click)="openMarketplace()" aria-label="Browse shops">
+      Shops
+    </button>
     <app-header-bar />
   }
 
@@ -16,4 +19,6 @@
       (locationPreview)="onLocationPreview($event)"
     />
   }
+
+  <app-marketplace-panel [open]="marketplaceOpen()" (closed)="closeMarketplace()" />
 </div>

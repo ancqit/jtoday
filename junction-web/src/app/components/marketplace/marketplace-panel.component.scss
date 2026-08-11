@@ -1,0 +1,271 @@
+.marketplace-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  padding: 1rem;
+  padding-top: max(1rem, env(safe-area-inset-top, 0px));
+  padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+  background: rgba(15, 23, 42, 0.28);
+}
+
+.marketplace-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border-radius: 1.25rem;
+  overflow: hidden;
+  background: rgba(238, 242, 246, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.16);
+  color: #475569;
+}
+
+.marketplace-header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+  background: rgba(238, 242, 246, 0.72);
+}
+
+.marketplace-title h2,
+.marketplace-title p {
+  margin: 0;
+}
+
+.marketplace-title h2 {
+  font-size: 1.05rem;
+  color: #334155;
+}
+
+.marketplace-title p {
+  font-size: 0.82rem;
+  color: #64748b;
+}
+
+.marketplace-body {
+  flex: 1;
+  overflow: auto;
+  padding: 1.25rem;
+}
+
+.icon-button,
+.cart-button,
+.primary-button,
+.shop-card {
+  font: inherit;
+}
+
+.icon-button {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 0.65rem;
+  background: rgba(248, 250, 252, 0.8);
+  color: #0f766e;
+  cursor: pointer;
+}
+
+.cart-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.55rem 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 0.65rem;
+  background: rgba(248, 250, 252, 0.8);
+  color: #0f766e;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cart-badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.35rem;
+  height: 1.35rem;
+  padding: 0 0.35rem;
+  border-radius: 999px;
+  background: #0f766e;
+  color: #fff;
+  font-size: 0.75rem;
+}
+
+.card-grid {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.shop-card,
+.product-card,
+.bill-card,
+.receipt-card,
+.cart-line {
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+}
+
+.shop-card {
+  display: grid;
+  gap: 0.35rem;
+  width: 100%;
+  padding: 1rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.shop-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.shop-meta,
+.shop-hours,
+.product-meta,
+.product-description,
+.status-message,
+.error-message,
+.hint-message {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.shop-meta,
+.shop-hours,
+.product-meta {
+  color: #64748b;
+}
+
+.product-card {
+  display: grid;
+  gap: 0.85rem;
+  padding: 1rem;
+}
+
+.product-copy h3 {
+  margin: 0 0 0.35rem;
+  color: #334155;
+}
+
+.product-description {
+  color: #64748b;
+}
+
+.product-price {
+  margin: 0.5rem 0 0;
+  font-weight: 700;
+  color: #0f766e;
+}
+
+.primary-button {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0.75rem;
+  background: linear-gradient(135deg, rgba(15, 118, 110, 0.92), rgba(20, 184, 166, 0.88));
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.primary-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.cart-list {
+  display: grid;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.cart-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.9rem 1rem;
+}
+
+.cart-line h3 {
+  margin: 0 0 0.25rem;
+  font-size: 0.95rem;
+}
+
+.cart-line p {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #64748b;
+}
+
+.quantity-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.bill-card,
+.receipt-card {
+  display: grid;
+  gap: 0.65rem;
+  padding: 1rem;
+}
+
+.bill-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.9rem;
+}
+
+.bill-row.total {
+  font-weight: 700;
+  color: #334155;
+}
+
+.error-message {
+  color: #dc2626;
+}
+
+.status-message,
+.hint-message {
+  color: #64748b;
+}
+
+@media print {
+  :not(.printable-receipt, .printable-receipt *) {
+    visibility: hidden;
+  }
+
+  .printable-receipt,
+  .printable-receipt * {
+    visibility: visible;
+  }
+
+  .printable-receipt {
+    position: absolute;
+    inset: 0;
+    padding: 2rem;
+    background: #fff;
+    color: #000;
+  }
+}
+
+@media (max-width: 720px) {
+  .marketplace-backdrop {
+    padding: 0.75rem;
+  }
+
+  .marketplace-body {
+    padding: 1rem;
+  }
+}

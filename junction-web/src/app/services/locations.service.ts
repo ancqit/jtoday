@@ -6,7 +6,7 @@ import {
   resolveLocalityCoordinates,
   slugifyLocationName,
 } from '../core/location-coordinates';
-import { LocationsApi } from '../core/locations.api';
+import { AddJunctionResponse, LocationsApi } from '../core/locations.api';
 import { City, Locality } from '../models/location.model';
 
 export interface MapLocationTarget {
@@ -104,6 +104,12 @@ export class LocationsService {
     );
   }
 
+  addJunction(cityName: string, localityName: string): Observable<{ city: City; locality: Locality }> {
+    return this.locationsApi.addJunction(cityName, localityName).pipe(
+      map((response) => this.mapAddJunctionResponse(response)),
+    );
+  }
+
   tryResolveLocality(cityName: string, localityName: string): Observable<Locality | null> {
     const cityId = slugifyLocationName(cityName);
 
@@ -121,5 +127,28 @@ export class LocationsService {
         };
       }),
     );
+  }
+
+  private mapAddJunctionResponse(response: AddJunctionResponse): { city: City; locality: Locality } {
+    const cityName = response.city.trim();
+    const localityName = response.locality.trim();
+    const cityId = slugifyLocationName(cityName);
+    const cityCoords = resolveCityCoordinates(cityName);
+    const localityCoords = resolveLocalityCoordinates(cityName, localityName);
+
+    return {
+      city: {
+        id: cityId,
+        name: cityName,
+        ...cityCoords,
+      },
+      locality: {
+        id: slugifyLocationName(localityName),
+        cityId,
+        name: localityName,
+        latitude: response.latitude ?? localityCoords.latitude,
+        longitude: response.longitude ?? localityCoords.longitude,
+      },
+    };
   }
 }

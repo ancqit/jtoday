@@ -4,10 +4,11 @@ import { UserSessionService } from '../../services/user-session.service';
 import { HeaderBarComponent } from '../../components/header-bar/header-bar.component';
 import { MapComponent, MapTarget } from '../../components/map/map.component';
 import { GreetComponent } from '../../components/greet/greet.component';
+import { MarketplacePanelComponent } from '../../components/marketplace/marketplace-panel.component';
 
 @Component({
   selector: 'app-home',
-  imports: [MapComponent, GreetComponent, HeaderBarComponent],
+  imports: [MapComponent, GreetComponent, HeaderBarComponent, MarketplacePanelComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
 })
@@ -15,6 +16,7 @@ export class HomeComponent {
   private readonly session = inject(UserSessionService);
 
   readonly hasCompletedWelcome = this.session.hasCompletedWelcome;
+  readonly marketplaceOpen = signal(false);
   private readonly previewTarget = signal<MapTarget | null>(null);
 
   readonly mapTarget = computed<MapTarget | null>(() => {
@@ -37,5 +39,13 @@ export class HomeComponent {
 
   onLocationPreview(target: MapTarget): void {
     this.previewTarget.set(target);
+  }
+
+  openMarketplace(): void {
+    this.marketplaceOpen.set(true);
+  }
+
+  closeMarketplace(): void {
+    this.marketplaceOpen.set(false);
   }
 }
