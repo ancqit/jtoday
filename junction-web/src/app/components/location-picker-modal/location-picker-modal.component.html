@@ -1,0 +1,26 @@
+<div class="picker-backdrop" role="dialog" aria-modal="true" [attr.aria-label]="title()" (click)="onDismiss()">
+  <section class="picker-card" (click)="$event.stopPropagation()">
+    <header class="picker-header">
+      <h2 class="picker-title wordmark-prompt">{{ title() }}</h2>
+      <button type="button" class="picker-close" aria-label="Close" (click)="onDismiss()">×</button>
+    </header>
+
+    <div class="picker-body">
+      @if (loading()) {
+        <p class="picker-status">Loading...</p>
+      } @else if (options().length === 0) {
+        <p class="picker-status">{{ emptyMessage() }}</p>
+      } @else {
+        <ul class="picker-list">
+          @for (option of options(); track option.id) {
+            <li>
+              <button type="button" class="picker-option" (click)="onPick(option.label)">
+                {{ option.label }}
+              </button>
+            </li>
+          }
+        </ul>
+      }
+    </div>
+  </section>
+</div>
