@@ -46,21 +46,64 @@
       }
 
       @if (!loading() && view() === 'shops') {
+        <div class="shops-toolbar">
+          <div
+            class="layout-toggle"
+            role="group"
+            aria-label="Shop layout"
+          >
+            <button
+              type="button"
+              class="layout-toggle-option"
+              [class.active]="shopsLayout() === 'card'"
+              [attr.aria-pressed]="shopsLayout() === 'card'"
+              (click)="setShopsLayout('card')"
+            >
+              Card
+            </button>
+            <button
+              type="button"
+              class="layout-toggle-option"
+              [class.active]="shopsLayout() === 'list'"
+              [attr.aria-pressed]="shopsLayout() === 'list'"
+              (click)="setShopsLayout('list')"
+            >
+              List
+            </button>
+          </div>
+        </div>
+
         @if (shops().length === 0 && !error()) {
           <p class="status-message">No open shops in your Junction yet.</p>
         }
 
-        <div class="card-grid">
-          @for (shop of shops(); track shop.id) {
-            <button type="button" class="shop-card" (click)="selectShop(shop)">
-              <span class="shop-name">{{ shop.name }}</span>
-              <span class="shop-meta">{{ shop.locality }}, {{ shop.city }}</span>
-              @if (shop.open_time && shop.closed_time) {
-                <span class="shop-hours">{{ shop.open_time }} – {{ shop.closed_time }}</span>
-              }
-            </button>
-          }
-        </div>
+        @if (shopsLayout() === 'card') {
+          <div class="card-grid">
+            @for (shop of shops(); track shop.id) {
+              <button type="button" class="shop-card" (click)="selectShop(shop)">
+                <span class="shop-name">{{ shop.name }}</span>
+                <span class="shop-meta">{{ shop.locality }}, {{ shop.city }}</span>
+                @if (shop.open_time && shop.closed_time) {
+                  <span class="shop-hours">{{ shop.open_time }} – {{ shop.closed_time }}</span>
+                }
+              </button>
+            }
+          </div>
+        } @else {
+          <div class="shop-list">
+            @for (shop of shops(); track shop.id) {
+              <button type="button" class="shop-row" (click)="selectShop(shop)">
+                <span class="shop-row-main">
+                  <span class="shop-name">{{ shop.name }}</span>
+                  <span class="shop-meta">{{ shop.locality }}, {{ shop.city }}</span>
+                </span>
+                @if (shop.open_time && shop.closed_time) {
+                  <span class="shop-hours">{{ shop.open_time }} – {{ shop.closed_time }}</span>
+                }
+              </button>
+            }
+          </div>
+        }
       }
 
       @if (!loading() && view() === 'products') {
