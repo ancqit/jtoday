@@ -1,42 +1,40 @@
 <div class="marketplace-shell" role="dialog" aria-modal="true" aria-label="Junction marketplace">
   <section class="marketplace-panel">
-    <header class="marketplace-header">
-      <button type="button" class="icon-button" (click)="back()" aria-label="Go back">
-        ←
-      </button>
+    @if (view() !== 'shops') {
+      <header class="marketplace-header">
+        <button type="button" class="icon-button" (click)="back()" aria-label="Go back">
+          ←
+        </button>
 
-      <div class="marketplace-title">
-        @switch (view()) {
-          @case ('shops') {
-            <h2>Shops near you</h2>
-            <p>{{ session.junctionLabel() }}</p>
+        <div class="marketplace-title">
+          @switch (view()) {
+            @case ('products') {
+              <h2>{{ selectedShop()?.name }}</h2>
+              <p>Choose products to add to your cart</p>
+            }
+            @case ('cart') {
+              <h2>Your cart</h2>
+              <p>{{ cart.shopName() }}</p>
+            }
+            @case ('receipt') {
+              <h2>Order placed</h2>
+              <p>Save your bill as PDF</p>
+            }
           }
-          @case ('products') {
-            <h2>{{ selectedShop()?.name }}</h2>
-            <p>Choose products to add to your cart</p>
-          }
-          @case ('cart') {
-            <h2>Your cart</h2>
-            <p>{{ cart.shopName() }}</p>
-          }
-          @case ('receipt') {
-            <h2>Order placed</h2>
-            <p>Save your bill as PDF</p>
-          }
+        </div>
+
+        @if (view() !== 'receipt' && !cart.isEmpty()) {
+          <button type="button" class="cart-button" (click)="openCart()" aria-label="Open cart">
+            Cart
+            <span class="cart-badge">{{ cart.itemCount() }}</span>
+          </button>
+        } @else {
+          <button type="button" class="icon-button" (click)="closePanel()" aria-label="Close marketplace">
+            ✕
+          </button>
         }
-      </div>
-
-      @if (view() !== 'receipt' && !cart.isEmpty()) {
-        <button type="button" class="cart-button" (click)="openCart()" aria-label="Open cart">
-          Cart
-          <span class="cart-badge">{{ cart.itemCount() }}</span>
-        </button>
-      } @else {
-        <button type="button" class="icon-button" (click)="closePanel()" aria-label="Close marketplace">
-          ✕
-        </button>
-      }
-    </header>
+      </header>
+    }
 
     <div class="marketplace-body">
       @if (loading()) {
