@@ -11,6 +11,13 @@ interface LocalityListResponse {
   localities: string[];
 }
 
+export interface AddJunctionResponse {
+  city: string;
+  locality: string;
+  latitude?: number | null;
+  longitude?: number | null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class LocationsApi {
   private readonly api = inject(ApiService);
@@ -34,5 +41,12 @@ export class LocationsApi {
         map((response) => (Array.isArray(response) ? response : (response?.localities ?? []))),
         catchError(() => of([])),
       );
+  }
+
+  addJunction(city: string, locality: string) {
+    return this.api.post<AddJunctionResponse>('/locations/add-junction', {
+      city: city.trim(),
+      locality: locality.trim(),
+    });
   }
 }

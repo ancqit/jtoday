@@ -39,6 +39,10 @@ export class GreetComponent implements OnInit {
   readonly selectedLocality = signal<Locality | null>(null);
   readonly localityGeocodeError = signal<string | null>(null);
   readonly localityValidating = signal(false);
+  readonly submitting = signal(false);
+  readonly submitError = signal<string | null>(null);
+
+  private pendingAddJunction = false;
 
   readonly form = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.minLength(2)]],
@@ -115,6 +119,7 @@ export class GreetComponent implements OnInit {
 
     if (knownLocality) {
       this.localityGeocodeError.set(null);
+      this.pendingAddJunction = false;
       this.applyLocalitySelection(knownLocality);
       return;
     }
@@ -130,12 +135,14 @@ export class GreetComponent implements OnInit {
         return;
       }
 
+      this.pendingAddJunction = true;
       this.applyLocalitySelection(locality);
     });
   }
 
   onSubmit(): void {
     this.form.markAllAsTouched();
+    this.submitError.set(null);
 
     const city = this.selectedCity();
     const locality = this.selectedLocality();
@@ -144,17 +151,47 @@ export class GreetComponent implements OnInit {
       return;
     }
 
-    this.submitted.emit({
-      name: this.form.controls.name.value,
-      city,
-      locality,
+    const name = this.form.controls.name.value;
+
+    if (!this.pendingAddJunction) {
+      this.submitted.emit({ name, city, locality });
+      return;
+    }
+
+    this.submitting.set(true);
+
+    this.locationsService.addJunction(city.name, locality.name).subscribe({
+      next: ({ city: syncedCity, locality: syncedLocality }) => {
+        this.submitting.set(false);
+        this.pendingAddJunction = false;
+        this.submitted.emit({ name, city: syncedCity, locality: syncedLocality });
+      },
+      error: (error) => {
+        this.submitting.set(false);
+        this.submitError.set(this.resolveSubmitError(error));
+      },
     });
+  }
+
+  private resolveSubmitError(error: { error?: { detail?: string | { msg?: string }[] } }): string {
+    const detail = error.error?.detail;
+    if (typeof detail === 'string' && detail.trim()) {
+      return detail;
+    }
+
+    if (Array.isArray(detail) && detail[0]?.msg) {
+      return detail[0].msg;
+    }
+
+    return 'Unable to save your Junction. Please try again.';
   }
 
   private applyCitySelection(city: City): void {
     this.selectedCity.set(city);
     this.selectedLocality.set(null);
     this.localities = [];
+    this.pendingAddJunction = false;
+    this.submitError.set(null);
     this.closePicker();
 
     this.locationsService.resolveCityTarget(city.name).subscribe((target) => {
