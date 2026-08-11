@@ -93,4 +93,14 @@ export class LocationsService {
       })),
     );
   }
+
+  resolveCity(cityName: string): Observable<City> {
+    return this.geocoding.resolveCity(cityName).pipe(
+      map((coordinates) => ({
+        id: slugifyLocationName(cityName),
+        name: cityName.trim(),
+        ...coordinates,
+      })),
+    );
+  }
 }

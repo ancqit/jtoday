@@ -43,12 +43,24 @@ form {
   gap: 1rem;
 }
 
-label {
+label,
+.picker-field {
   display: grid;
   gap: 0.4rem;
   font-size: 0.9rem;
   color: rgba(241, 245, 249, 0.88);
   text-shadow: 0 1px 6px rgba(15, 23, 42, 0.4);
+}
+
+.field-label {
+  font-size: 0.9rem;
+}
+
+.selected-value {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgba(153, 246, 228, 0.92);
 }
 
 input,
@@ -67,38 +79,41 @@ input {
   color: rgba(248, 250, 252, 0.95);
 }
 
-.field-button {
-  width: 100%;
-  padding: 0.75rem 0.9rem;
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  border-radius: 0.75rem;
-  background: rgba(15, 23, 42, 0.42);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  color: rgba(248, 250, 252, 0.95);
-  text-align: left;
-  cursor: pointer;
-}
-
-.field-button:disabled {
-  opacity: 0.65;
-  cursor: not-allowed;
-}
-
 input::placeholder {
   color: rgba(226, 232, 240, 0.55);
 }
 
-input:focus,
-.field-button:focus {
+input:focus {
   outline: 2px solid rgba(20, 184, 166, 0.75);
   outline-offset: 1px;
   background: rgba(15, 23, 42, 0.52);
 }
 
-.field-button:not(:disabled):hover {
-  background: rgba(15, 23, 42, 0.52);
-  border-color: rgba(20, 184, 166, 0.55);
+.add-action-button {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0.75rem;
+  background: linear-gradient(135deg, rgba(15, 118, 110, 0.82), rgba(20, 184, 166, 0.78));
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  color: rgba(255, 255, 255, 0.96);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.add-action-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(15, 118, 110, 0.92), rgba(20, 184, 166, 0.88));
+}
+
+.add-action-button:focus {
+  outline: 2px solid rgba(20, 184, 166, 0.75);
+  outline-offset: 1px;
+}
+
+.add-action-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 small {

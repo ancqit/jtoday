@@ -32,8 +32,8 @@ export class GreetComponent implements OnInit {
   localitiesLoading = false;
 
   readonly activePicker = signal<ActivePicker>(null);
-  readonly selectedCityName = signal<string | null>(null);
-  readonly selectedLocalityName = signal<string | null>(null);
+  readonly selectedCity = signal<City | null>(null);
+  readonly selectedLocality = signal<Locality | null>(null);
 
   readonly form = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.minLength(2)]],
@@ -58,7 +58,7 @@ export class GreetComponent implements OnInit {
   }
 
   openLocalityPicker(): void {
-    if (!this.selectedCityName()) {
+    if (!this.selectedCity() || this.localitiesLoading) {
       return;
     }
 
@@ -70,54 +70,92 @@ export class GreetComponent implements OnInit {
   }
 
   onCityPicked(cityName: string): void {
-    this.selectedCityName.set(cityName);
-    this.selectedLocalityName.set(null);
-    this.localities = [];
-    this.closePicker();
+    const trimmed = cityName.trim();
+    if (!trimmed) {
+      return;
+    }
 
-    this.locationsService.resolveCityTarget(cityName).subscribe((target) => {
-      this.locationPreview.emit(target);
-    });
+    const knownCity = this.cities.find(
+      (city) => city.name.toLowerCase() === trimmed.toLowerCase(),
+    );
 
-    this.localitiesLoading = true;
-    this.locationsService.getLocalities(cityName).subscribe((localities) => {
-      this.localities = localities;
-      this.localitiesLoading = false;
+    if (knownCity) {
+      this.applyCitySelection(knownCity);
+      return;
+    }
+
+    this.locationsService.resolveCity(trimmed).subscribe((city) => {
+      this.applyCitySelection(city);
     });
   }
 
   onLocalityPicked(localityName: string): void {
-    const cityName = this.selectedCityName();
-    if (!cityName) {
+    const city = this.selectedCity();
+    const trimmed = localityName.trim();
+
+    if (!city || !trimmed) {
       return;
     }
 
-    this.selectedLocalityName.set(localityName);
-    this.closePicker();
+    const knownLocality = this.localities.find(
+      (locality) => locality.name.toLowerCase() === trimmed.toLowerCase(),
+    );
 
-    this.locationsService.resolveLocalityTarget(cityName, localityName).subscribe((target) => {
-      this.locationPreview.emit(target);
+    if (knownLocality) {
+      this.applyLocalitySelection(knownLocality);
+      return;
+    }
+
+    this.locationsService.resolveLocality(city.name, trimmed).subscribe((locality) => {
+      this.applyLocalitySelection(locality);
     });
   }
 
   onSubmit(): void {
     this.form.markAllAsTouched();
 
-    if (this.form.invalid || !this.selectedCityName() || !this.selectedLocalityName()) {
+    const city = this.selectedCity();
+    const locality = this.selectedLocality();
+
+    if (this.form.invalid || !city || !locality) {
       return;
     }
 
-    const name = this.form.controls.name.value;
-    const cityName = this.selectedCityName()!;
-    const localityName = this.selectedLocalityName()!;
-    const city = this.cities.find((item) => item.name === cityName);
+    this.submitted.emit({
+      name: this.form.controls.name.value,
+      city,
+      locality,
+    });
+  }
 
+  private applyCitySelection(city: City): void {
+    this.selectedCity.set(city);
+    this.selectedLocality.set(null);
+    this.localities = [];
+    this.closePicker();
+
+    this.locationsService.resolveCityTarget(city.name).subscribe((target) => {
+      this.locationPreview.emit(target);
+    });
+
+    this.localitiesLoading = true;
+    this.locationsService.getLocalities(city.name).subscribe((localities) => {
+      this.localities = localities;
+      this.localitiesLoading = false;
+    });
+  }
+
+  private applyLocalitySelection(locality: Locality): void {
+    const city = this.selectedCity();
     if (!city) {
       return;
     }
 
-    this.locationsService.resolveLocality(cityName, localityName).subscribe((locality) => {
-      this.submitted.emit({ name, city, locality });
+    this.selectedLocality.set(locality);
+    this.closePicker();
+
+    this.locationsService.resolveLocalityTarget(city.name, locality.name).subscribe((target) => {
+      this.locationPreview.emit(target);
     });
   }
 }

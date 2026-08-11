@@ -6,21 +6,48 @@
     </header>
 
     <div class="picker-body">
+      <label class="picker-search">
+        <span class="visually-hidden">Search</span>
+        <input
+          type="search"
+          placeholder="Search"
+          [ngModel]="searchQuery()"
+          (ngModelChange)="onSearchChange($event)"
+        />
+      </label>
+
       @if (loading()) {
         <p class="picker-status">Loading...</p>
       } @else if (options().length === 0) {
         <p class="picker-status">{{ emptyMessage() }}</p>
       } @else {
-        <ul class="picker-list">
-          @for (option of options(); track option.id) {
-            <li>
-              <button type="button" class="picker-option" (click)="onPick(option.label)">
-                {{ option.label }}
-              </button>
-            </li>
+        <div class="picker-tags" role="listbox" [attr.aria-label]="title()">
+          @for (option of filteredOptions(); track option.id) {
+            <button type="button" class="picker-tag" role="option" (click)="onPick(option.label)">
+              {{ option.label }}
+            </button>
           }
-        </ul>
+        </div>
+
+        @if (showNoMatches()) {
+          <p class="picker-hint">No matches for "{{ searchQuery() }}".</p>
+        }
       }
+
+      <section class="picker-add">
+        <p class="picker-add-label wordmark-prompt">{{ addSectionLabel() }}</p>
+        <div class="picker-add-row">
+          <input
+            type="text"
+            [placeholder]="addSectionLabel()"
+            [ngModel]="newEntryName()"
+            (ngModelChange)="onNewEntryChange($event)"
+          />
+          <button type="button" class="picker-add-button" [disabled]="!newEntryName().trim()" (click)="onAddCustom()">
+            Add
+          </button>
+        </div>
+      </section>
     </div>
   </section>
 </div>
