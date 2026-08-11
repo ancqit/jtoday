@@ -31,6 +31,7 @@ export class SessionService {
   }
 
   createSession(): Observable<void> {
+    // junctionBack: POST /session — guest JWT for junction.today (~100s TTL)
     return this.http.post<SessionResponse>(this.url('/session'), {}).pipe(
       tap((response) => this.applySession(response)),
       map(() => undefined),

@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, inject, OnInit, output, signal } from '@angular/core';
+import { Component, effect, inject, OnInit, output, signal } from '@angular/core';
 import { Product } from '../../models/product.model';
 import { SavedOrder } from '../../models/order.model';
 import { Shop } from '../../models/shop.model';
@@ -33,6 +33,27 @@ export class MarketplacePanelComponent implements OnInit {
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
   readonly shopsLayout = signal<ShopsLayout>('card');
+
+  private loadedJunctionKey: string | null = null;
+
+  constructor() {
+    effect(() => {
+      const junctionKey = this.session.junctionKey();
+      if (!junctionKey) {
+        return;
+      }
+
+      if (this.loadedJunctionKey === null) {
+        this.loadedJunctionKey = junctionKey;
+        return;
+      }
+
+      if (this.loadedJunctionKey !== junctionKey) {
+        this.loadedJunctionKey = junctionKey;
+        this.openPanel();
+      }
+    });
+  }
 
   ngOnInit(): void {
     this.openPanel();
@@ -145,6 +166,7 @@ export class MarketplacePanelComponent implements OnInit {
     this.loading.set(true);
     this.error.set(null);
 
+    // junctionBack GET /shops/by-location?city=&locality= for the active junction profile.
     this.catalog.getShops(profile.city.name, profile.locality.name).subscribe({
       next: (shops) => {
         this.shops.set(shops.filter((shop) => shop.is_open));

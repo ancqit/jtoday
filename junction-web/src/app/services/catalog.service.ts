@@ -1,18 +1,26 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, switchMap } from 'rxjs';
 import { Product } from '../models/product.model';
 import { Shop } from '../models/shop.model';
 import { CatalogApi } from '../core/catalog.api';
+import { SessionService } from '../core/session.service';
 
 @Injectable({ providedIn: 'root' })
 export class CatalogService {
   private readonly catalogApi = inject(CatalogApi);
+  private readonly session = inject(SessionService);
 
+  /** junctionBack: GET /shops/by-location?city=&locality= (session JWT) */
   getShops(city: string, locality: string): Observable<Shop[]> {
-    return this.catalogApi.shopsByLocation(city, locality);
+    return this.session.ensureSession().pipe(
+      switchMap(() => this.catalogApi.shopsByLocation(city, locality)),
+    );
   }
 
+  /** junctionBack: GET /shops/{shop_id}/products (session JWT) */
   getProducts(shopId: string): Observable<Product[]> {
-    return this.catalogApi.productsForShop(shopId);
+    return this.session.ensureSession().pipe(
+      switchMap(() => this.catalogApi.productsForShop(shopId)),
+    );
   }
 }
