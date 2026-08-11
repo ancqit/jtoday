@@ -2,6 +2,12 @@ import { inject, Injectable } from '@angular/core';
 import { catchError, map, Observable, of } from 'rxjs';
 import { ApiService } from './api.service';
 
+/**
+ * junctionBack location reads/writes (https://github.com/ancqit/junctionBack).
+ * Routes: GET /locations/cities, GET /locations/localities?city=, POST /locations/add-junction
+ * All require the junction.today session JWT (Bearer).
+ */
+
 interface CityListResponse {
   cities: string[];
 }

@@ -166,6 +166,7 @@ export class MarketplacePanelComponent implements OnInit {
     this.loading.set(true);
     this.error.set(null);
 
+    // junctionBack GET /shops/by-location?city=&locality= for the active junction profile.
     this.catalog.getShops(profile.city.name, profile.locality.name).subscribe({
       next: (shops) => {
         this.shops.set(shops.filter((shop) => shop.is_open));

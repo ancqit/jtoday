@@ -4,6 +4,9 @@ import { catchError, switchMap, throwError } from 'rxjs';
 import { resolveApiBaseUrl } from './api.config';
 import { SessionService } from './session.service';
 
+/** junctionBack routes that accept the junction.today session JWT. */
+const SESSION_PROTECTED_PATHS = ['/session', '/locations/', '/shops', '/products'] as const;
+
 function isApiRequest(url: string): boolean {
   const baseUrl = resolveApiBaseUrl();
   if (url.startsWith(baseUrl)) {
@@ -14,7 +17,7 @@ function isApiRequest(url: string): boolean {
     return true;
   }
 
-  return url.includes('/session') || url.includes('/locations/') || url.includes('/shops') || url.includes('/products');
+  return SESSION_PROTECTED_PATHS.some((segment) => url.includes(segment));
 }
 
 function isSessionCreateRequest(url: string, method: string): boolean {
