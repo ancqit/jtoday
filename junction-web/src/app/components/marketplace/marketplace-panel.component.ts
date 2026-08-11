@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, inject, OnInit, output, signal } from '@angular/core';
+import { Component, effect, inject, OnInit, output, signal } from '@angular/core';
 import { Product } from '../../models/product.model';
 import { SavedOrder } from '../../models/order.model';
 import { Shop } from '../../models/shop.model';
@@ -33,6 +33,27 @@ export class MarketplacePanelComponent implements OnInit {
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
   readonly shopsLayout = signal<ShopsLayout>('card');
+
+  private loadedJunctionKey: string | null = null;
+
+  constructor() {
+    effect(() => {
+      const junctionKey = this.session.junctionKey();
+      if (!junctionKey) {
+        return;
+      }
+
+      if (this.loadedJunctionKey === null) {
+        this.loadedJunctionKey = junctionKey;
+        return;
+      }
+
+      if (this.loadedJunctionKey !== junctionKey) {
+        this.loadedJunctionKey = junctionKey;
+        this.openPanel();
+      }
+    });
+  }
 
   ngOnInit(): void {
     this.openPanel();

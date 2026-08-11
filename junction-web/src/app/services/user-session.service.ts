@@ -18,6 +18,15 @@ export class UserSessionService {
     return `${profile.locality.name}, ${profile.city.name}`;
   });
 
+  readonly junctionKey = computed(() => {
+    const profile = this.profile();
+    if (!profile) {
+      return null;
+    }
+
+    return `${profile.city.id}:${profile.locality.id}`;
+  });
+
   completeWelcome(name: string, city: City, locality: Locality): void {
     this.profile.set({ name: name.trim(), city, locality });
     this.welcomeComplete.set(true);
