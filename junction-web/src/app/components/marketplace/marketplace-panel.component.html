@@ -1,42 +1,40 @@
 <div class="marketplace-shell" role="dialog" aria-modal="true" aria-label="Junction marketplace">
   <section class="marketplace-panel">
-    <header class="marketplace-header">
-      <button type="button" class="icon-button" (click)="back()" aria-label="Go back">
-        ←
-      </button>
+    @if (view() !== 'shops') {
+      <header class="marketplace-header">
+        <button type="button" class="icon-button" (click)="back()" aria-label="Go back">
+          ←
+        </button>
 
-      <div class="marketplace-title">
-        @switch (view()) {
-          @case ('shops') {
-            <h2>Shops near you</h2>
-            <p>{{ session.junctionLabel() }}</p>
+        <div class="marketplace-title">
+          @switch (view()) {
+            @case ('products') {
+              <h2>{{ selectedShop()?.name }}</h2>
+              <p>Choose products to add to your cart</p>
+            }
+            @case ('cart') {
+              <h2>Your cart</h2>
+              <p>{{ cart.shopName() }}</p>
+            }
+            @case ('receipt') {
+              <h2>Order placed</h2>
+              <p>Save your bill as PDF</p>
+            }
           }
-          @case ('products') {
-            <h2>{{ selectedShop()?.name }}</h2>
-            <p>Choose products to add to your cart</p>
-          }
-          @case ('cart') {
-            <h2>Your cart</h2>
-            <p>{{ cart.shopName() }}</p>
-          }
-          @case ('receipt') {
-            <h2>Order placed</h2>
-            <p>Save your bill as PDF</p>
-          }
+        </div>
+
+        @if (view() !== 'receipt' && !cart.isEmpty()) {
+          <button type="button" class="cart-button" (click)="openCart()" aria-label="Open cart">
+            Cart
+            <span class="cart-badge">{{ cart.itemCount() }}</span>
+          </button>
+        } @else {
+          <button type="button" class="icon-button" (click)="closePanel()" aria-label="Close marketplace">
+            ✕
+          </button>
         }
-      </div>
-
-      @if (view() !== 'receipt' && !cart.isEmpty()) {
-        <button type="button" class="cart-button" (click)="openCart()" aria-label="Open cart">
-          Cart
-          <span class="cart-badge">{{ cart.itemCount() }}</span>
-        </button>
-      } @else {
-        <button type="button" class="icon-button" (click)="closePanel()" aria-label="Close marketplace">
-          ✕
-        </button>
-      }
-    </header>
+      </header>
+    }
 
     <div class="marketplace-body">
       @if (loading()) {
@@ -48,21 +46,64 @@
       }
 
       @if (!loading() && view() === 'shops') {
+        <div class="shops-toolbar">
+          <div
+            class="layout-toggle"
+            role="group"
+            aria-label="Shop layout"
+          >
+            <button
+              type="button"
+              class="layout-toggle-option"
+              [class.active]="shopsLayout() === 'card'"
+              [attr.aria-pressed]="shopsLayout() === 'card'"
+              (click)="setShopsLayout('card')"
+            >
+              Card
+            </button>
+            <button
+              type="button"
+              class="layout-toggle-option"
+              [class.active]="shopsLayout() === 'list'"
+              [attr.aria-pressed]="shopsLayout() === 'list'"
+              (click)="setShopsLayout('list')"
+            >
+              List
+            </button>
+          </div>
+        </div>
+
         @if (shops().length === 0 && !error()) {
           <p class="status-message">No open shops in your Junction yet.</p>
         }
 
-        <div class="card-grid">
-          @for (shop of shops(); track shop.id) {
-            <button type="button" class="shop-card" (click)="selectShop(shop)">
-              <span class="shop-name">{{ shop.name }}</span>
-              <span class="shop-meta">{{ shop.locality }}, {{ shop.city }}</span>
-              @if (shop.open_time && shop.closed_time) {
-                <span class="shop-hours">{{ shop.open_time }} – {{ shop.closed_time }}</span>
-              }
-            </button>
-          }
-        </div>
+        @if (shopsLayout() === 'card') {
+          <div class="card-grid">
+            @for (shop of shops(); track shop.id) {
+              <button type="button" class="shop-card" (click)="selectShop(shop)">
+                <span class="shop-name">{{ shop.name }}</span>
+                <span class="shop-meta">{{ shop.locality }}, {{ shop.city }}</span>
+                @if (shop.open_time && shop.closed_time) {
+                  <span class="shop-hours">{{ shop.open_time }} – {{ shop.closed_time }}</span>
+                }
+              </button>
+            }
+          </div>
+        } @else {
+          <div class="shop-list">
+            @for (shop of shops(); track shop.id) {
+              <button type="button" class="shop-row" (click)="selectShop(shop)">
+                <span class="shop-row-main">
+                  <span class="shop-name">{{ shop.name }}</span>
+                  <span class="shop-meta">{{ shop.locality }}, {{ shop.city }}</span>
+                </span>
+                @if (shop.open_time && shop.closed_time) {
+                  <span class="shop-hours">{{ shop.open_time }} – {{ shop.closed_time }}</span>
+                }
+              </button>
+            }
+          </div>
+        }
       }
 
       @if (!loading() && view() === 'products') {

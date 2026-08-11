@@ -9,6 +9,7 @@ import { CartStore } from '../../stores/cart.store';
 import { OrderStore } from '../../stores/order.store';
 
 type MarketplaceView = 'shops' | 'products' | 'cart' | 'receipt';
+type ShopsLayout = 'card' | 'list';
 
 @Component({
   selector: 'app-marketplace-panel',
@@ -31,6 +32,7 @@ export class MarketplacePanelComponent implements OnInit {
   readonly completedOrder = signal<SavedOrder | null>(null);
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
+  readonly shopsLayout = signal<ShopsLayout>('card');
 
   ngOnInit(): void {
     this.openPanel();
@@ -127,6 +129,10 @@ export class MarketplacePanelComponent implements OnInit {
       currency,
       maximumFractionDigits: 2,
     }).format(amount);
+  }
+
+  setShopsLayout(layout: ShopsLayout): void {
+    this.shopsLayout.set(layout);
   }
 
   private loadShops(): void {
