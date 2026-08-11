@@ -34,6 +34,19 @@ export class GeocodingService {
     );
   }
 
+  tryGeocodeLocality(cityName: string, localityName: string): Observable<Coordinates | null> {
+    const staticCoords = resolveLocalityCoordinates(cityName, localityName);
+    const cityCoords = resolveCityCoordinates(cityName);
+    const hasDistinctLocality =
+      staticCoords.latitude !== cityCoords.latitude || staticCoords.longitude !== cityCoords.longitude;
+
+    if (hasDistinctLocality) {
+      return of(staticCoords);
+    }
+
+    return this.geocode(`${localityName}, ${cityName}, India`).pipe(catchError(() => of(null)));
+  }
+
   private geocode(query: string): Observable<Coordinates> {
     return this.http
       .get<NominatimResult[]>('https://nominatim.openstreetmap.org/search', {

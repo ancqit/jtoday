@@ -3,11 +3,11 @@ import { City, Locality } from '../../models/location.model';
 import { UserSessionService } from '../../services/user-session.service';
 import { HeaderBarComponent } from '../../components/header-bar/header-bar.component';
 import { MapComponent, MapTarget } from '../../components/map/map.component';
-import { WelcomeModalComponent } from '../../components/welcome-modal/welcome-modal.component';
+import { GreetComponent } from '../../components/greet/greet.component';
 
 @Component({
   selector: 'app-home',
-  imports: [MapComponent, WelcomeModalComponent, HeaderBarComponent],
+  imports: [MapComponent, GreetComponent, HeaderBarComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
 })
@@ -31,7 +31,7 @@ export class HomeComponent {
     return this.previewTarget();
   });
 
-  onWelcomeSubmitted(event: { name: string; city: City; locality: Locality }): void {
+  onGreetSubmitted(event: { name: string; city: City; locality: Locality }): void {
     this.session.completeWelcome(event.name, event.city, event.locality);
   }
 

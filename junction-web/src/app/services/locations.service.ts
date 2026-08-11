@@ -93,4 +93,33 @@ export class LocationsService {
       })),
     );
   }
+
+  resolveCity(cityName: string): Observable<City> {
+    return this.geocoding.resolveCity(cityName).pipe(
+      map((coordinates) => ({
+        id: slugifyLocationName(cityName),
+        name: cityName.trim(),
+        ...coordinates,
+      })),
+    );
+  }
+
+  tryResolveLocality(cityName: string, localityName: string): Observable<Locality | null> {
+    const cityId = slugifyLocationName(cityName);
+
+    return this.geocoding.tryGeocodeLocality(cityName, localityName).pipe(
+      map((coordinates) => {
+        if (!coordinates) {
+          return null;
+        }
+
+        return {
+          id: slugifyLocationName(localityName),
+          cityId,
+          name: localityName.trim(),
+          ...coordinates,
+        };
+      }),
+    );
+  }
 }

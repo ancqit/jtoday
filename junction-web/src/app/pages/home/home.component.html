@@ -11,8 +11,8 @@
   </main>
 
   @if (!hasCompletedWelcome()) {
-    <app-welcome-modal
-      (submitted)="onWelcomeSubmitted($event)"
+    <app-greet
+      (submitted)="onGreetSubmitted($event)"
       (locationPreview)="onLocationPreview($event)"
     />
   }
