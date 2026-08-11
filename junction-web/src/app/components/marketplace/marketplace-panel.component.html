@@ -1,153 +1,151 @@
-@if (open()) {
-  <div class="marketplace-backdrop" role="dialog" aria-modal="true" aria-label="Junction marketplace">
-    <section class="marketplace-panel">
-      <header class="marketplace-header">
-        <button type="button" class="icon-button" (click)="back()" aria-label="Go back">
-          ←
-        </button>
+<div class="marketplace-shell" role="dialog" aria-modal="true" aria-label="Junction marketplace">
+  <section class="marketplace-panel">
+    <header class="marketplace-header">
+      <button type="button" class="icon-button" (click)="back()" aria-label="Go back">
+        ←
+      </button>
 
-        <div class="marketplace-title">
-          @switch (view()) {
-            @case ('shops') {
-              <h2>Shops near you</h2>
-              <p>{{ session.junctionLabel() }}</p>
-            }
-            @case ('products') {
-              <h2>{{ selectedShop()?.name }}</h2>
-              <p>Choose products to add to your cart</p>
-            }
-            @case ('cart') {
-              <h2>Your cart</h2>
-              <p>{{ cart.shopName() }}</p>
-            }
-            @case ('receipt') {
-              <h2>Order placed</h2>
-              <p>Save your bill as PDF</p>
-            }
+      <div class="marketplace-title">
+        @switch (view()) {
+          @case ('shops') {
+            <h2>Shops near you</h2>
+            <p>{{ session.junctionLabel() }}</p>
+          }
+          @case ('products') {
+            <h2>{{ selectedShop()?.name }}</h2>
+            <p>Choose products to add to your cart</p>
+          }
+          @case ('cart') {
+            <h2>Your cart</h2>
+            <p>{{ cart.shopName() }}</p>
+          }
+          @case ('receipt') {
+            <h2>Order placed</h2>
+            <p>Save your bill as PDF</p>
+          }
+        }
+      </div>
+
+      @if (view() !== 'receipt' && !cart.isEmpty()) {
+        <button type="button" class="cart-button" (click)="openCart()" aria-label="Open cart">
+          Cart
+          <span class="cart-badge">{{ cart.itemCount() }}</span>
+        </button>
+      } @else {
+        <button type="button" class="icon-button" (click)="closePanel()" aria-label="Close marketplace">
+          ✕
+        </button>
+      }
+    </header>
+
+    <div class="marketplace-body">
+      @if (loading()) {
+        <p class="status-message">Loading...</p>
+      }
+
+      @if (error()) {
+        <p class="error-message">{{ error() }}</p>
+      }
+
+      @if (!loading() && view() === 'shops') {
+        @if (shops().length === 0 && !error()) {
+          <p class="status-message">No open shops in your Junction yet.</p>
+        }
+
+        <div class="card-grid">
+          @for (shop of shops(); track shop.id) {
+            <button type="button" class="shop-card" (click)="selectShop(shop)">
+              <span class="shop-name">{{ shop.name }}</span>
+              <span class="shop-meta">{{ shop.locality }}, {{ shop.city }}</span>
+              @if (shop.open_time && shop.closed_time) {
+                <span class="shop-hours">{{ shop.open_time }} – {{ shop.closed_time }}</span>
+              }
+            </button>
+          }
+        </div>
+      }
+
+      @if (!loading() && view() === 'products') {
+        @if (products().length === 0 && !error()) {
+          <p class="status-message">This shop has no products listed yet.</p>
+        }
+
+        <div class="card-grid">
+          @for (product of products(); track product.id) {
+            <article class="product-card">
+              <div class="product-copy">
+                <h3>{{ product.name }}</h3>
+                <p class="product-meta">{{ product.category }} · {{ product.unit }}</p>
+                @if (product.description) {
+                  <p class="product-description">{{ product.description }}</p>
+                }
+                <p class="product-price">
+                  {{ formatMoney(product.price, product.currency) }}
+                </p>
+              </div>
+              <button type="button" class="primary-button" (click)="addToCart(product)">
+                Add to cart
+              </button>
+            </article>
+          }
+        </div>
+      }
+
+      @if (view() === 'cart') {
+        <div class="cart-list">
+          @for (line of cart.lines(); track line.productId) {
+            <article class="cart-line">
+              <div>
+                <h3>{{ line.productName }}</h3>
+                <p>{{ formatMoney(line.unitPrice, line.currency) }} / {{ line.unit }}</p>
+              </div>
+              <div class="quantity-controls">
+                <button type="button" class="icon-button" (click)="updateQuantity(line.productId, line.quantity - 1)">−</button>
+                <span>{{ line.quantity }}</span>
+                <button type="button" class="icon-button" (click)="updateQuantity(line.productId, line.quantity + 1)">+</button>
+              </div>
+            </article>
           }
         </div>
 
-        @if (view() !== 'receipt' && !cart.isEmpty()) {
-          <button type="button" class="cart-button" (click)="openCart()" aria-label="Open cart">
-            Cart
-            <span class="cart-badge">{{ cart.itemCount() }}</span>
+        <section class="bill-card">
+          <div class="bill-row"><span>Subtotal</span><span>{{ formatMoney(cart.subtotal(), cart.currency()) }}</span></div>
+          <div class="bill-row"><span>Tax (5%)</span><span>{{ formatMoney(cart.taxAmount(), cart.currency()) }}</span></div>
+          <div class="bill-row total"><span>Total</span><span>{{ formatMoney(cart.totalAmount(), cart.currency()) }}</span></div>
+          <button type="button" class="primary-button" [disabled]="cart.isEmpty()" (click)="placeOrder()">
+            Place order
           </button>
-        } @else {
-          <button type="button" class="icon-button" (click)="closePanel()" aria-label="Close marketplace">
-            ✕
-          </button>
-        }
-      </header>
+        </section>
+      }
 
-      <div class="marketplace-body">
-        @if (loading()) {
-          <p class="status-message">Loading...</p>
-        }
+      @if (view() === 'receipt' && completedOrder(); as order) {
+        <section class="receipt-card printable-receipt">
+          <h3>Junction Today Bill</h3>
+          <p>Order #{{ order.id.slice(0, 8) }}</p>
+          <p>{{ order.createdAt | date: 'medium' }}</p>
+          <p>{{ order.customerName }}</p>
+          <p>{{ order.junctionLabel }}</p>
+          <p>{{ order.shopName }}</p>
 
-        @if (error()) {
-          <p class="error-message">{{ error() }}</p>
-        }
-
-        @if (!loading() && view() === 'shops') {
-          @if (shops().length === 0 && !error()) {
-            <p class="status-message">No open shops in your Junction yet.</p>
-          }
-
-          <div class="card-grid">
-            @for (shop of shops(); track shop.id) {
-              <button type="button" class="shop-card" (click)="selectShop(shop)">
-                <span class="shop-name">{{ shop.name }}</span>
-                <span class="shop-meta">{{ shop.locality }}, {{ shop.city }}</span>
-                @if (shop.open_time && shop.closed_time) {
-                  <span class="shop-hours">{{ shop.open_time }} – {{ shop.closed_time }}</span>
-                }
-              </button>
-            }
-          </div>
-        }
-
-        @if (!loading() && view() === 'products') {
-          @if (products().length === 0 && !error()) {
-            <p class="status-message">This shop has no products listed yet.</p>
-          }
-
-          <div class="card-grid">
-            @for (product of products(); track product.id) {
-              <article class="product-card">
-                <div class="product-copy">
-                  <h3>{{ product.name }}</h3>
-                  <p class="product-meta">{{ product.category }} · {{ product.unit }}</p>
-                  @if (product.description) {
-                    <p class="product-description">{{ product.description }}</p>
-                  }
-                  <p class="product-price">
-                    {{ formatMoney(product.price, product.currency) }}
-                  </p>
-                </div>
-                <button type="button" class="primary-button" (click)="addToCart(product)">
-                  Add to cart
-                </button>
-              </article>
-            }
-          </div>
-        }
-
-        @if (view() === 'cart') {
-          <div class="cart-list">
-            @for (line of cart.lines(); track line.productId) {
-              <article class="cart-line">
-                <div>
-                  <h3>{{ line.productName }}</h3>
-                  <p>{{ formatMoney(line.unitPrice, line.currency) }} / {{ line.unit }}</p>
-                </div>
-                <div class="quantity-controls">
-                  <button type="button" class="icon-button" (click)="updateQuantity(line.productId, line.quantity - 1)">−</button>
-                  <span>{{ line.quantity }}</span>
-                  <button type="button" class="icon-button" (click)="updateQuantity(line.productId, line.quantity + 1)">+</button>
-                </div>
-              </article>
+          <div class="receipt-lines">
+            @for (item of order.items; track item.productId) {
+              <div class="bill-row">
+                <span>{{ item.productName }} × {{ item.quantity }}</span>
+                <span>{{ formatMoney(item.unitPrice * item.quantity, item.currency) }}</span>
+              </div>
             }
           </div>
 
-          <section class="bill-card">
-            <div class="bill-row"><span>Subtotal</span><span>{{ formatMoney(cart.subtotal(), cart.currency()) }}</span></div>
-            <div class="bill-row"><span>Tax (5%)</span><span>{{ formatMoney(cart.taxAmount(), cart.currency()) }}</span></div>
-            <div class="bill-row total"><span>Total</span><span>{{ formatMoney(cart.totalAmount(), cart.currency()) }}</span></div>
-            <button type="button" class="primary-button" [disabled]="cart.isEmpty()" (click)="placeOrder()">
-              Place order
-            </button>
-          </section>
-        }
+          <div class="bill-row"><span>Subtotal</span><span>{{ formatMoney(order.subtotal, order.currency) }}</span></div>
+          <div class="bill-row"><span>Tax</span><span>{{ formatMoney(order.taxAmount, order.currency) }}</span></div>
+          <div class="bill-row total"><span>Total</span><span>{{ formatMoney(order.totalAmount, order.currency) }}</span></div>
+        </section>
 
-        @if (view() === 'receipt' && completedOrder(); as order) {
-          <section class="receipt-card printable-receipt">
-            <h3>Junction Today Bill</h3>
-            <p>Order #{{ order.id.slice(0, 8) }}</p>
-            <p>{{ order.createdAt | date: 'medium' }}</p>
-            <p>{{ order.customerName }}</p>
-            <p>{{ order.junctionLabel }}</p>
-            <p>{{ order.shopName }}</p>
-
-            <div class="receipt-lines">
-              @for (item of order.items; track item.productId) {
-                <div class="bill-row">
-                  <span>{{ item.productName }} × {{ item.quantity }}</span>
-                  <span>{{ formatMoney(item.unitPrice * item.quantity, item.currency) }}</span>
-                </div>
-              }
-            </div>
-
-            <div class="bill-row"><span>Subtotal</span><span>{{ formatMoney(order.subtotal, order.currency) }}</span></div>
-            <div class="bill-row"><span>Tax</span><span>{{ formatMoney(order.taxAmount, order.currency) }}</span></div>
-            <div class="bill-row total"><span>Total</span><span>{{ formatMoney(order.totalAmount, order.currency) }}</span></div>
-          </section>
-
-          <button type="button" class="primary-button" (click)="saveReceiptPdf()">
-            Save bill as PDF
-          </button>
-          <p class="hint-message">Use your browser print dialog and choose “Save as PDF”.</p>
-        }
-      </div>
-    </section>
-  </div>
-}
+        <button type="button" class="primary-button" (click)="saveReceiptPdf()">
+          Save bill as PDF
+        </button>
+        <p class="hint-message">Use your browser print dialog and choose “Save as PDF”.</p>
+      }
+    </div>
+  </section>
+</div>

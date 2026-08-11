@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, effect, inject, input, output, signal } from '@angular/core';
+import { Component, inject, OnInit, output, signal } from '@angular/core';
 import { Product } from '../../models/product.model';
 import { SavedOrder } from '../../models/order.model';
 import { Shop } from '../../models/shop.model';
@@ -16,13 +16,12 @@ type MarketplaceView = 'shops' | 'products' | 'cart' | 'receipt';
   templateUrl: './marketplace-panel.component.html',
   styleUrl: './marketplace-panel.component.scss',
 })
-export class MarketplacePanelComponent {
+export class MarketplacePanelComponent implements OnInit {
   private readonly catalog = inject(CatalogService);
   readonly session = inject(UserSessionService);
   readonly cart = inject(CartStore);
   private readonly orders = inject(OrderStore);
 
-  readonly open = input(false);
   readonly closed = output<void>();
 
   readonly view = signal<MarketplaceView>('shops');
@@ -33,12 +32,8 @@ export class MarketplacePanelComponent {
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
 
-  constructor() {
-    effect(() => {
-      if (this.open()) {
-        this.openPanel();
-      }
-    });
+  ngOnInit(): void {
+    this.openPanel();
   }
 
   openPanel(): void {
