@@ -154,7 +154,19 @@ export class GreetComponent implements OnInit {
     const name = this.form.controls.name.value;
 
     if (!this.pendingAddJunction) {
-      this.submitted.emit({ name, city, locality });
+      this.submitting.set(true);
+      this.locationsService.resolveLocality(city.name, locality.name).subscribe((resolved) => {
+        this.submitting.set(false);
+        this.submitted.emit({
+          name,
+          city,
+          locality: {
+            ...locality,
+            latitude: resolved.latitude,
+            longitude: resolved.longitude,
+          },
+        });
+      });
       return;
     }
 
@@ -220,6 +232,16 @@ export class GreetComponent implements OnInit {
     this.closePicker();
 
     this.locationsService.resolveLocalityTarget(city.name, locality.name).subscribe((target) => {
+      const current = this.selectedLocality();
+      if (!current || current.name !== locality.name) {
+        return;
+      }
+
+      this.selectedLocality.set({
+        ...current,
+        latitude: target.latitude,
+        longitude: target.longitude,
+      });
       this.locationPreview.emit(target);
     });
   }
