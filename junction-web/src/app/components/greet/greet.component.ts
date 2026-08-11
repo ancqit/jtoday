@@ -175,7 +175,7 @@ export class GreetComponent implements OnInit {
 
   private resolveSubmitError(error: { status?: number; error?: { detail?: string | { msg?: string }[] } }): string {
     if (error.status === 404) {
-      return 'Junction save API is not available yet. Please redeploy junctionBack with POST /locations/add-junction.';
+      return 'Unable to save your Junction right now. Please try again shortly.';
     }
 
     const detail = error.error?.detail;
