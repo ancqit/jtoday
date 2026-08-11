@@ -47,7 +47,16 @@
         }
       </div>
 
-      <button type="submit" class="submit-button">Continue</button>
+      <button type="submit" class="submit-button" [disabled]="submitting()">
+        @if (submitting()) {
+          Saving your Junction...
+        } @else {
+          Continue
+        }
+      </button>
+      @if (submitError()) {
+        <small>{{ submitError() }}</small>
+      }
     </form>
   </section>
 </div>
