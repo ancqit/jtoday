@@ -41,8 +41,8 @@ export class HomeComponent {
     this.previewTarget.set(target);
   }
 
-  openMarketplace(): void {
-    this.marketplaceOpen.set(true);
+  toggleMarketplace(): void {
+    this.marketplaceOpen.update((open) => !open);
   }
 
   closeMarketplace(): void {

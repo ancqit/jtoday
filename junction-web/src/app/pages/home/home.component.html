@@ -1,9 +1,26 @@
 <div class="app-shell" [class.welcome-active]="!hasCompletedWelcome()">
   @if (hasCompletedWelcome()) {
-    <button type="button" class="marketplace-launcher" (click)="openMarketplace()" aria-label="Browse shops">
-      Shops
-    </button>
-    <app-header-bar />
+    <div class="app-layout">
+      <div class="app-chrome">
+        <app-header-bar />
+
+        <button
+          type="button"
+          class="shops-toggle"
+          [class.active]="marketplaceOpen()"
+          [attr.aria-expanded]="marketplaceOpen()"
+          (click)="toggleMarketplace()"
+        >
+          {{ marketplaceOpen() ? 'Close shops' : 'Shops' }}
+        </button>
+      </div>
+
+      @if (marketplaceOpen()) {
+        <div class="marketplace-slot">
+          <app-marketplace-panel (closed)="closeMarketplace()" />
+        </div>
+      }
+    </div>
   }
 
   <main class="map-stage">
@@ -19,6 +36,4 @@
       (locationPreview)="onLocationPreview($event)"
     />
   }
-
-  <app-marketplace-panel [open]="marketplaceOpen()" (closed)="closeMarketplace()" />
 </div>

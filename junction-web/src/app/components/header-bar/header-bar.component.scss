@@ -1,12 +1,8 @@
 .header-shell {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 20;
-  padding: 0.75rem 1rem;
-  padding-top: max(0.75rem, env(safe-area-inset-top, 0px));
-  pointer-events: none;
+  position: relative;
+  z-index: 1;
+  padding: 0;
+  pointer-events: auto;
 }
 
 .header-bar {
@@ -181,10 +177,6 @@
 }
 
 @media (max-width: 720px) {
-  .header-shell {
-    padding-inline: 0.75rem;
-  }
-
   .header-bar {
     align-items: flex-start;
     flex-wrap: wrap;
