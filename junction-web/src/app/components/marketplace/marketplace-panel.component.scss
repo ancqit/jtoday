@@ -39,28 +39,6 @@
   margin: 0;
 }
 
-.shop-phone-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem 0.75rem;
-}
-
-.shop-phone-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: #64748b;
-  cursor: pointer;
-  user-select: none;
-}
-
-.shop-phone-toggle input {
-  accent-color: #0f766e;
-}
-
 .shop-phone a,
 .shop-phone {
   color: #0f766e;
@@ -358,18 +336,13 @@
 
 .shop-row-phone-wrap {
   display: grid;
-  gap: 0.25rem;
+  gap: 0.15rem;
   flex-shrink: 0;
   min-width: 7.5rem;
   padding: 0.55rem 0.7rem;
   border-radius: 0.7rem;
   background: rgba(248, 250, 252, 0.95);
   text-align: right;
-  justify-items: end;
-}
-
-.shop-card-body .shop-phone-row {
-  padding-top: 0.15rem;
 }
 
 .cozy-shop-card:hover,

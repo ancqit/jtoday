@@ -46,9 +46,6 @@ export class MarketplacePanelComponent implements OnInit {
   readonly actionMessage = signal<string | null>(null);
 
   private readonly productQuantities = signal<Record<string, number>>({});
-  private readonly shopPhoneVisible = signal<Record<string, boolean>>({});
-  private readonly shopPhones = signal<Record<string, string>>({});
-  private readonly shopPhoneLoading = signal<Record<string, boolean>>({});
 
   private loadedJunctionKey: string | null = null;
 
@@ -81,9 +78,6 @@ export class MarketplacePanelComponent implements OnInit {
     this.products.set([]);
     this.completedOrder.set(null);
     this.error.set(null);
-    this.shopPhoneVisible.set({});
-    this.shopPhones.set({});
-    this.shopPhoneLoading.set({});
     this.loadShops();
   }
 
@@ -267,60 +261,9 @@ export class MarketplacePanelComponent implements OnInit {
     return resolveShopProfileImageSource(shop);
   }
 
-  isShopPhoneVisible(shopId: string): boolean {
-    return this.shopPhoneVisible()[shopId] ?? false;
-  }
-
-  isShopPhoneLoading(shopId: string): boolean {
-    return this.shopPhoneLoading()[shopId] ?? false;
-  }
-
   shopPhoneNumber(shop: Shop): string | null {
-    if (!this.isShopPhoneVisible(shop.id)) {
-      return null;
-    }
-
-    const phone = this.shopPhones()[shop.id]?.trim();
+    const phone = shop.phone_number?.trim();
     return phone || null;
-  }
-
-  onShopPhoneToggle(shop: Shop, event: Event): void {
-    event.preventDefault();
-    event.stopPropagation();
-
-    const input = event.target as HTMLInputElement;
-    const showPhone = input.checked;
-
-    this.shopPhoneVisible.update((state) => ({
-      ...state,
-      [shop.id]: showPhone,
-    }));
-
-    if (!showPhone) {
-      this.shopPhones.update((state) => {
-        const { [shop.id]: _, ...rest } = state;
-        return rest;
-      });
-      return;
-    }
-
-    this.shopPhoneLoading.update((state) => ({ ...state, [shop.id]: true }));
-    this.catalog.getShopContact(shop.id, true).subscribe({
-      next: (contact) => {
-        this.shopPhoneLoading.update((state) => ({ ...state, [shop.id]: false }));
-        if (contact.phone_number?.trim()) {
-          this.shopPhones.update((state) => ({
-            ...state,
-            [shop.id]: contact.phone_number!.trim(),
-          }));
-        }
-      },
-      error: () => {
-        this.shopPhoneLoading.update((state) => ({ ...state, [shop.id]: false }));
-        this.shopPhoneVisible.update((state) => ({ ...state, [shop.id]: false }));
-        input.checked = false;
-      },
-    });
   }
 
   private loadShops(): void {

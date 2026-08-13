@@ -14,20 +14,11 @@
                 @if (shopHoursLabel(shop); as hours) {
                   <p>{{ hours }}</p>
                 }
-                <div class="shop-phone-row">
-                  <label class="shop-phone-toggle" (click)="$event.stopPropagation()">
-                    <input
-                      type="checkbox"
-                      [checked]="isShopPhoneVisible(shop.id)"
-                      [disabled]="isShopPhoneLoading(shop.id)"
-                      (change)="onShopPhoneToggle(shop, $event)"
-                    />
-                    <span>{{ isShopPhoneLoading(shop.id) ? 'Loading phone…' : 'Show phone' }}</span>
-                  </label>
-                  @if (shopPhoneNumber(shop); as phone) {
-                    <a class="shop-phone" [href]="'tel:' + phone">{{ phone }}</a>
-                  }
-                </div>
+                @if (shopPhoneNumber(shop); as phone) {
+                  <p class="shop-phone">
+                    <a [href]="'tel:' + phone">{{ phone }}</a>
+                  </p>
+                }
               }
             }
             @case ('cart') {
@@ -118,20 +109,12 @@
                         <span class="shop-detail-value">{{ hours }}</span>
                       </p>
                     }
-                    <div class="shop-phone-row" (click)="$event.stopPropagation()">
-                      <label class="shop-phone-toggle">
-                        <input
-                          type="checkbox"
-                          [checked]="isShopPhoneVisible(shop.id)"
-                          [disabled]="isShopPhoneLoading(shop.id)"
-                          (change)="onShopPhoneToggle(shop, $event)"
-                        />
-                        <span>{{ isShopPhoneLoading(shop.id) ? 'Loading…' : 'Phone' }}</span>
-                      </label>
-                      @if (shopPhoneNumber(shop); as phone) {
-                        <a class="shop-phone-value" [href]="'tel:' + phone">{{ phone }}</a>
-                      }
-                    </div>
+                    @if (shopPhoneNumber(shop); as phone) {
+                      <p class="shop-detail">
+                        <span class="shop-detail-label">Phone</span>
+                        <a class="shop-detail-value shop-phone-value" [href]="'tel:' + phone">{{ phone }}</a>
+                      </p>
+                    }
                   </div>
                 </div>
               </button>
@@ -160,20 +143,12 @@
                     <span class="shop-detail-value">{{ hours }}</span>
                   </div>
                 }
-                <div class="shop-row-phone-wrap" (click)="$event.stopPropagation()">
-                  <label class="shop-phone-toggle">
-                    <input
-                      type="checkbox"
-                      [checked]="isShopPhoneVisible(shop.id)"
-                      [disabled]="isShopPhoneLoading(shop.id)"
-                      (change)="onShopPhoneToggle(shop, $event)"
-                    />
-                    <span>{{ isShopPhoneLoading(shop.id) ? 'Loading…' : 'Phone' }}</span>
-                  </label>
-                  @if (shopPhoneNumber(shop); as phone) {
-                    <a class="shop-phone-value" [href]="'tel:' + phone">{{ phone }}</a>
-                  }
-                </div>
+                @if (shopPhoneNumber(shop); as phone) {
+                  <div class="shop-row-phone-wrap">
+                    <span class="shop-detail-label">Phone</span>
+                    <a class="shop-detail-value shop-phone-value" [href]="'tel:' + phone">{{ phone }}</a>
+                  </div>
+                }
               </button>
             }
           </div>
