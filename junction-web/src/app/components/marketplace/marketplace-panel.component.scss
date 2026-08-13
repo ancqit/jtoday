@@ -35,6 +35,20 @@
   margin: 0;
 }
 
+.shop-phone {
+  margin: 0;
+}
+
+.shop-phone a {
+  color: #0f766e;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.shop-phone a:hover {
+  text-decoration: underline;
+}
+
 .marketplace-title h2 {
   font-size: 1.05rem;
   color: #334155;
@@ -247,8 +261,7 @@
 }
 
 .shop-card-media,
-.shop-row-media,
-.shop-detail-media {
+.shop-row-media {
   flex-shrink: 0;
   width: 3.5rem;
   height: 3.5rem;
@@ -273,63 +286,9 @@
   height: 2.75rem;
 }
 
-.shop-detail-card {
-  display: flex;
-  gap: 0.85rem;
-  align-items: flex-start;
-  margin-bottom: 0.85rem;
-  padding: 0.85rem;
-  border: 1px solid rgba(226, 232, 240, 0.95);
-  border-radius: 1rem;
-  background: rgba(255, 255, 255, 0.88);
-  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
-}
-
-.shop-detail-media {
-  width: 4rem;
-  height: 4rem;
-}
-
-.shop-detail-copy {
-  display: grid;
-  gap: 0.35rem;
-  min-width: 0;
-}
-
-.shop-detail-copy h3 {
-  margin: 0;
-  font-size: 1rem;
-  color: #334155;
-  text-align: left;
-}
-
-.shop-description {
-  margin: 0;
-  font-size: 0.86rem;
-  line-height: 1.45;
-  color: #475569;
-}
-
-.shop-detail-meta {
-  margin: 0;
-  font-size: 0.82rem;
-  color: #64748b;
-}
-
-.shop-mobile {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-}
-
-.shop-mobile a {
+.shop-phone-value {
   color: #0f766e;
   font-weight: 600;
-  text-decoration: none;
-}
-
-.shop-mobile a:hover {
-  text-decoration: underline;
 }
 
 .shop-detail {

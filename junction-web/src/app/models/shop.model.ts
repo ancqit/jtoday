@@ -8,8 +8,8 @@ export interface Shop {
   is_open: boolean;
   phone_number: string;
   owner_user_id: string;
-  description?: string | null;
-  mobile_number?: string | null;
-  show_mobile_number?: boolean;
+  /** Owner profile photo from junctionBack GET /profile/avatar/file/{id} */
+  avatar_url?: string | null;
+  /** @deprecated Use avatar_url from junctionBack shop catalog */
   profile_image_url?: string | null;
 }

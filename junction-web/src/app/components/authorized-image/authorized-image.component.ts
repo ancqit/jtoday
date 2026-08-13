@@ -14,6 +14,7 @@ import {
   isExternalImageUrl,
   toAbsoluteApiUrl,
 } from '../../core/product-image.util';
+import { isPublicProfileAvatarPath } from '../../core/shop-image.util';
 import { SessionService } from '../../core/session.service';
 
 @Component({
@@ -76,6 +77,11 @@ export class AuthorizedImageComponent {
     }
 
     const url = toAbsoluteApiUrl(source);
+    if (isPublicProfileAvatarPath(url)) {
+      this.displayUrl.set(url);
+      return;
+    }
+
     this.session
       .ensureSession()
       .pipe(
