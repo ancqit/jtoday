@@ -1,6 +1,13 @@
 import { Injectable, computed, signal } from '@angular/core';
 import { City, Locality, UserProfile } from '../models/location.model';
 
+const PROFILE_KEY = 'junction.today.profile';
+
+interface StoredProfileState {
+  profile: UserProfile;
+  welcomeComplete: boolean;
+}
+
 @Injectable({ providedIn: 'root' })
 export class UserSessionService {
   private readonly profile = signal<UserProfile | null>(null);
@@ -9,6 +16,11 @@ export class UserSessionService {
   readonly userProfile = this.profile.asReadonly();
   readonly hasCompletedWelcome = this.welcomeComplete.asReadonly();
   readonly displayName = computed(() => this.profile()?.name ?? '');
+  readonly hasContactProfile = computed(() => {
+    const profile = this.profile();
+    return Boolean(profile?.email?.trim() && profile?.phoneNumber?.trim());
+  });
+
   readonly junctionLabel = computed(() => {
     const profile = this.profile();
     if (!profile) {
@@ -27,9 +39,35 @@ export class UserSessionService {
     return `${profile.city.id}:${profile.locality.id}`;
   });
 
+  constructor() {
+    this.restoreProfile();
+  }
+
   completeWelcome(name: string, city: City, locality: Locality): void {
-    this.profile.set({ name: name.trim(), city, locality });
+    const existing = this.profile();
+    this.profile.set({
+      name: name.trim(),
+      email: existing?.email,
+      phoneNumber: existing?.phoneNumber,
+      city,
+      locality,
+    });
     this.welcomeComplete.set(true);
+    this.persistProfile();
+  }
+
+  updateContactProfile(email: string, phoneNumber: string): void {
+    const current = this.profile();
+    if (!current) {
+      return;
+    }
+
+    this.profile.set({
+      ...current,
+      email: email.trim(),
+      phoneNumber: phoneNumber.trim(),
+    });
+    this.persistProfile();
   }
 
   updateCity(city: City, locality: Locality): void {
@@ -39,6 +77,7 @@ export class UserSessionService {
     }
 
     this.profile.set({ ...current, city, locality });
+    this.persistProfile();
   }
 
   updateLocality(locality: Locality): void {
@@ -48,5 +87,38 @@ export class UserSessionService {
     }
 
     this.profile.set({ ...current, locality });
+    this.persistProfile();
+  }
+
+  private persistProfile(): void {
+    const profile = this.profile();
+    if (!profile) {
+      return;
+    }
+
+    const state: StoredProfileState = {
+      profile,
+      welcomeComplete: this.welcomeComplete(),
+    };
+    localStorage.setItem(PROFILE_KEY, JSON.stringify(state));
+  }
+
+  private restoreProfile(): void {
+    try {
+      const raw = localStorage.getItem(PROFILE_KEY);
+      if (!raw) {
+        return;
+      }
+
+      const state = JSON.parse(raw) as StoredProfileState;
+      if (state.profile) {
+        this.profile.set(state.profile);
+      }
+      if (state.welcomeComplete) {
+        this.welcomeComplete.set(true);
+      }
+    } catch {
+      // Ignore invalid stored profile data.
+    }
   }
 }

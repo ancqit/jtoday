@@ -1,8 +1,11 @@
 import { DatePipe } from '@angular/common';
 import { Component, effect, inject, OnInit, output, signal } from '@angular/core';
+import { AuthorizedImageComponent } from '../authorized-image/authorized-image.component';
 import { Product } from '../../models/product.model';
 import { SavedOrder } from '../../models/order.model';
 import { Shop } from '../../models/shop.model';
+import { resolveProductImageSource } from '../../core/product-image.util';
+import { formatShopHours } from '../../core/shop-hours.util';
 import { CatalogService } from '../../services/catalog.service';
 import { UserSessionService } from '../../services/user-session.service';
 import { CartStore } from '../../stores/cart.store';
@@ -13,7 +16,7 @@ type ShopsLayout = 'card' | 'list';
 
 @Component({
   selector: 'app-marketplace-panel',
-  imports: [DatePipe],
+  imports: [DatePipe, AuthorizedImageComponent],
   templateUrl: './marketplace-panel.component.html',
   styleUrl: './marketplace-panel.component.scss',
 })
@@ -154,6 +157,22 @@ export class MarketplacePanelComponent implements OnInit {
 
   setShopsLayout(layout: ShopsLayout): void {
     this.shopsLayout.set(layout);
+  }
+
+  productImageSource(product: Product): string | null {
+    return resolveProductImageSource(product);
+  }
+
+  shopHoursLabel(shop: Shop): string | null {
+    if (!shop.open_time || !shop.closed_time) {
+      return null;
+    }
+
+    return formatShopHours(shop.open_time, shop.closed_time);
+  }
+
+  shopStatusLabel(shop: Shop): string {
+    return shop.is_open ? 'Open now' : 'Closed';
   }
 
   private loadShops(): void {
