@@ -6,7 +6,7 @@ export interface Shop {
   open_time?: string | null;
   closed_time?: string | null;
   is_open: boolean;
-  phone_number: string;
+  phone_number?: string | null;
   owner_user_id: string;
   /** Owner profile photo from junctionBack GET /profile/avatar/file/{id} */
   avatar_url?: string | null;
