@@ -7,6 +7,7 @@ import { Product } from '../../models/product.model';
 import { SavedOrder } from '../../models/order.model';
 import { Shop } from '../../models/shop.model';
 import { resolveProductImageSource, resolveProductImageSources } from '../../core/product-image.util';
+import { resolveShopProfileImageSource } from '../../core/shop-image.util';
 import { formatShopHours } from '../../core/shop-hours.util';
 import { CatalogService } from '../../services/catalog.service';
 import { UserSessionService } from '../../services/user-session.service';
@@ -254,6 +255,24 @@ export class MarketplacePanelComponent implements OnInit {
     }
 
     return formatShopHours(shop.open_time, shop.closed_time);
+  }
+
+  shopProfileImageSource(shop: Shop): string | null {
+    return resolveShopProfileImageSource(shop);
+  }
+
+  shopDescription(shop: Shop): string | null {
+    const description = shop.description?.trim();
+    return description || null;
+  }
+
+  shopCustomerMobile(shop: Shop): string | null {
+    if (!shop.show_mobile_number) {
+      return null;
+    }
+
+    const mobile = shop.mobile_number?.trim();
+    return mobile || null;
   }
 
   private loadShops(): void {
