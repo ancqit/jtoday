@@ -1,5 +1,6 @@
-import { Component, inject, output, signal } from '@angular/core';
+import { Component, computed, inject, input, output, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ProfileLevel } from '../../models/location.model';
 import { UserSessionService } from '../../services/user-session.service';
 
 @Component({
@@ -10,16 +11,20 @@ import { UserSessionService } from '../../services/user-session.service';
 })
 export class ProfileModalComponent {
   private readonly fb = inject(FormBuilder);
-  private readonly session = inject(UserSessionService);
+  readonly session = inject(UserSessionService);
 
+  readonly mode = input<'settings' | 'checkout'>('settings');
   readonly closed = output<void>();
+  readonly checkoutCompleted = output<void>();
 
   readonly saving = signal(false);
   readonly error = signal<string | null>(null);
+  readonly profileLevel = computed(() => this.session.profileLevel());
 
   readonly form = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
     phoneNumber: ['', [Validators.required, Validators.pattern(/^[+]?[\d\s-]{8,15}$/)]],
+    verificationCode: ['', [Validators.pattern(/^\d{6}$/)]],
   });
 
   constructor() {
@@ -32,15 +37,26 @@ export class ProfileModalComponent {
     }
   }
 
+  isStepComplete(level: ProfileLevel): boolean {
+    const current = this.profileLevel();
+    if (!current) {
+      return false;
+    }
+
+    const order: ProfileLevel[] = ['created', 'contact', 'authenticated'];
+    return order.indexOf(current) >= order.indexOf(level);
+  }
+
   onDismiss(): void {
     this.closed.emit();
   }
 
-  onSubmit(): void {
-    this.form.markAllAsTouched();
+  onSaveContact(): void {
+    this.form.controls.email.markAsTouched();
+    this.form.controls.phoneNumber.markAsTouched();
     this.error.set(null);
 
-    if (this.form.invalid) {
+    if (this.form.controls.email.invalid || this.form.controls.phoneNumber.invalid) {
       return;
     }
 
@@ -48,6 +64,40 @@ export class ProfileModalComponent {
     this.saving.set(true);
     this.session.updateContactProfile(email.trim(), phoneNumber.trim());
     this.saving.set(false);
+
+    if (this.mode() === 'checkout' && this.session.hasContactProfile()) {
+      return;
+    }
+
+    if (this.mode() === 'settings') {
+      this.closed.emit();
+    }
+  }
+
+  onAuthenticate(): void {
+    this.error.set(null);
+
+    if (!this.session.hasContactProfile()) {
+      this.error.set('Add your email and phone first.');
+      return;
+    }
+
+    const code = this.form.controls.verificationCode.value.trim();
+    if (!/^\d{6}$/.test(code)) {
+      this.form.controls.verificationCode.markAsTouched();
+      this.error.set('Enter the 6-digit verification code.');
+      return;
+    }
+
+    this.saving.set(true);
+    this.session.authenticateProfile();
+    this.saving.set(false);
+
+    if (this.mode() === 'checkout') {
+      this.checkoutCompleted.emit();
+      return;
+    }
+
     this.closed.emit();
   }
 }

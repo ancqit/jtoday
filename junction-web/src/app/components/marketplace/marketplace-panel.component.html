@@ -12,12 +12,8 @@
               <h2>{{ selectedShop()?.name }}</h2>
               @if (selectedShop(); as shop) {
                 @if (shopHoursLabel(shop); as hours) {
-                  <p>{{ hours }} · {{ shopStatusLabel(shop) }}</p>
-                } @else {
-                  <p>{{ shopStatusLabel(shop) }}</p>
+                  <p>{{ hours }}</p>
                 }
-              } @else {
-                <p>Choose products to add to your cart</p>
               }
             }
             @case ('cart') {
@@ -53,13 +49,13 @@
         <p class="error-message">{{ error() }}</p>
       }
 
+      @if (actionMessage()) {
+        <p class="action-message">{{ actionMessage() }}</p>
+      }
+
       @if (!loading() && view() === 'shops') {
         <div class="shops-toolbar">
-          <div
-            class="layout-toggle"
-            role="group"
-            aria-label="Shop layout"
-          >
+          <div class="layout-toggle" role="group" aria-label="Shop layout">
             <button
               type="button"
               class="layout-toggle-option"
@@ -88,47 +84,39 @@
         @if (shopsLayout() === 'card') {
           <div class="card-grid shop-card-grid">
             @for (shop of shops(); track shop.id) {
-              <button type="button" class="shop-card cozy-shop-card" (click)="selectShop(shop)">
-                <div class="shop-card-top">
-                  <span class="shop-status-pill" [class.is-open]="shop.is_open">
-                    {{ shopStatusLabel(shop) }}
-                  </span>
+              <button type="button" class="shop-card pro-shop-card" (click)="selectShop(shop)">
+                <h3 class="shop-name">{{ shop.name }}</h3>
+                <div class="shop-card-body">
+                  <p class="shop-detail">
+                    <span class="shop-detail-label">Location</span>
+                    <span class="shop-detail-value">{{ shop.locality }}, {{ shop.city }}</span>
+                  </p>
+                  @if (shopHoursLabel(shop); as hours) {
+                    <p class="shop-detail shop-detail-hours">
+                      <span class="shop-detail-label">Hours</span>
+                      <span class="shop-detail-value">{{ hours }}</span>
+                    </p>
+                  }
                 </div>
-                <span class="shop-name">{{ shop.name }}</span>
-                <span class="shop-meta">
-                  <span class="shop-meta-icon" aria-hidden="true">◎</span>
-                  {{ shop.locality }}, {{ shop.city }}
-                </span>
-                @if (shopHoursLabel(shop); as hours) {
-                  <span class="shop-hours">
-                    <span class="shop-meta-icon" aria-hidden="true">◷</span>
-                    {{ hours }}
-                  </span>
-                }
               </button>
             }
           </div>
         } @else {
           <div class="shop-list">
             @for (shop of shops(); track shop.id) {
-              <button type="button" class="shop-row cozy-shop-row" (click)="selectShop(shop)">
-                <span class="shop-row-main">
-                  <span class="shop-row-title">
-                    <span class="shop-name">{{ shop.name }}</span>
-                    <span class="shop-status-pill" [class.is-open]="shop.is_open">
-                      {{ shopStatusLabel(shop) }}
-                    </span>
-                  </span>
-                  <span class="shop-meta">
-                    <span class="shop-meta-icon" aria-hidden="true">◎</span>
-                    {{ shop.locality }}, {{ shop.city }}
-                  </span>
-                </span>
+              <button type="button" class="shop-row pro-shop-row" (click)="selectShop(shop)">
+                <div class="shop-row-main">
+                  <h3 class="shop-name">{{ shop.name }}</h3>
+                  <p class="shop-detail">
+                    <span class="shop-detail-label">Location</span>
+                    <span class="shop-detail-value">{{ shop.locality }}, {{ shop.city }}</span>
+                  </p>
+                </div>
                 @if (shopHoursLabel(shop); as hours) {
-                  <span class="shop-hours shop-row-hours">
-                    <span class="shop-meta-icon" aria-hidden="true">◷</span>
-                    {{ hours }}
-                  </span>
+                  <div class="shop-row-hours-wrap">
+                    <span class="shop-detail-label">Hours</span>
+                    <span class="shop-detail-value">{{ hours }}</span>
+                  </div>
                 }
               </button>
             }
@@ -141,31 +129,123 @@
           <p class="status-message">This shop has no products listed yet.</p>
         }
 
-        <div class="card-grid product-card-grid">
-          @for (product of products(); track product.id) {
-            <article class="product-card cozy-product-card">
-              <div class="product-media">
-                <app-authorized-image
-                  [src]="productImageSource(product)"
-                  [alt]="product.name"
-                />
-              </div>
-              <div class="product-copy">
-                <h3>{{ product.name }}</h3>
-                <p class="product-meta">{{ product.category }} · {{ product.unit }}</p>
-                @if (product.description) {
-                  <p class="product-description">{{ product.description }}</p>
-                }
-                <p class="product-price">
-                  {{ formatMoney(product.price, product.currency) }}
-                </p>
-              </div>
-              <button type="button" class="primary-button" (click)="addToCart(product)">
-                Add to cart
-              </button>
-            </article>
-          }
+        <div class="products-toolbar">
+          <div class="layout-toggle" role="group" aria-label="Product layout">
+            <button
+              type="button"
+              class="layout-toggle-option"
+              [class.active]="productsLayout() === 'card'"
+              [attr.aria-pressed]="productsLayout() === 'card'"
+              (click)="setProductsLayout('card')"
+            >
+              Card
+            </button>
+            <button
+              type="button"
+              class="layout-toggle-option"
+              [class.active]="productsLayout() === 'list'"
+              [attr.aria-pressed]="productsLayout() === 'list'"
+              (click)="setProductsLayout('list')"
+            >
+              List
+            </button>
+          </div>
         </div>
+
+        @if (productsLayout() === 'card') {
+          <div class="card-grid product-card-grid">
+            @for (product of products(); track product.id) {
+              <article class="product-card compact-product-card">
+                <button
+                  type="button"
+                  class="product-media-button"
+                  [disabled]="productImageSources(product).length === 0"
+                  (click)="openProductGallery(product)"
+                  [attr.aria-label]="'View photos of ' + product.name"
+                >
+                  <div class="product-media">
+                    <app-authorized-image
+                      [src]="productImageSource(product)"
+                      [alt]="product.name"
+                    />
+                  </div>
+                  @if (productImageSources(product).length > 1) {
+                    <span class="product-photo-count">{{ productImageSources(product).length }}</span>
+                  }
+                </button>
+                <div class="product-copy">
+                  <h3>{{ product.name }}</h3>
+                  <p class="product-meta">{{ product.category }} · {{ product.unit }}</p>
+                  <p class="product-price">{{ formatMoney(product.price, product.currency) }}</p>
+                </div>
+                <div class="product-add-row">
+                  <label class="product-qty-field">
+                    <span>Qty</span>
+                    <input
+                      type="number"
+                      min="1"
+                      max="99"
+                      [value]="productQuantity(product.id)"
+                      (input)="onProductQuantityInput(product.id, $event)"
+                      [attr.aria-label]="'Quantity for ' + product.name"
+                    />
+                  </label>
+                  <button type="button" class="primary-button product-add-button" (click)="addToCart(product)">
+                    @if (cartQuantityFor(product.id) > 0) {
+                      Add · {{ cartQuantityFor(product.id) }} in cart
+                    } @else {
+                      Add to cart
+                    }
+                  </button>
+                </div>
+              </article>
+            }
+          </div>
+        } @else {
+          <div class="product-list">
+            @for (product of products(); track product.id) {
+              <article class="product-row compact-product-row">
+                <button
+                  type="button"
+                  class="product-row-media"
+                  [disabled]="productImageSources(product).length === 0"
+                  (click)="openProductGallery(product)"
+                  [attr.aria-label]="'View photos of ' + product.name"
+                >
+                  <app-authorized-image
+                    [src]="productImageSource(product)"
+                    [alt]="product.name"
+                  />
+                </button>
+                <div class="product-row-copy">
+                  <h3>{{ product.name }}</h3>
+                  <p class="product-meta">{{ product.category }} · {{ product.unit }}</p>
+                  <p class="product-price">{{ formatMoney(product.price, product.currency) }}</p>
+                </div>
+                <div class="product-row-actions">
+                  <label class="product-qty-field">
+                    <span>Qty</span>
+                    <input
+                      type="number"
+                      min="1"
+                      max="99"
+                      [value]="productQuantity(product.id)"
+                      (input)="onProductQuantityInput(product.id, $event)"
+                      [attr.aria-label]="'Quantity for ' + product.name"
+                    />
+                  </label>
+                  <button type="button" class="primary-button product-add-button" (click)="addToCart(product)">
+                    @if (cartQuantityFor(product.id) > 0) {
+                      Add · {{ cartQuantityFor(product.id) }}
+                    } @else {
+                      Add
+                    }
+                  </button>
+                </div>
+              </article>
+            }
+          </div>
+        }
       }
 
       @if (view() === 'cart') {
@@ -226,3 +306,19 @@
     </div>
   </section>
 </div>
+
+@if (galleryProduct(); as product) {
+  <app-product-gallery-modal
+    [productName]="product.name"
+    [imageSources]="productImageSources(product)"
+    (closed)="closeProductGallery()"
+  />
+}
+
+@if (checkoutProfileOpen()) {
+  <app-profile-modal
+    [mode]="'checkout'"
+    (closed)="closeCheckoutProfile()"
+    (checkoutCompleted)="onCheckoutProfileCompleted()"
+  />
+}

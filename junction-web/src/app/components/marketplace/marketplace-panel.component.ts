@@ -1,10 +1,12 @@
 import { DatePipe } from '@angular/common';
 import { Component, effect, inject, OnInit, output, signal } from '@angular/core';
 import { AuthorizedImageComponent } from '../authorized-image/authorized-image.component';
+import { ProductGalleryModalComponent } from '../product-gallery-modal/product-gallery-modal.component';
+import { ProfileModalComponent } from '../profile-modal/profile-modal.component';
 import { Product } from '../../models/product.model';
 import { SavedOrder } from '../../models/order.model';
 import { Shop } from '../../models/shop.model';
-import { resolveProductImageSource } from '../../core/product-image.util';
+import { resolveProductImageSource, resolveProductImageSources } from '../../core/product-image.util';
 import { formatShopHours } from '../../core/shop-hours.util';
 import { CatalogService } from '../../services/catalog.service';
 import { UserSessionService } from '../../services/user-session.service';
@@ -13,10 +15,11 @@ import { OrderStore } from '../../stores/order.store';
 
 type MarketplaceView = 'shops' | 'products' | 'cart' | 'receipt';
 type ShopsLayout = 'card' | 'list';
+type ProductsLayout = 'card' | 'list';
 
 @Component({
   selector: 'app-marketplace-panel',
-  imports: [DatePipe, AuthorizedImageComponent],
+  imports: [DatePipe, AuthorizedImageComponent, ProductGalleryModalComponent, ProfileModalComponent],
   templateUrl: './marketplace-panel.component.html',
   styleUrl: './marketplace-panel.component.scss',
 })
@@ -36,6 +39,12 @@ export class MarketplacePanelComponent implements OnInit {
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
   readonly shopsLayout = signal<ShopsLayout>('card');
+  readonly productsLayout = signal<ProductsLayout>('card');
+  readonly galleryProduct = signal<Product | null>(null);
+  readonly checkoutProfileOpen = signal(false);
+  readonly actionMessage = signal<string | null>(null);
+
+  private readonly productQuantities = signal<Record<string, number>>({});
 
   private loadedJunctionKey: string | null = null;
 
@@ -114,14 +123,46 @@ export class MarketplacePanelComponent implements OnInit {
   }
 
   addToCart(product: Product): void {
-    this.cart.addProduct({
-      id: product.id,
-      name: product.name,
-      sku: product.sku,
-      price: product.price,
-      unit: product.unit,
-      currency: product.currency,
-    });
+    if (!this.session.hasContactProfile()) {
+      this.actionMessage.set('Add your email and phone in Settings before adding items.');
+      return;
+    }
+
+    this.actionMessage.set(null);
+    const quantity = this.productQuantity(product.id);
+
+    this.cart.addProduct(
+      {
+        id: product.id,
+        name: product.name,
+        sku: product.sku,
+        price: product.price,
+        unit: product.unit,
+        currency: product.currency,
+      },
+      quantity,
+    );
+  }
+
+  productQuantity(productId: string): number {
+    return this.productQuantities()[productId] ?? 1;
+  }
+
+  onProductQuantityInput(productId: string, event: Event): void {
+    const value = Number((event.target as HTMLInputElement).value);
+    const quantity = Math.max(1, Math.min(99, Math.floor(value) || 1));
+    this.productQuantities.update((drafts) => ({
+      ...drafts,
+      [productId]: quantity,
+    }));
+  }
+
+  cartQuantityFor(productId: string): number {
+    return this.cart.lines().find((line) => line.productId === productId)?.quantity ?? 0;
+  }
+
+  setProductsLayout(layout: ProductsLayout): void {
+    this.productsLayout.set(layout);
   }
 
   updateQuantity(productId: string, quantity: number): void {
@@ -129,6 +170,34 @@ export class MarketplacePanelComponent implements OnInit {
   }
 
   placeOrder(): void {
+    const profile = this.session.userProfile();
+    if (!profile || this.cart.isEmpty()) {
+      return;
+    }
+
+    if (!this.session.hasContactProfile()) {
+      this.checkoutProfileOpen.set(true);
+      return;
+    }
+
+    if (!profile.authenticated) {
+      this.checkoutProfileOpen.set(true);
+      return;
+    }
+
+    this.completeOrder();
+  }
+
+  closeCheckoutProfile(): void {
+    this.checkoutProfileOpen.set(false);
+  }
+
+  onCheckoutProfileCompleted(): void {
+    this.checkoutProfileOpen.set(false);
+    this.completeOrder();
+  }
+
+  private completeOrder(): void {
     const profile = this.session.userProfile();
     if (!profile || this.cart.isEmpty()) {
       return;
@@ -163,16 +232,28 @@ export class MarketplacePanelComponent implements OnInit {
     return resolveProductImageSource(product);
   }
 
+  productImageSources(product: Product): string[] {
+    return resolveProductImageSources(product);
+  }
+
+  openProductGallery(product: Product): void {
+    if (this.productImageSources(product).length === 0) {
+      return;
+    }
+
+    this.galleryProduct.set(product);
+  }
+
+  closeProductGallery(): void {
+    this.galleryProduct.set(null);
+  }
+
   shopHoursLabel(shop: Shop): string | null {
     if (!shop.open_time || !shop.closed_time) {
       return null;
     }
 
     return formatShopHours(shop.open_time, shop.closed_time);
-  }
-
-  shopStatusLabel(shop: Shop): string {
-    return shop.is_open ? 'Open now' : 'Closed';
   }
 
   private loadShops(): void {

@@ -2,28 +2,84 @@
   <section class="profile-card" (click)="$event.stopPropagation()">
     <header class="profile-header">
       <div>
-        <h2 class="profile-title wordmark-prompt">Your profile</h2>
-        <p class="profile-subtitle">Add your email and phone so shops can reach you.</p>
+        <h2 class="profile-title wordmark-prompt">
+          @if (mode() === 'checkout') {
+            Complete checkout
+          } @else {
+            Your profile
+          }
+        </h2>
+        <p class="profile-subtitle">
+          @if (mode() === 'checkout') {
+            Add contact details and authenticate to place your order.
+          } @else {
+            Save your email and phone. You authenticate when you place an order.
+          }
+        </p>
       </div>
       <button type="button" class="profile-close" aria-label="Close" (click)="onDismiss()">×</button>
     </header>
 
-    <form class="profile-form" [formGroup]="form" (ngSubmit)="onSubmit()">
-      <label>
-        <span>Email</span>
-        <input type="email" formControlName="email" autocomplete="email" placeholder="you@example.com" />
-        @if (form.controls.email.touched && form.controls.email.invalid) {
-          <small>Enter a valid email address.</small>
-        }
-      </label>
+    @if (mode() === 'settings') {
+      <ol class="profile-levels" aria-label="Profile progress">
+        <li class="profile-level" [class.complete]="isStepComplete('created')">
+          <span class="profile-level-marker">1</span>
+          <div>
+            <strong>Profile created</strong>
+            <p>Your Junction welcome profile is set up.</p>
+          </div>
+        </li>
+        <li class="profile-level" [class.complete]="isStepComplete('contact')">
+          <span class="profile-level-marker">2</span>
+          <div>
+            <strong>Contact added</strong>
+            <p>Save your email and phone to add items.</p>
+          </div>
+        </li>
+        <li class="profile-level" [class.complete]="isStepComplete('authenticated')">
+          <span class="profile-level-marker">3</span>
+          <div>
+            <strong>Authenticated</strong>
+            <p>Verified when you place an order.</p>
+          </div>
+        </li>
+      </ol>
+    }
 
-      <label>
-        <span>Phone</span>
-        <input type="tel" formControlName="phoneNumber" autocomplete="tel" placeholder="+91 98765 43210" />
-        @if (form.controls.phoneNumber.touched && form.controls.phoneNumber.invalid) {
-          <small>Enter a valid phone number.</small>
-        }
-      </label>
+    <form class="profile-form" [formGroup]="form" (ngSubmit)="onAuthenticate()">
+      @if (!session.hasContactProfile() || mode() === 'settings') {
+        <label>
+          <span>Email</span>
+          <input type="email" formControlName="email" autocomplete="email" placeholder="you@example.com" />
+          @if (form.controls.email.touched && form.controls.email.invalid) {
+            <small>Enter a valid email address.</small>
+          }
+        </label>
+
+        <label>
+          <span>Phone</span>
+          <input type="tel" formControlName="phoneNumber" autocomplete="tel" placeholder="+91 98765 43210" />
+          @if (form.controls.phoneNumber.touched && form.controls.phoneNumber.invalid) {
+            <small>Enter a valid phone number.</small>
+          }
+        </label>
+      }
+
+      @if (mode() === 'checkout' && session.hasContactProfile() && profileLevel() !== 'authenticated') {
+        <label>
+          <span>Verification code</span>
+          <input
+            type="text"
+            formControlName="verificationCode"
+            inputmode="numeric"
+            maxlength="6"
+            placeholder="6-digit code"
+          />
+          @if (form.controls.verificationCode.touched && form.controls.verificationCode.invalid) {
+            <small>Enter a 6-digit code.</small>
+          }
+        </label>
+      }
 
       @if (error()) {
         <p class="profile-error">{{ error() }}</p>
@@ -31,9 +87,19 @@
 
       <div class="profile-actions">
         <button type="button" class="btn-secondary" (click)="onDismiss()">Cancel</button>
-        <button type="submit" class="btn-primary" [disabled]="saving()">
-          {{ saving() ? 'Saving...' : 'Save profile' }}
-        </button>
+        @if (!session.hasContactProfile()) {
+          <button type="button" class="btn-primary" [disabled]="saving()" (click)="onSaveContact()">
+            {{ saving() ? 'Saving...' : mode() === 'checkout' ? 'Save & continue' : 'Save contact' }}
+          </button>
+        } @else if (mode() === 'checkout' && profileLevel() !== 'authenticated') {
+          <button type="submit" class="btn-primary" [disabled]="saving()">
+            {{ saving() ? 'Verifying...' : 'Authenticate & place order' }}
+          </button>
+        } @else if (mode() === 'settings') {
+          <button type="button" class="btn-primary" [disabled]="saving()" (click)="onSaveContact()">
+            {{ saving() ? 'Saving...' : 'Save contact' }}
+          </button>
+        }
       </div>
     </form>
   </section>

@@ -27,7 +27,20 @@
   align-items: baseline;
   gap: 0.35rem;
   margin: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.greeting-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.junction-copy .wordmark-secondary {
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .greeting-hey {
@@ -212,18 +225,38 @@
 
 @media (max-width: 720px) {
   .header-bar {
-    align-items: flex-start;
-    flex-wrap: wrap;
-    gap: 0.65rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.55rem 0.75rem;
   }
 
   .junction-controls {
-    width: 100%;
-    justify-content: space-between;
+    width: auto;
+    justify-content: flex-end;
+    gap: 0.45rem;
+  }
+
+  .junction-copy {
+    max-width: 8.5rem;
+    text-align: right;
+  }
+
+  .junction-name {
+    font-size: 0.82rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .greeting-hey {
+    font-size: 0.9rem;
   }
 
   .settings-panel {
     right: 0;
     left: auto;
+    width: min(18rem, calc(100vw - 1.5rem));
   }
 }

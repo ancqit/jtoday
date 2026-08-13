@@ -11,12 +11,65 @@
 }
 
 .profile-card {
-  width: min(100%, 24rem);
+  width: min(100%, 26rem);
   padding: 1.25rem;
   border-radius: 1.25rem;
   background: linear-gradient(165deg, rgba(255, 251, 245, 0.98), rgba(236, 253, 245, 0.96));
   border: 1px solid rgba(255, 255, 255, 0.7);
   box-shadow: 0 24px 48px rgba(15, 23, 42, 0.18);
+}
+
+.profile-levels {
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.profile-level {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.65rem;
+  align-items: start;
+  padding: 0.65rem 0.75rem;
+  border-radius: 0.85rem;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.profile-level.complete {
+  border-color: rgba(16, 185, 129, 0.35);
+  background: rgba(236, 253, 245, 0.75);
+}
+
+.profile-level-marker {
+  display: grid;
+  place-items: center;
+  width: 1.65rem;
+  height: 1.65rem;
+  border-radius: 999px;
+  background: #e2e8f0;
+  color: #475569;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.profile-level.complete .profile-level-marker {
+  background: #0f766e;
+  color: #fff;
+}
+
+.profile-level strong {
+  display: block;
+  font-size: 0.84rem;
+  color: #0f172a;
+}
+
+.profile-level p {
+  margin: 0.15rem 0 0;
+  font-size: 0.75rem;
+  color: #64748b;
 }
 
 .profile-header {
