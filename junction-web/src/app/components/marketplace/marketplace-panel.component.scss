@@ -39,7 +39,8 @@
   margin: 0;
 }
 
-.shop-phone a {
+.shop-phone a,
+.shop-phone {
   color: #0f766e;
   font-weight: 600;
   text-decoration: none;
@@ -289,6 +290,12 @@
 .shop-phone-value {
   color: #0f766e;
   font-weight: 600;
+  text-decoration: none;
+  font-size: 0.82rem;
+}
+
+.shop-phone-value:hover {
+  text-decoration: underline;
 }
 
 .shop-detail {
@@ -316,6 +323,12 @@
   font-weight: 600;
 }
 
+.shop-detail-notice .shop-detail-value {
+  color: #334155;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
 .shop-row-hours-wrap {
   display: grid;
   gap: 0.15rem;
@@ -325,6 +338,39 @@
   border-radius: 0.7rem;
   background: #f0fdfa;
   text-align: right;
+}
+
+.shop-row-phone-wrap {
+  display: grid;
+  gap: 0.15rem;
+  flex-shrink: 0;
+  min-width: 7.5rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: 0.7rem;
+  background: rgba(248, 250, 252, 0.95);
+  text-align: right;
+}
+
+.shop-row-notice-wrap {
+  display: grid;
+  gap: 0.15rem;
+  flex-shrink: 0;
+  min-width: 7.5rem;
+  max-width: 12rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: 0.7rem;
+  background: rgba(254, 243, 199, 0.55);
+  text-align: right;
+}
+
+.shop-row-notice-wrap .shop-detail-value {
+  color: #92400e;
+  font-size: 0.8rem;
+  line-height: 1.35;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
 }
 
 .cozy-shop-card:hover,
@@ -762,6 +808,12 @@
 
   .shop-row-hours-wrap {
     width: 100%;
+    text-align: left;
+  }
+
+  .shop-row-notice-wrap {
+    width: 100%;
+    max-width: none;
     text-align: left;
   }
 

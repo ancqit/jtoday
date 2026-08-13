@@ -10,6 +10,7 @@ import { resolveProductImageSource, resolveProductImageSources } from '../../cor
 import { resolveShopProfileImageSource } from '../../core/shop-image.util';
 import { formatShopHours } from '../../core/shop-hours.util';
 import { CatalogService } from '../../services/catalog.service';
+import { NoticesService } from '../../services/notices.service';
 import { UserSessionService } from '../../services/user-session.service';
 import { CartStore } from '../../stores/cart.store';
 import { OrderStore } from '../../stores/order.store';
@@ -26,6 +27,7 @@ type ProductsLayout = 'card' | 'list';
 })
 export class MarketplacePanelComponent implements OnInit {
   private readonly catalog = inject(CatalogService);
+  private readonly notices = inject(NoticesService);
   readonly session = inject(UserSessionService);
   readonly cart = inject(CartStore);
   private readonly orders = inject(OrderStore);
@@ -44,6 +46,7 @@ export class MarketplacePanelComponent implements OnInit {
   readonly galleryProduct = signal<Product | null>(null);
   readonly checkoutProfileOpen = signal(false);
   readonly actionMessage = signal<string | null>(null);
+  readonly shopNotices = signal<Record<string, string>>({});
 
   private readonly productQuantities = signal<Record<string, number>>({});
 
@@ -78,6 +81,7 @@ export class MarketplacePanelComponent implements OnInit {
     this.products.set([]);
     this.completedOrder.set(null);
     this.error.set(null);
+    this.shopNotices.set({});
     this.loadShops();
   }
 
@@ -266,6 +270,11 @@ export class MarketplacePanelComponent implements OnInit {
     return phone || null;
   }
 
+  shopNotice(shop: Shop): string | null {
+    const message = this.shopNotices()[shop.id]?.trim();
+    return message || null;
+  }
+
   private loadShops(): void {
     const profile = this.session.userProfile();
     if (!profile) {
@@ -279,12 +288,29 @@ export class MarketplacePanelComponent implements OnInit {
     // junctionBack GET /shops/by-location?city=&locality= for the active junction profile.
     this.catalog.getShops(profile.city.name, profile.locality.name).subscribe({
       next: (shops) => {
-        this.shops.set(shops.filter((shop) => shop.is_open));
+        const openShops = shops.filter((shop) => shop.is_open);
+        this.shops.set(openShops);
         this.loading.set(false);
+        this.loadShopNotices(openShops);
       },
       error: () => {
         this.loading.set(false);
         this.error.set('Unable to load shops for your Junction.');
+      },
+    });
+  }
+
+  private loadShopNotices(shops: Shop[]): void {
+    this.notices.getTodayForShops(shops.map((shop) => shop.id)).subscribe({
+      next: (notices) => {
+        const messages: Record<string, string> = {};
+        for (const [storeId, notice] of Object.entries(notices)) {
+          const message = notice.message?.trim();
+          if (message) {
+            messages[storeId] = message;
+          }
+        }
+        this.shopNotices.set(messages);
       },
     });
   }

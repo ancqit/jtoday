@@ -112,7 +112,13 @@
                     @if (shopPhoneNumber(shop); as phone) {
                       <p class="shop-detail">
                         <span class="shop-detail-label">Phone</span>
-                        <span class="shop-detail-value shop-phone-value">{{ phone }}</span>
+                        <a class="shop-detail-value shop-phone-value" [href]="'tel:' + phone">{{ phone }}</a>
+                      </p>
+                    }
+                    @if (shopNotice(shop); as notice) {
+                      <p class="shop-detail shop-detail-notice">
+                        <span class="shop-detail-label">Notice</span>
+                        <span class="shop-detail-value">{{ notice }}</span>
                       </p>
                     }
                   </div>
@@ -146,7 +152,13 @@
                 @if (shopPhoneNumber(shop); as phone) {
                   <div class="shop-row-phone-wrap">
                     <span class="shop-detail-label">Phone</span>
-                    <span class="shop-detail-value">{{ phone }}</span>
+                    <a class="shop-detail-value shop-phone-value" [href]="'tel:' + phone">{{ phone }}</a>
+                  </div>
+                }
+                @if (shopNotice(shop); as notice) {
+                  <div class="shop-row-notice-wrap">
+                    <span class="shop-detail-label">Notice</span>
+                    <span class="shop-detail-value">{{ notice }}</span>
                   </div>
                 }
               </button>
