@@ -2,10 +2,15 @@ import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { catchError, switchMap, throwError } from 'rxjs';
 import { resolveApiBaseUrl } from './api.config';
+import { SKIP_SESSION_AUTH } from './http-context';
 import { SessionService } from './session.service';
 
 /** junctionBack routes that accept the junction.today session JWT. */
-const SESSION_PROTECTED_PATHS = ['/session', '/locations/', '/shops', '/products', '/notices'] as const;
+const SESSION_PROTECTED_PATHS = ['/session', '/locations/', '/shops', '/products'] as const;
+
+function isPublicNoticesTodayRequest(url: string, method: string): boolean {
+  return method === 'GET' && url.includes('/notices/today');
+}
 
 function isApiRequest(url: string): boolean {
   const baseUrl = resolveApiBaseUrl();
@@ -29,7 +34,13 @@ export const sessionInterceptor: HttpInterceptorFn = (request, next) => {
   const token = session.accessToken();
 
   let outgoing = request;
-  if (token && isApiRequest(request.url) && !isSessionCreateRequest(request.url, request.method)) {
+  if (
+    token &&
+    isApiRequest(request.url) &&
+    !isSessionCreateRequest(request.url, request.method) &&
+    !request.context.get(SKIP_SESSION_AUTH) &&
+    !isPublicNoticesTodayRequest(request.url, request.method)
+  ) {
     outgoing = request.clone({
       setHeaders: { Authorization: `Bearer ${token}` },
     });
@@ -40,7 +51,9 @@ export const sessionInterceptor: HttpInterceptorFn = (request, next) => {
       if (
         error.status !== 401 ||
         !isApiRequest(request.url) ||
-        isSessionCreateRequest(request.url, request.method)
+        isSessionCreateRequest(request.url, request.method) ||
+        request.context.get(SKIP_SESSION_AUTH) ||
+        isPublicNoticesTodayRequest(request.url, request.method)
       ) {
         return throwError(() => error);
       }
