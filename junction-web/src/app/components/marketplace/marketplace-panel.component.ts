@@ -261,18 +261,9 @@ export class MarketplacePanelComponent implements OnInit {
     return resolveShopProfileImageSource(shop);
   }
 
-  shopDescription(shop: Shop): string | null {
-    const description = shop.description?.trim();
-    return description || null;
-  }
-
-  shopCustomerMobile(shop: Shop): string | null {
-    if (!shop.show_mobile_number) {
-      return null;
-    }
-
-    const mobile = shop.mobile_number?.trim();
-    return mobile || null;
+  shopPhoneNumber(shop: Shop): string | null {
+    const phone = shop.phone_number?.trim();
+    return phone || null;
   }
 
   private loadShops(): void {

@@ -14,6 +14,11 @@
                 @if (shopHoursLabel(shop); as hours) {
                   <p>{{ hours }}</p>
                 }
+                @if (shopPhoneNumber(shop); as phone) {
+                  <p class="shop-phone">
+                    <a [href]="'tel:' + phone">{{ phone }}</a>
+                  </p>
+                }
               }
             }
             @case ('cart') {
@@ -104,6 +109,12 @@
                         <span class="shop-detail-value">{{ hours }}</span>
                       </p>
                     }
+                    @if (shopPhoneNumber(shop); as phone) {
+                      <p class="shop-detail">
+                        <span class="shop-detail-label">Phone</span>
+                        <span class="shop-detail-value shop-phone-value">{{ phone }}</span>
+                      </p>
+                    }
                   </div>
                 </div>
               </button>
@@ -132,6 +143,12 @@
                     <span class="shop-detail-value">{{ hours }}</span>
                   </div>
                 }
+                @if (shopPhoneNumber(shop); as phone) {
+                  <div class="shop-row-phone-wrap">
+                    <span class="shop-detail-label">Phone</span>
+                    <span class="shop-detail-value">{{ phone }}</span>
+                  </div>
+                }
               </button>
             }
           </div>
@@ -139,32 +156,6 @@
       }
 
       @if (!loading() && view() === 'products') {
-        @if (selectedShop(); as shop) {
-          <section class="shop-detail-card">
-            <div class="shop-detail-media">
-              <app-authorized-image
-                [src]="shopProfileImageSource(shop)"
-                [alt]="shop.name"
-              />
-            </div>
-            <div class="shop-detail-copy">
-              <h3>{{ shop.name }}</h3>
-              @if (shopDescription(shop); as description) {
-                <p class="shop-description">{{ description }}</p>
-              }
-              @if (shopHoursLabel(shop); as hours) {
-                <p class="shop-detail-meta">{{ hours }}</p>
-              }
-              @if (shopCustomerMobile(shop); as mobile) {
-                <p class="shop-detail-meta shop-mobile">
-                  <span class="shop-detail-label">Mobile</span>
-                  <a [href]="'tel:' + mobile">{{ mobile }}</a>
-                </p>
-              }
-            </div>
-          </section>
-        }
-
         @if (products().length === 0 && !error()) {
           <p class="status-message">This shop has no products listed yet.</p>
         }
