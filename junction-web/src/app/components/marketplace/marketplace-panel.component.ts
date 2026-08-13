@@ -266,6 +266,10 @@ export class MarketplacePanelComponent implements OnInit {
   }
 
   shopPhoneNumber(shop: Shop): string | null {
+    if (!shop.show_phone) {
+      return null;
+    }
+
     const phone = shop.phone_number?.trim();
     return phone || null;
   }

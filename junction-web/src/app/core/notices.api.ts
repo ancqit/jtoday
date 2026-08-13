@@ -5,20 +5,25 @@ import { ApiService } from './api.service';
 
 /**
  * junctionBack notice reads (https://github.com/ancqit/junctionBack).
- * GET /notices/today?store_id= — today's notice for one shop (public).
+ * - GET /notices — today's notices (session or user JWT)
+ * - GET /notices/today?shop_id= — one shop (public; store_id alias works)
  */
 @Injectable({ providedIn: 'root' })
 export class NoticesApi {
   private readonly api = inject(ApiService);
 
-  todayForShop(storeId: string): Observable<Notice | null> {
-    const trimmed = storeId.trim();
+  listToday(): Observable<Notice[]> {
+    return this.api.get<Notice[]>('/notices').pipe(catchError(() => of([])));
+  }
+
+  todayForShop(shopId: string): Observable<Notice | null> {
+    const trimmed = shopId.trim();
     if (!trimmed) {
       return of(null);
     }
 
     return this.api
-      .get<Notice>('/notices/today', { store_id: trimmed })
+      .get<Notice>('/notices/today', { shop_id: trimmed })
       .pipe(catchError(() => of(null)));
   }
 }
