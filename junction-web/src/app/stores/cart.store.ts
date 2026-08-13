@@ -35,19 +35,25 @@ export class CartStore {
     this.shopName.set(shopName);
   }
 
-  addProduct(product: {
-    id: string;
-    name: string;
-    sku: string;
-    price: number;
-    unit: string;
-    currency: string;
-  }): void {
+  addProduct(
+    product: {
+      id: string;
+      name: string;
+      sku: string;
+      price: number;
+      unit: string;
+      currency: string;
+    },
+    quantity = 1,
+  ): void {
+    const amount = Math.max(1, Math.floor(quantity));
     const existing = this.lines().find((line) => line.productId === product.id);
     if (existing) {
       this.lines.update((lines) =>
         lines.map((line) =>
-          line.productId === product.id ? { ...line, quantity: line.quantity + 1 } : line,
+          line.productId === product.id
+            ? { ...line, quantity: line.quantity + amount }
+            : line,
         ),
       );
       return;
@@ -60,7 +66,7 @@ export class CartStore {
         productName: product.name,
         sku: product.sku,
         unitPrice: product.price,
-        quantity: 1,
+        quantity: amount,
         unit: product.unit,
         currency: product.currency,
       },

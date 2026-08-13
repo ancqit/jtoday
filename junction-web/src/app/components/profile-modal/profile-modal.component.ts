@@ -1,4 +1,4 @@
-import { Component, computed, inject, output, signal } from '@angular/core';
+import { Component, computed, inject, input, output, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ProfileLevel } from '../../models/location.model';
 import { UserSessionService } from '../../services/user-session.service';
@@ -11,9 +11,11 @@ import { UserSessionService } from '../../services/user-session.service';
 })
 export class ProfileModalComponent {
   private readonly fb = inject(FormBuilder);
-  private readonly session = inject(UserSessionService);
+  readonly session = inject(UserSessionService);
 
+  readonly mode = input<'settings' | 'checkout'>('settings');
   readonly closed = output<void>();
+  readonly checkoutCompleted = output<void>();
 
   readonly saving = signal(false);
   readonly error = signal<string | null>(null);
@@ -62,6 +64,14 @@ export class ProfileModalComponent {
     this.saving.set(true);
     this.session.updateContactProfile(email.trim(), phoneNumber.trim());
     this.saving.set(false);
+
+    if (this.mode() === 'checkout' && this.session.hasContactProfile()) {
+      return;
+    }
+
+    if (this.mode() === 'settings') {
+      this.closed.emit();
+    }
   }
 
   onAuthenticate(): void {
@@ -82,6 +92,12 @@ export class ProfileModalComponent {
     this.saving.set(true);
     this.session.authenticateProfile();
     this.saving.set(false);
+
+    if (this.mode() === 'checkout') {
+      this.checkoutCompleted.emit();
+      return;
+    }
+
     this.closed.emit();
   }
 }
