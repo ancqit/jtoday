@@ -88,47 +88,49 @@
         @if (shopsLayout() === 'card') {
           <div class="card-grid shop-card-grid">
             @for (shop of shops(); track shop.id) {
-              <button type="button" class="shop-card cozy-shop-card" (click)="selectShop(shop)">
-                <div class="shop-card-top">
+              <button type="button" class="shop-card pro-shop-card" (click)="selectShop(shop)">
+                <div class="shop-card-header">
+                  <h3 class="shop-name">{{ shop.name }}</h3>
                   <span class="shop-status-pill" [class.is-open]="shop.is_open">
                     {{ shopStatusLabel(shop) }}
                   </span>
                 </div>
-                <span class="shop-name">{{ shop.name }}</span>
-                <span class="shop-meta">
-                  <span class="shop-meta-icon" aria-hidden="true">◎</span>
-                  {{ shop.locality }}, {{ shop.city }}
-                </span>
-                @if (shopHoursLabel(shop); as hours) {
-                  <span class="shop-hours">
-                    <span class="shop-meta-icon" aria-hidden="true">◷</span>
-                    {{ hours }}
-                  </span>
-                }
+                <div class="shop-card-body">
+                  <p class="shop-detail">
+                    <span class="shop-detail-label">Location</span>
+                    <span class="shop-detail-value">{{ shop.locality }}, {{ shop.city }}</span>
+                  </p>
+                  @if (shopHoursLabel(shop); as hours) {
+                    <p class="shop-detail shop-detail-hours">
+                      <span class="shop-detail-label">Hours</span>
+                      <span class="shop-detail-value">{{ hours }}</span>
+                    </p>
+                  }
+                </div>
               </button>
             }
           </div>
         } @else {
           <div class="shop-list">
             @for (shop of shops(); track shop.id) {
-              <button type="button" class="shop-row cozy-shop-row" (click)="selectShop(shop)">
-                <span class="shop-row-main">
-                  <span class="shop-row-title">
-                    <span class="shop-name">{{ shop.name }}</span>
+              <button type="button" class="shop-row pro-shop-row" (click)="selectShop(shop)">
+                <div class="shop-row-main">
+                  <div class="shop-row-header">
+                    <h3 class="shop-name">{{ shop.name }}</h3>
                     <span class="shop-status-pill" [class.is-open]="shop.is_open">
                       {{ shopStatusLabel(shop) }}
                     </span>
-                  </span>
-                  <span class="shop-meta">
-                    <span class="shop-meta-icon" aria-hidden="true">◎</span>
-                    {{ shop.locality }}, {{ shop.city }}
-                  </span>
-                </span>
+                  </div>
+                  <p class="shop-detail">
+                    <span class="shop-detail-label">Location</span>
+                    <span class="shop-detail-value">{{ shop.locality }}, {{ shop.city }}</span>
+                  </p>
+                </div>
                 @if (shopHoursLabel(shop); as hours) {
-                  <span class="shop-hours shop-row-hours">
-                    <span class="shop-meta-icon" aria-hidden="true">◷</span>
-                    {{ hours }}
-                  </span>
+                  <div class="shop-row-hours-wrap">
+                    <span class="shop-detail-label">Hours</span>
+                    <span class="shop-detail-value">{{ hours }}</span>
+                  </div>
                 }
               </button>
             }
@@ -144,12 +146,23 @@
         <div class="card-grid product-card-grid">
           @for (product of products(); track product.id) {
             <article class="product-card cozy-product-card">
-              <div class="product-media">
-                <app-authorized-image
-                  [src]="productImageSource(product)"
-                  [alt]="product.name"
-                />
-              </div>
+              <button
+                type="button"
+                class="product-media-button"
+                [disabled]="productImageSources(product).length === 0"
+                (click)="openProductGallery(product)"
+                [attr.aria-label]="'View photos of ' + product.name"
+              >
+                <div class="product-media">
+                  <app-authorized-image
+                    [src]="productImageSource(product)"
+                    [alt]="product.name"
+                  />
+                </div>
+                @if (productImageSources(product).length > 1) {
+                  <span class="product-photo-count">{{ productImageSources(product).length }} photos</span>
+                }
+              </button>
               <div class="product-copy">
                 <h3>{{ product.name }}</h3>
                 <p class="product-meta">{{ product.category }} · {{ product.unit }}</p>
@@ -226,3 +239,11 @@
     </div>
   </section>
 </div>
+
+@if (galleryProduct(); as product) {
+  <app-product-gallery-modal
+    [productName]="product.name"
+    [imageSources]="productImageSources(product)"
+    (closed)="closeProductGallery()"
+  />
+}

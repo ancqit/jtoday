@@ -30,13 +30,19 @@
           <section class="settings-panel" aria-label="Settings">
             <button type="button" class="settings-profile-button" (click)="openProfileModal()">
               <span class="settings-profile-title">
-                {{ session.hasContactProfile() ? 'Your profile' : 'Create your profile' }}
+                {{ session.profileLevelLabel() }}
               </span>
               <span class="settings-profile-hint">
-                @if (session.hasContactProfile()) {
-                  {{ session.userProfile()?.email }} · {{ session.userProfile()?.phoneNumber }}
-                } @else {
-                  Add email and phone for orders
+                @switch (session.profileLevel()) {
+                  @case ('authenticated') {
+                    Verified profile · {{ session.userProfile()?.email }}
+                  }
+                  @case ('contact') {
+                    Verify to authenticate · {{ session.userProfile()?.email }}
+                  }
+                  @default {
+                    Add email and phone to continue
+                  }
                 }
               </span>
             </button>

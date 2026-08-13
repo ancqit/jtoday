@@ -1,0 +1,49 @@
+<div class="gallery-backdrop" role="dialog" aria-modal="true" [attr.aria-label]="productName() + ' images'" (click)="onDismiss()">
+  <section class="gallery-card" (click)="$event.stopPropagation()">
+    <header class="gallery-header">
+      <div>
+        <h2 class="gallery-title">{{ productName() }}</h2>
+        <p class="gallery-count">{{ imageSources().length }} photo{{ imageSources().length === 1 ? '' : 's' }}</p>
+      </div>
+      <button type="button" class="gallery-close" aria-label="Close" (click)="onDismiss()">×</button>
+    </header>
+
+    <div class="gallery-stage">
+      @if (imageSources().length > 1) {
+        <button type="button" class="gallery-nav gallery-nav-prev" aria-label="Previous image" (click)="showPrevious()">
+          ‹
+        </button>
+      }
+
+      <div class="gallery-main">
+        <app-authorized-image
+          [src]="imageSources()[activeIndex()]"
+          [alt]="productName()"
+        />
+      </div>
+
+      @if (imageSources().length > 1) {
+        <button type="button" class="gallery-nav gallery-nav-next" aria-label="Next image" (click)="showNext()">
+          ›
+        </button>
+      }
+    </div>
+
+    @if (imageSources().length > 1) {
+      <div class="gallery-thumbs" role="tablist" aria-label="Product images">
+        @for (source of imageSources(); track source; let index = $index) {
+          <button
+            type="button"
+            class="gallery-thumb"
+            role="tab"
+            [class.active]="index === activeIndex()"
+            [attr.aria-selected]="index === activeIndex()"
+            (click)="selectImage(index)"
+          >
+            <app-authorized-image [src]="source" [alt]="productName() + ' thumbnail ' + (index + 1)" />
+          </button>
+        }
+      </div>
+    }
+  </section>
+</div>

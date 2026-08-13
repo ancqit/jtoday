@@ -1,5 +1,6 @@
-import { Component, inject, output, signal } from '@angular/core';
+import { Component, computed, inject, output, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ProfileLevel } from '../../models/location.model';
 import { UserSessionService } from '../../services/user-session.service';
 
 @Component({
@@ -16,10 +17,12 @@ export class ProfileModalComponent {
 
   readonly saving = signal(false);
   readonly error = signal<string | null>(null);
+  readonly profileLevel = computed(() => this.session.profileLevel());
 
   readonly form = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
     phoneNumber: ['', [Validators.required, Validators.pattern(/^[+]?[\d\s-]{8,15}$/)]],
+    verificationCode: ['', [Validators.pattern(/^\d{6}$/)]],
   });
 
   constructor() {
@@ -32,21 +35,52 @@ export class ProfileModalComponent {
     }
   }
 
+  isStepComplete(level: ProfileLevel): boolean {
+    const current = this.profileLevel();
+    if (!current) {
+      return false;
+    }
+
+    const order: ProfileLevel[] = ['created', 'contact', 'authenticated'];
+    return order.indexOf(current) >= order.indexOf(level);
+  }
+
   onDismiss(): void {
     this.closed.emit();
   }
 
-  onSubmit(): void {
-    this.form.markAllAsTouched();
+  onSaveContact(): void {
+    this.form.controls.email.markAsTouched();
+    this.form.controls.phoneNumber.markAsTouched();
     this.error.set(null);
 
-    if (this.form.invalid) {
+    if (this.form.controls.email.invalid || this.form.controls.phoneNumber.invalid) {
       return;
     }
 
     const { email, phoneNumber } = this.form.getRawValue();
     this.saving.set(true);
     this.session.updateContactProfile(email.trim(), phoneNumber.trim());
+    this.saving.set(false);
+  }
+
+  onAuthenticate(): void {
+    this.error.set(null);
+
+    if (!this.session.hasContactProfile()) {
+      this.error.set('Add your email and phone first.');
+      return;
+    }
+
+    const code = this.form.controls.verificationCode.value.trim();
+    if (!/^\d{6}$/.test(code)) {
+      this.form.controls.verificationCode.markAsTouched();
+      this.error.set('Enter the 6-digit verification code.');
+      return;
+    }
+
+    this.saving.set(true);
+    this.session.authenticateProfile();
     this.saving.set(false);
     this.closed.emit();
   }

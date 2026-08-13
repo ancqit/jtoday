@@ -1,5 +1,5 @@
 import { Injectable, computed, signal } from '@angular/core';
-import { City, Locality, UserProfile } from '../models/location.model';
+import { City, Locality, ProfileLevel, UserProfile } from '../models/location.model';
 
 const PROFILE_KEY = 'junction.today.profile';
 
@@ -19,6 +19,36 @@ export class UserSessionService {
   readonly hasContactProfile = computed(() => {
     const profile = this.profile();
     return Boolean(profile?.email?.trim() && profile?.phoneNumber?.trim());
+  });
+
+  readonly profileLevel = computed<ProfileLevel | null>(() => {
+    const profile = this.profile();
+    if (!profile) {
+      return null;
+    }
+
+    if (profile.authenticated) {
+      return 'authenticated';
+    }
+
+    if (profile.email?.trim() && profile.phoneNumber?.trim()) {
+      return 'contact';
+    }
+
+    return 'created';
+  });
+
+  readonly profileLevelLabel = computed(() => {
+    switch (this.profileLevel()) {
+      case 'authenticated':
+        return 'Authenticated';
+      case 'contact':
+        return 'Contact added';
+      case 'created':
+        return 'Profile created';
+      default:
+        return '';
+    }
   });
 
   readonly junctionLabel = computed(() => {
@@ -49,6 +79,7 @@ export class UserSessionService {
       name: name.trim(),
       email: existing?.email,
       phoneNumber: existing?.phoneNumber,
+      authenticated: existing?.authenticated ?? false,
       city,
       locality,
     });
@@ -66,6 +97,20 @@ export class UserSessionService {
       ...current,
       email: email.trim(),
       phoneNumber: phoneNumber.trim(),
+      authenticated: false,
+    });
+    this.persistProfile();
+  }
+
+  authenticateProfile(): void {
+    const current = this.profile();
+    if (!current || !current.email?.trim() || !current.phoneNumber?.trim()) {
+      return;
+    }
+
+    this.profile.set({
+      ...current,
+      authenticated: true,
     });
     this.persistProfile();
   }

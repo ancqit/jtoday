@@ -1,10 +1,11 @@
 import { DatePipe } from '@angular/common';
 import { Component, effect, inject, OnInit, output, signal } from '@angular/core';
 import { AuthorizedImageComponent } from '../authorized-image/authorized-image.component';
+import { ProductGalleryModalComponent } from '../product-gallery-modal/product-gallery-modal.component';
 import { Product } from '../../models/product.model';
 import { SavedOrder } from '../../models/order.model';
 import { Shop } from '../../models/shop.model';
-import { resolveProductImageSource } from '../../core/product-image.util';
+import { resolveProductImageSource, resolveProductImageSources } from '../../core/product-image.util';
 import { formatShopHours } from '../../core/shop-hours.util';
 import { CatalogService } from '../../services/catalog.service';
 import { UserSessionService } from '../../services/user-session.service';
@@ -16,7 +17,7 @@ type ShopsLayout = 'card' | 'list';
 
 @Component({
   selector: 'app-marketplace-panel',
-  imports: [DatePipe, AuthorizedImageComponent],
+  imports: [DatePipe, AuthorizedImageComponent, ProductGalleryModalComponent],
   templateUrl: './marketplace-panel.component.html',
   styleUrl: './marketplace-panel.component.scss',
 })
@@ -36,6 +37,7 @@ export class MarketplacePanelComponent implements OnInit {
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
   readonly shopsLayout = signal<ShopsLayout>('card');
+  readonly galleryProduct = signal<Product | null>(null);
 
   private loadedJunctionKey: string | null = null;
 
@@ -161,6 +163,22 @@ export class MarketplacePanelComponent implements OnInit {
 
   productImageSource(product: Product): string | null {
     return resolveProductImageSource(product);
+  }
+
+  productImageSources(product: Product): string[] {
+    return resolveProductImageSources(product);
+  }
+
+  openProductGallery(product: Product): void {
+    if (this.productImageSources(product).length === 0) {
+      return;
+    }
+
+    this.galleryProduct.set(product);
+  }
+
+  closeProductGallery(): void {
+    this.galleryProduct.set(null);
   }
 
   shopHoursLabel(shop: Shop): string | null {
