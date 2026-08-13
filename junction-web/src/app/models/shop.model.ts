@@ -7,6 +7,8 @@ export interface Shop {
   closed_time?: string | null;
   is_open: boolean;
   phone_number?: string | null;
+  /** When false, hide phone_number in the UI (junctionBack shop switch). */
+  show_phone?: boolean;
   owner_user_id: string;
   /** Owner profile photo from junctionBack GET /profile/avatar/file/{id} */
   avatar_url?: string | null;

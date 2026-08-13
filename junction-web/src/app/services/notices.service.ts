@@ -7,12 +7,12 @@ import { Notice } from '../models/notice.model';
 export class NoticesService {
   private readonly noticesApi = inject(NoticesApi);
 
-  /** junctionBack: GET /notices/today?store_id= */
+  /** junctionBack: GET /notices/today?store_id= (public, no session JWT) */
   getTodayForShop(storeId: string): Observable<Notice | null> {
     return this.noticesApi.todayForShop(storeId);
   }
 
-  /** Fetch today's notice for each shop; missing notices are omitted. */
+  /** Fetch today's notice per shop; 404/missing notices are omitted. */
   getTodayForShops(storeIds: string[]): Observable<Record<string, Notice>> {
     const ids = [...new Set(storeIds.map((id) => id.trim()).filter(Boolean))];
     if (ids.length === 0) {
