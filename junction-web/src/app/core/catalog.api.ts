@@ -7,7 +7,7 @@ import { ApiService } from './api.service';
 /**
  * junctionBack catalog reads (https://github.com/ancqit/junctionBack).
  * Flow: POST /session → GET /shops/by-location → GET /shops/{shop_id}/products
- * Phone visibility is controlled by junctionBack (phone_number null when hidden).
+ * Phone visibility uses shop `show_phone`; hide `phone_number` in the UI when false.
  * All catalog routes accept the junction.today session JWT (Bearer).
  */
 @Injectable({ providedIn: 'root' })
