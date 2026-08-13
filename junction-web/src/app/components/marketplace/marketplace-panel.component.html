@@ -10,7 +10,15 @@
           @switch (view()) {
             @case ('products') {
               <h2>{{ selectedShop()?.name }}</h2>
-              <p>Choose products to add to your cart</p>
+              @if (selectedShop(); as shop) {
+                @if (shopHoursLabel(shop); as hours) {
+                  <p>{{ hours }} · {{ shopStatusLabel(shop) }}</p>
+                } @else {
+                  <p>{{ shopStatusLabel(shop) }}</p>
+                }
+              } @else {
+                <p>Choose products to add to your cart</p>
+              }
             }
             @case ('cart') {
               <h2>Your cart</h2>
@@ -78,13 +86,24 @@
         }
 
         @if (shopsLayout() === 'card') {
-          <div class="card-grid">
+          <div class="card-grid shop-card-grid">
             @for (shop of shops(); track shop.id) {
-              <button type="button" class="shop-card" (click)="selectShop(shop)">
+              <button type="button" class="shop-card cozy-shop-card" (click)="selectShop(shop)">
+                <div class="shop-card-top">
+                  <span class="shop-status-pill" [class.is-open]="shop.is_open">
+                    {{ shopStatusLabel(shop) }}
+                  </span>
+                </div>
                 <span class="shop-name">{{ shop.name }}</span>
-                <span class="shop-meta">{{ shop.locality }}, {{ shop.city }}</span>
-                @if (shop.open_time && shop.closed_time) {
-                  <span class="shop-hours">{{ shop.open_time }} – {{ shop.closed_time }}</span>
+                <span class="shop-meta">
+                  <span class="shop-meta-icon" aria-hidden="true">◎</span>
+                  {{ shop.locality }}, {{ shop.city }}
+                </span>
+                @if (shopHoursLabel(shop); as hours) {
+                  <span class="shop-hours">
+                    <span class="shop-meta-icon" aria-hidden="true">◷</span>
+                    {{ hours }}
+                  </span>
                 }
               </button>
             }
@@ -92,13 +111,24 @@
         } @else {
           <div class="shop-list">
             @for (shop of shops(); track shop.id) {
-              <button type="button" class="shop-row" (click)="selectShop(shop)">
+              <button type="button" class="shop-row cozy-shop-row" (click)="selectShop(shop)">
                 <span class="shop-row-main">
-                  <span class="shop-name">{{ shop.name }}</span>
-                  <span class="shop-meta">{{ shop.locality }}, {{ shop.city }}</span>
+                  <span class="shop-row-title">
+                    <span class="shop-name">{{ shop.name }}</span>
+                    <span class="shop-status-pill" [class.is-open]="shop.is_open">
+                      {{ shopStatusLabel(shop) }}
+                    </span>
+                  </span>
+                  <span class="shop-meta">
+                    <span class="shop-meta-icon" aria-hidden="true">◎</span>
+                    {{ shop.locality }}, {{ shop.city }}
+                  </span>
                 </span>
-                @if (shop.open_time && shop.closed_time) {
-                  <span class="shop-hours">{{ shop.open_time }} – {{ shop.closed_time }}</span>
+                @if (shopHoursLabel(shop); as hours) {
+                  <span class="shop-hours shop-row-hours">
+                    <span class="shop-meta-icon" aria-hidden="true">◷</span>
+                    {{ hours }}
+                  </span>
                 }
               </button>
             }
@@ -111,9 +141,15 @@
           <p class="status-message">This shop has no products listed yet.</p>
         }
 
-        <div class="card-grid">
+        <div class="card-grid product-card-grid">
           @for (product of products(); track product.id) {
-            <article class="product-card">
+            <article class="product-card cozy-product-card">
+              <div class="product-media">
+                <app-authorized-image
+                  [src]="productImageSource(product)"
+                  [alt]="product.name"
+                />
+              </div>
               <div class="product-copy">
                 <h3>{{ product.name }}</h3>
                 <p class="product-meta">{{ product.category }} · {{ product.unit }}</p>

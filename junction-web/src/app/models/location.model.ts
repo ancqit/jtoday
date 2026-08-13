@@ -15,6 +15,8 @@ export interface Locality {
 
 export interface UserProfile {
   name: string;
+  email?: string | null;
+  phoneNumber?: string | null;
   city: City;
   locality: Locality;
 }

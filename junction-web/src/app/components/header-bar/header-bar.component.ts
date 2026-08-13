@@ -9,12 +9,13 @@ import {
 } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { City, Locality, UserProfile } from '../../models/location.model';
+import { ProfileModalComponent } from '../profile-modal/profile-modal.component';
 import { LocationsService } from '../../services/locations.service';
 import { UserSessionService } from '../../services/user-session.service';
 
 @Component({
   selector: 'app-header-bar',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, ProfileModalComponent],
   templateUrl: './header-bar.component.html',
   styleUrl: './header-bar.component.scss',
 })
@@ -28,6 +29,7 @@ export class HeaderBarComponent implements OnInit {
   localities: Locality[] = [];
   localitiesLoading = false;
   readonly settingsOpen = signal(false);
+  readonly profileModalOpen = signal(false);
   private profileInitialized = false;
 
   readonly form = this.fb.nonNullable.group({
@@ -93,6 +95,11 @@ export class HeaderBarComponent implements OnInit {
 
   @HostListener('document:keydown.escape')
   onEscape(): void {
+    if (this.profileModalOpen()) {
+      this.profileModalOpen.set(false);
+      return;
+    }
+
     this.closeSettings();
   }
 
@@ -116,6 +123,15 @@ export class HeaderBarComponent implements OnInit {
     if (profile) {
       this.syncFormFromProfile(profile);
     }
+  }
+
+  openProfileModal(): void {
+    this.settingsOpen.set(false);
+    this.profileModalOpen.set(true);
+  }
+
+  closeProfileModal(): void {
+    this.profileModalOpen.set(false);
   }
 
   applyJunctionChange(): void {

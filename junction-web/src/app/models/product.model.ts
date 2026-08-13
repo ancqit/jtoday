@@ -1,3 +1,5 @@
+import { ProductImage } from './product-image.model';
+
 export interface Product {
   id: string;
   store_id: string;
@@ -12,4 +14,6 @@ export interface Product {
   status: string;
   image_url?: string | null;
   image_cdn?: string | null;
+  image?: ProductImage | null;
+  images?: ProductImage[];
 }

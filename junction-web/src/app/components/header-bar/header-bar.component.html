@@ -15,7 +15,7 @@
         <button
           type="button"
           class="settings-button"
-          aria-label="Change Junction"
+          aria-label="Settings"
           [attr.aria-expanded]="settingsOpen()"
           (click)="$event.stopPropagation(); toggleSettings()"
         >
@@ -27,7 +27,22 @@
         </button>
 
         @if (settingsOpen()) {
-          <section class="settings-panel" aria-label="Change Junction">
+          <section class="settings-panel" aria-label="Settings">
+            <button type="button" class="settings-profile-button" (click)="openProfileModal()">
+              <span class="settings-profile-title">
+                {{ session.hasContactProfile() ? 'Your profile' : 'Create your profile' }}
+              </span>
+              <span class="settings-profile-hint">
+                @if (session.hasContactProfile()) {
+                  {{ session.userProfile()?.email }} · {{ session.userProfile()?.phoneNumber }}
+                } @else {
+                  Add email and phone for orders
+                }
+              </span>
+            </button>
+
+            <div class="settings-divider" role="separator"></div>
+
             <p class="settings-title">Change your Junction</p>
 
             <form [formGroup]="form" class="settings-form" (ngSubmit)="applyJunctionChange()">
@@ -69,3 +84,7 @@
     </div>
   </header>
 </div>
+
+@if (profileModalOpen()) {
+  <app-profile-modal (closed)="closeProfileModal()" />
+}
