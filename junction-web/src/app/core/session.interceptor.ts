@@ -5,7 +5,7 @@ import { resolveApiBaseUrl } from './api.config';
 import { SessionService } from './session.service';
 
 /** junctionBack routes that accept the junction.today session JWT. */
-const SESSION_PROTECTED_PATHS = ['/session', '/locations/', '/shops', '/products'] as const;
+const SESSION_PROTECTED_PATHS = ['/session', '/locations/', '/shops', '/products', '/notices'] as const;
 
 function isApiRequest(url: string): boolean {
   const baseUrl = resolveApiBaseUrl();
