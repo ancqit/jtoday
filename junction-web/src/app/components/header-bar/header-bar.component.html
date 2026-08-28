@@ -2,7 +2,14 @@
   <header class="header-bar">
     <p class="greeting">
       <span class="greeting-hey wordmark-primary">Hey,</span>
-      <span class="greeting-name wordmark-prompt">{{ session.displayName() }}</span>
+      <button
+        type="button"
+        class="greeting-name wordmark-prompt"
+        (click)="junctionPickerRequested.emit()"
+        aria-label="Change your Junction"
+      >
+        {{ session.displayName() }}
+      </button>
     </p>
 
     <div class="junction-controls">

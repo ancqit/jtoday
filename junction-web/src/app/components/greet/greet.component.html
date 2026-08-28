@@ -1,8 +1,24 @@
 <div class="greet-backdrop" role="dialog" aria-modal="true" aria-labelledby="greet-title">
   <section class="greet-card">
+    @if (reopen()) {
+      <button type="button" class="greet-close" (click)="dismiss()" aria-label="Close">✕</button>
+    }
+
     <div class="greet-wordmark">
-      <h1 id="greet-title" class="wordmark-primary">Welcome</h1>
-      <p class="wordmark-prompt">Select your Junction.</p>
+      <h1 id="greet-title" class="wordmark-primary">
+        @if (reopen()) {
+          Your Junction
+        } @else {
+          Welcome
+        }
+      </h1>
+      <p class="wordmark-prompt">
+        @if (reopen()) {
+          Choose services in your locality or across your city.
+        } @else {
+          Select your Junction.
+        }
+      </p>
     </div>
 
     <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
@@ -43,17 +59,33 @@
           }
         </button>
         @if (form.controls.name.touched && selectedCity() && !localitiesLoading && !selectedLocality()) {
-          <small>Please choose a locality.</small>
+          <small>Please choose a locality for neighbourhood services.</small>
         }
       </div>
 
-      <button type="submit" class="submit-button" [disabled]="submitting()">
-        @if (submitting()) {
-          Saving your Junction...
-        } @else {
-          Continue
+      <div class="greet-actions">
+        <button type="submit" class="submit-button" [disabled]="submitting()">
+          @if (submitting()) {
+            Saving your Junction...
+          } @else if (reopen()) {
+            Services in locality
+          } @else {
+            Continue
+          }
+        </button>
+
+        @if (selectedCity(); as city) {
+          <button
+            type="button"
+            class="city-services-button"
+            [disabled]="submitting() || form.controls.name.invalid"
+            (click)="onCityServices()"
+          >
+            City Services at {{ city.name }}
+          </button>
         }
-      </button>
+      </div>
+
       @if (submitError()) {
         <small>{{ submitError() }}</small>
       }

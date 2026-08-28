@@ -2,17 +2,28 @@
   @if (hasCompletedWelcome()) {
     <div class="app-layout">
       <div class="app-chrome">
-        <app-header-bar />
+        <app-header-bar (junctionPickerRequested)="openJunctionPicker()" />
 
-        <button
-          type="button"
-          class="shops-toggle"
-          [class.active]="marketplaceOpen()"
-          [attr.aria-expanded]="marketplaceOpen()"
-          (click)="toggleMarketplace()"
-        >
-          {{ marketplaceOpen() ? 'Close shops' : 'Shops' }}
-        </button>
+        <div class="services-actions">
+          <button
+            type="button"
+            class="services-toggle"
+            [class.active]="marketplaceOpen()"
+            [attr.aria-expanded]="marketplaceOpen()"
+            (click)="toggleMarketplace()"
+          >
+            {{ marketplaceOpen() ? 'Close services' : 'Services' }}
+          </button>
+
+          <a
+            class="add-services-button"
+            href="https://junction.website"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Add services
+          </a>
+        </div>
       </div>
 
       @if (marketplaceOpen()) {
@@ -33,6 +44,18 @@
   @if (!hasCompletedWelcome()) {
     <app-greet
       (submitted)="onGreetSubmitted($event)"
+      (cityServicesSelected)="onCityServicesSelected($event)"
+      (locationPreview)="onLocationPreview($event)"
+    />
+  }
+
+  @if (junctionPickerOpen()) {
+    <app-greet
+      [reopen]="true"
+      [initialProfile]="session.userProfile()"
+      (submitted)="onJunctionPickerSubmitted($event)"
+      (cityServicesSelected)="onJunctionPickerCityServices($event)"
+      (dismissed)="closeJunctionPicker()"
       (locationPreview)="onLocationPreview($event)"
     />
   }

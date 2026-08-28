@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable, switchMap } from 'rxjs';
+import { map, Observable, switchMap } from 'rxjs';
 import { Product } from '../models/product.model';
 import { Shop } from '../models/shop.model';
 import { CatalogApi } from '../core/catalog.api';
@@ -14,6 +14,17 @@ export class CatalogService {
   getShops(city: string, locality: string): Observable<Shop[]> {
     return this.session.ensureSession().pipe(
       switchMap(() => this.catalogApi.shopsByLocation(city, locality)),
+    );
+  }
+
+  /** junctionBack: GET /shops (session JWT), filtered to one city. */
+  getShopsByCity(city: string): Observable<Shop[]> {
+    const cityName = city.trim().toLowerCase();
+    return this.session.ensureSession().pipe(
+      switchMap(() => this.catalogApi.allShops()),
+      map((shops) =>
+        shops.filter((shop) => shop.city.trim().toLowerCase() === cityName),
+      ),
     );
   }
 

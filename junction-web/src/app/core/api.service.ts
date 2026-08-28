@@ -19,8 +19,10 @@ export class ApiService {
     });
   }
 
-  post<T>(path: string, body: unknown): Observable<T> {
-    return this.http.post<T>(this.url(path), body);
+  post<T>(path: string, body: unknown, options?: ApiGetOptions): Observable<T> {
+    return this.http.post<T>(this.url(path), body, {
+      context: options?.context,
+    });
   }
 
   put<T>(path: string, body: unknown): Observable<T> {

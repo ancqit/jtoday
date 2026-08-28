@@ -5,6 +5,7 @@ import {
   OnInit,
   effect,
   inject,
+  output,
   signal,
 } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
@@ -24,6 +25,8 @@ export class HeaderBarComponent implements OnInit {
   private readonly locationsService = inject(LocationsService);
   private readonly host = inject(ElementRef<HTMLElement>);
   readonly session = inject(UserSessionService);
+
+  readonly junctionPickerRequested = output<void>();
 
   cities: City[] = [];
   localities: Locality[] = [];

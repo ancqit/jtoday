@@ -60,7 +60,8 @@
 
       @if (!loading() && view() === 'shops') {
         <div class="shops-toolbar">
-          <div class="layout-toggle" role="group" aria-label="Shop layout">
+          <h2 class="services-heading">{{ session.servicesHeading() }}</h2>
+          <div class="layout-toggle" role="group" aria-label="Service layout">
             <button
               type="button"
               class="layout-toggle-option"
@@ -83,7 +84,7 @@
         </div>
 
         @if (shops().length === 0 && !error()) {
-          <p class="status-message">No open shops in your Junction yet.</p>
+          <p class="status-message">No open services in your area yet.</p>
         }
 
         @if (shopsLayout() === 'card') {
@@ -312,8 +313,33 @@
           <div class="bill-row"><span>Subtotal</span><span>{{ formatMoney(cart.subtotal(), cart.currency()) }}</span></div>
           <div class="bill-row"><span>Tax (5%)</span><span>{{ formatMoney(cart.taxAmount(), cart.currency()) }}</span></div>
           <div class="bill-row total"><span>Total</span><span>{{ formatMoney(cart.totalAmount(), cart.currency()) }}</span></div>
-          <button type="button" class="primary-button" [disabled]="cart.isEmpty()" (click)="placeOrder()">
-            Place order
+
+          <fieldset class="payment-options">
+            <legend>Payment</legend>
+            <label class="payment-option">
+              <input
+                type="radio"
+                name="payment-method"
+                value="pay_at_store"
+                [checked]="paymentMethod() === 'pay_at_store'"
+                (change)="paymentMethod.set('pay_at_store')"
+              />
+              <span>Pay at store</span>
+            </label>
+            <p class="payment-hint">Your order will be sent to the shop. Pay when you collect.</p>
+          </fieldset>
+
+          <button
+            type="button"
+            class="primary-button"
+            [disabled]="cart.isEmpty() || placingOrder()"
+            (click)="placeOrder()"
+          >
+            @if (placingOrder()) {
+              Sending order to shop...
+            } @else {
+              Place order · pay at store
+            }
           </button>
         </section>
       }
@@ -321,11 +347,15 @@
       @if (view() === 'receipt' && completedOrder(); as order) {
         <section class="receipt-card printable-receipt">
           <h3>Junction Today Bill</h3>
-          <p>Order #{{ order.id.slice(0, 8) }}</p>
+          <p>Order #{{ order.orderNumber || order.id.slice(0, 8) }}</p>
           <p>{{ order.createdAt | date: 'medium' }}</p>
           <p>{{ order.customerName }}</p>
           <p>{{ order.junctionLabel }}</p>
           <p>{{ order.shopName }}</p>
+          <p class="receipt-payment">Payment: Pay at store</p>
+          @if (order.shopNotified) {
+            <p class="receipt-notice">The shop has been notified of your order.</p>
+          }
 
           <div class="receipt-lines">
             @for (item of order.items; track item.productId) {

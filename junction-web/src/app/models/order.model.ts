@@ -1,7 +1,10 @@
 import { CartLine } from './cart.model';
 
+export type PaymentMethod = 'pay_at_store';
+
 export interface SavedOrder {
   id: string;
+  orderNumber?: string;
   createdAt: string;
   customerName: string;
   junctionLabel: string;
@@ -12,4 +15,6 @@ export interface SavedOrder {
   taxAmount: number;
   totalAmount: number;
   currency: string;
+  paymentMethod: PaymentMethod;
+  shopNotified: boolean;
 }

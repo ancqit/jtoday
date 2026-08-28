@@ -1,5 +1,5 @@
 import { Injectable, computed, signal } from '@angular/core';
-import { City, Locality, ProfileLevel, UserProfile } from '../models/location.model';
+import { City, Locality, ProfileLevel, ServiceScope, UserProfile } from '../models/location.model';
 
 const PROFILE_KEY = 'junction.today.profile';
 
@@ -57,13 +57,37 @@ export class UserSessionService {
       return '';
     }
 
+    if ((profile.serviceScope ?? 'locality') === 'city') {
+      return profile.city.name;
+    }
+
     return `${profile.locality.name}, ${profile.city.name}`;
   });
+
+  readonly servicesHeading = computed(() => {
+    const profile = this.profile();
+    if (!profile) {
+      return 'Services';
+    }
+
+    if ((profile.serviceScope ?? 'locality') === 'city') {
+      return `City Services at ${profile.city.name}`;
+    }
+
+    return `Services in ${profile.locality.name}`;
+  });
+
+  readonly serviceScope = computed<ServiceScope>(() => this.profile()?.serviceScope ?? 'locality');
 
   readonly junctionKey = computed(() => {
     const profile = this.profile();
     if (!profile) {
       return null;
+    }
+
+    const scope = profile.serviceScope ?? 'locality';
+    if (scope === 'city') {
+      return `${profile.city.id}:city`;
     }
 
     return `${profile.city.id}:${profile.locality.id}`;
@@ -73,7 +97,7 @@ export class UserSessionService {
     this.restoreProfile();
   }
 
-  completeWelcome(name: string, city: City, locality: Locality): void {
+  completeWelcome(name: string, city: City, locality: Locality, serviceScope: ServiceScope = 'locality'): void {
     const existing = this.profile();
     this.profile.set({
       name: name.trim(),
@@ -82,8 +106,35 @@ export class UserSessionService {
       authenticated: existing?.authenticated ?? false,
       city,
       locality,
+      serviceScope,
     });
     this.welcomeComplete.set(true);
+    this.persistProfile();
+  }
+
+  completeCityServices(name: string, city: City): void {
+    const cityWideLocality: Locality = {
+      id: `city-wide-${city.id}`,
+      cityId: city.id,
+      name: 'City-wide',
+      latitude: city.latitude,
+      longitude: city.longitude,
+    };
+
+    this.completeWelcome(name, city, cityWideLocality, 'city');
+  }
+
+  updateServiceScope(serviceScope: ServiceScope, locality?: Locality): void {
+    const current = this.profile();
+    if (!current) {
+      return;
+    }
+
+    this.profile.set({
+      ...current,
+      serviceScope,
+      locality: locality ?? current.locality,
+    });
     this.persistProfile();
   }
 
@@ -115,13 +166,13 @@ export class UserSessionService {
     this.persistProfile();
   }
 
-  updateCity(city: City, locality: Locality): void {
+  updateCity(city: City, locality: Locality, serviceScope: ServiceScope = 'locality'): void {
     const current = this.profile();
     if (!current) {
       return;
     }
 
-    this.profile.set({ ...current, city, locality });
+    this.profile.set({ ...current, city, locality, serviceScope });
     this.persistProfile();
   }
 
