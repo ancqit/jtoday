@@ -23,8 +23,15 @@
   pointer-events: auto;
 }
 
-.shops-toggle {
-  justify-self: start;
+.services-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  align-items: center;
+}
+
+.services-toggle,
+.add-services-button {
   padding: 0.6rem 1rem;
   border: 1px solid rgba(255, 255, 255, 0.55);
   border-radius: 0.75rem;
@@ -38,15 +45,20 @@
   cursor: pointer;
   box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
   transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.shops-toggle:hover,
-.shops-toggle.active {
+.services-toggle:hover,
+.services-toggle.active,
+.add-services-button:hover {
   background: rgba(255, 255, 255, 0.92);
   border-color: rgba(148, 163, 184, 0.8);
 }
 
-.shops-toggle.active {
+.services-toggle.active {
   color: #334155;
 }
 
@@ -69,9 +81,13 @@
     gap: 0.55rem;
   }
 
-  .shops-toggle {
+  .services-actions {
     width: 100%;
-    justify-self: stretch;
+  }
+
+  .services-toggle,
+  .add-services-button {
+    flex: 1 1 0;
     text-align: center;
   }
 

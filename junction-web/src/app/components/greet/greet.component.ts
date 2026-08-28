@@ -1,6 +1,6 @@
-import { Component, OnInit, inject, output, signal } from '@angular/core';
+import { Component, OnInit, inject, input, output, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { City, Locality } from '../../models/location.model';
+import { City, Locality, UserProfile } from '../../models/location.model';
 import { LocationsService } from '../../services/locations.service';
 import {
   LocationPickerModalComponent,
@@ -22,7 +22,13 @@ export class GreetComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly locationsService = inject(LocationsService);
 
+  /** When true, user is changing junction after welcome (name click). */
+  readonly reopen = input(false);
+  readonly initialProfile = input<UserProfile | null>(null);
+
   readonly submitted = output<{ name: string; city: City; locality: Locality }>();
+  readonly cityServicesSelected = output<{ name: string; city: City }>();
+  readonly dismissed = output<void>();
   readonly locationPreview = output<{
     latitude: number;
     longitude: number;
@@ -49,6 +55,18 @@ export class GreetComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    const profile = this.initialProfile();
+    if (profile) {
+      this.form.controls.name.setValue(profile.name);
+      this.selectedCity.set(profile.city);
+      this.selectedLocality.set(profile.locality);
+      this.localitiesLoading = true;
+      this.locationsService.getLocalities(profile.city.name).subscribe((localities) => {
+        this.localities = localities;
+        this.localitiesLoading = false;
+      });
+    }
+
     this.locationsService.getCities().subscribe((cities) => {
       this.cities = cities;
     });
@@ -183,6 +201,25 @@ export class GreetComponent implements OnInit {
         this.submitError.set(this.resolveSubmitError(error));
       },
     });
+  }
+
+  onCityServices(): void {
+    this.form.markAllAsTouched();
+    this.submitError.set(null);
+
+    const city = this.selectedCity();
+    if (this.form.invalid || !city) {
+      return;
+    }
+
+    this.cityServicesSelected.emit({
+      name: this.form.controls.name.value,
+      city,
+    });
+  }
+
+  dismiss(): void {
+    this.dismissed.emit();
   }
 
   private resolveSubmitError(error: { status?: number; error?: { detail?: string | { msg?: string }[] } }): string {

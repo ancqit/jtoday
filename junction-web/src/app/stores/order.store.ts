@@ -10,32 +10,7 @@ export class OrderStore {
 
   readonly orders = this.ordersSignal.asReadonly();
 
-  saveFromCart(
-    cart: CartStore,
-    customerName: string,
-    junctionLabel: string,
-  ): SavedOrder {
-    const shopId = cart.shopId();
-    const shopName = cart.shopName();
-
-    if (!shopId || !shopName || cart.isEmpty()) {
-      throw new Error('Cart is empty');
-    }
-
-    const order: SavedOrder = {
-      id: crypto.randomUUID(),
-      createdAt: new Date().toISOString(),
-      customerName,
-      junctionLabel,
-      shopId,
-      shopName,
-      items: cart.lines().map((line) => ({ ...line })),
-      subtotal: cart.subtotal(),
-      taxAmount: cart.taxAmount(),
-      totalAmount: cart.totalAmount(),
-      currency: cart.currency(),
-    };
-
+  saveOrder(order: SavedOrder, cart: CartStore): SavedOrder {
     const next = [order, ...this.ordersSignal()];
     this.ordersSignal.set(next);
     localStorage.setItem(ORDERS_KEY, JSON.stringify(next));

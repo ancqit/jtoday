@@ -21,6 +21,11 @@ export class CatalogApi {
     });
   }
 
+  /** junctionBack GET /shops (session JWT) — filter client-side by city. */
+  allShops(): Observable<Shop[]> {
+    return this.api.get<Shop[]>('/shops');
+  }
+
   productsForShop(shopId: string): Observable<Product[]> {
     return this.api.get<Product[]>(`/shops/${shopId}/products`);
   }

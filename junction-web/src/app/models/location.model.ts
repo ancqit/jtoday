@@ -13,6 +13,9 @@ export interface Locality {
   longitude: number;
 }
 
+/** Locality junction vs city-wide services listing. */
+export type ServiceScope = 'locality' | 'city';
+
 export interface UserProfile {
   name: string;
   email?: string | null;
@@ -20,6 +23,7 @@ export interface UserProfile {
   authenticated?: boolean;
   city: City;
   locality: Locality;
+  serviceScope?: ServiceScope;
 }
 
 export type ProfileLevel = 'created' | 'contact' | 'authenticated';

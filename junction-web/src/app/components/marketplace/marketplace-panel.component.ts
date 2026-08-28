@@ -11,6 +11,7 @@ import { resolveShopProfileImageSource } from '../../core/shop-image.util';
 import { formatShopHours } from '../../core/shop-hours.util';
 import { CatalogService } from '../../services/catalog.service';
 import { NoticesService } from '../../services/notices.service';
+import { OrdersService } from '../../services/orders.service';
 import { UserSessionService } from '../../services/user-session.service';
 import { CartStore } from '../../stores/cart.store';
 import { OrderStore } from '../../stores/order.store';
@@ -28,6 +29,7 @@ type ProductsLayout = 'card' | 'list';
 export class MarketplacePanelComponent implements OnInit {
   private readonly catalog = inject(CatalogService);
   private readonly notices = inject(NoticesService);
+  private readonly ordersService = inject(OrdersService);
   readonly session = inject(UserSessionService);
   readonly cart = inject(CartStore);
   private readonly orders = inject(OrderStore);
@@ -47,6 +49,8 @@ export class MarketplacePanelComponent implements OnInit {
   readonly checkoutProfileOpen = signal(false);
   readonly actionMessage = signal<string | null>(null);
   readonly shopNotices = signal<Record<string, string>>({});
+  readonly placingOrder = signal(false);
+  readonly paymentMethod = signal<'pay_at_store'>('pay_at_store');
 
   private readonly productQuantities = signal<Record<string, number>>({});
 
@@ -208,13 +212,23 @@ export class MarketplacePanelComponent implements OnInit {
       return;
     }
 
-    const order = this.orders.saveFromCart(
-      this.cart,
-      profile.name,
-      this.session.junctionLabel(),
-    );
-    this.completedOrder.set(order);
-    this.view.set('receipt');
+    this.placingOrder.set(true);
+    this.error.set(null);
+
+    this.ordersService
+      .submitPayAtStoreOrder(this.cart, profile, this.session.junctionLabel())
+      .subscribe({
+        next: (order) => {
+          const saved = this.orders.saveOrder(order, this.cart);
+          this.completedOrder.set(saved);
+          this.placingOrder.set(false);
+          this.view.set('receipt');
+        },
+        error: () => {
+          this.placingOrder.set(false);
+          this.error.set('Unable to place your order right now. Please try again.');
+        },
+      });
   }
 
   saveReceiptPdf(): void {
@@ -289,8 +303,12 @@ export class MarketplacePanelComponent implements OnInit {
     this.loading.set(true);
     this.error.set(null);
 
-    // junctionBack GET /shops/by-location?city=&locality= for the active junction profile.
-    this.catalog.getShops(profile.city.name, profile.locality.name).subscribe({
+    const shops$ =
+      this.session.serviceScope() === 'city'
+        ? this.catalog.getShopsByCity(profile.city.name)
+        : this.catalog.getShops(profile.city.name, profile.locality.name);
+
+    shops$.subscribe({
       next: (shops) => {
         const openShops = shops.filter((shop) => shop.is_open);
         this.shops.set(openShops);
@@ -299,7 +317,7 @@ export class MarketplacePanelComponent implements OnInit {
       },
       error: () => {
         this.loading.set(false);
-        this.error.set('Unable to load shops for your Junction.');
+        this.error.set('Unable to load services for your Junction.');
       },
     });
   }
