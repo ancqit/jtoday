@@ -5,40 +5,40 @@ import {
   OnInit,
   effect,
   inject,
-  output,
   signal,
 } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { City, Locality, UserProfile } from '../../models/location.model';
 import { ProfileModalComponent } from '../profile-modal/profile-modal.component';
+import {
+  LocationPickerModalComponent,
+  PickerOption,
+} from '../location-picker-modal/location-picker-modal.component';
 import { LocationsService } from '../../services/locations.service';
 import { UserSessionService } from '../../services/user-session.service';
 
+type ActivePicker = 'city' | 'locality' | null;
+
 @Component({
   selector: 'app-header-bar',
-  imports: [ReactiveFormsModule, ProfileModalComponent],
+  imports: [ProfileModalComponent, LocationPickerModalComponent],
   templateUrl: './header-bar.component.html',
   styleUrl: './header-bar.component.scss',
 })
 export class HeaderBarComponent implements OnInit {
-  private readonly fb = inject(FormBuilder);
   private readonly locationsService = inject(LocationsService);
   private readonly host = inject(ElementRef<HTMLElement>);
   readonly session = inject(UserSessionService);
-
-  readonly junctionPickerRequested = output<void>();
 
   cities: City[] = [];
   localities: Locality[] = [];
   localitiesLoading = false;
   readonly settingsOpen = signal(false);
   readonly profileModalOpen = signal(false);
+  readonly activePicker = signal<ActivePicker>(null);
+  readonly selectedCity = signal<City | null>(null);
+  readonly selectedLocality = signal<Locality | null>(null);
+  readonly applyingJunction = signal(false);
   private profileInitialized = false;
-
-  readonly form = this.fb.nonNullable.group({
-    cityName: [''],
-    localityName: [{ value: '', disabled: true }],
-  });
 
   constructor() {
     effect(() => {
@@ -64,24 +64,14 @@ export class HeaderBarComponent implements OnInit {
         this.initializeFromProfile(profile);
       }
     });
+  }
 
-    this.form.controls.cityName.valueChanges.subscribe((cityName) => {
-      this.setLocalityEnabled(false);
-      this.form.controls.localityName.setValue('', { emitEvent: false });
-      this.localities = [];
+  get cityPickerOptions(): PickerOption[] {
+    return this.cities.map((city) => ({ id: city.id, label: city.name }));
+  }
 
-      if (!cityName) {
-        this.localitiesLoading = false;
-        return;
-      }
-
-      this.localitiesLoading = true;
-      this.locationsService.getLocalities(cityName).subscribe((localities) => {
-        this.localities = localities;
-        this.localitiesLoading = false;
-        this.setLocalityEnabled(localities.length > 0);
-      });
-    });
+  get localityPickerOptions(): PickerOption[] {
+    return this.localities.map((locality) => ({ id: locality.id, label: locality.name }));
   }
 
   @HostListener('document:click', ['$event'])
@@ -98,6 +88,11 @@ export class HeaderBarComponent implements OnInit {
 
   @HostListener('document:keydown.escape')
   onEscape(): void {
+    if (this.activePicker()) {
+      this.closePicker();
+      return;
+    }
+
     if (this.profileModalOpen()) {
       this.profileModalOpen.set(false);
       return;
@@ -114,7 +109,7 @@ export class HeaderBarComponent implements OnInit {
 
     const profile = this.session.userProfile();
     if (profile) {
-      this.syncFormFromProfile(profile);
+      this.syncFromProfile(profile);
     }
 
     this.settingsOpen.set(true);
@@ -124,7 +119,7 @@ export class HeaderBarComponent implements OnInit {
     this.settingsOpen.set(false);
     const profile = this.session.userProfile();
     if (profile) {
-      this.syncFormFromProfile(profile);
+      this.syncFromProfile(profile);
     }
   }
 
@@ -137,53 +132,102 @@ export class HeaderBarComponent implements OnInit {
     this.profileModalOpen.set(false);
   }
 
-  applyJunctionChange(): void {
-    const { cityName, localityName } = this.form.getRawValue();
-    const city = this.cities.find((item) => item.name === cityName);
+  openCityPicker(): void {
+    this.activePicker.set('city');
+  }
 
-    if (!city || !localityName) {
+  openLocalityPicker(): void {
+    if (!this.selectedCity() || this.localitiesLoading) {
       return;
     }
 
-    this.locationsService.resolveLocality(cityName, localityName).subscribe((locality) => {
-      const profile = this.session.userProfile();
-      if (!profile) {
-        return;
-      }
+    this.activePicker.set('locality');
+  }
 
-      if (city.name !== profile.city.name) {
-        this.session.updateCity(city, locality);
-      } else if (locality.name !== profile.locality.name) {
-        this.session.updateLocality(locality);
-      }
+  closePicker(): void {
+    this.activePicker.set(null);
+  }
 
-      this.settingsOpen.set(false);
+  onCityPicked(cityName: string): void {
+    const city = this.cities.find((item) => item.name.toLowerCase() === cityName.trim().toLowerCase());
+    if (!city) {
+      return;
+    }
+
+    this.selectedCity.set(city);
+    this.selectedLocality.set(null);
+    this.localities = [];
+    this.closePicker();
+
+    this.localitiesLoading = true;
+    this.locationsService.getLocalities(city.name).subscribe((localities) => {
+      this.localities = localities;
+      this.localitiesLoading = false;
+    });
+  }
+
+  onLocalityPicked(localityName: string): void {
+    const locality = this.localities.find(
+      (item) => item.name.toLowerCase() === localityName.trim().toLowerCase(),
+    );
+    if (!locality) {
+      return;
+    }
+
+    this.selectedLocality.set(locality);
+    this.closePicker();
+  }
+
+  applyJunctionChange(): void {
+    const city = this.selectedCity();
+    const locality = this.selectedLocality();
+    const profile = this.session.userProfile();
+
+    if (!city || !locality || !profile) {
+      return;
+    }
+
+    this.applyingJunction.set(true);
+
+    this.locationsService.resolveLocality(city.name, locality.name).subscribe({
+      next: (resolvedLocality) => {
+        this.applyingJunction.set(false);
+
+        if (city.name !== profile.city.name) {
+          this.session.updateCity(city, resolvedLocality, 'locality');
+        } else if (resolvedLocality.name !== profile.locality.name) {
+          this.session.updateLocality(resolvedLocality);
+          this.session.updateServiceScope('locality', resolvedLocality);
+        } else {
+          this.session.updateServiceScope('locality', resolvedLocality);
+        }
+
+        this.settingsOpen.set(false);
+      },
+      error: () => {
+        this.applyingJunction.set(false);
+      },
     });
   }
 
   private initializeFromProfile(profile: UserProfile): void {
     this.profileInitialized = true;
-    this.syncFormFromProfile(profile);
+    this.syncFromProfile(profile);
   }
 
-  private syncFormFromProfile(profile: UserProfile): void {
-    this.form.controls.cityName.setValue(profile.city.name, { emitEvent: false });
+  private syncFromProfile(profile: UserProfile): void {
+    this.selectedCity.set(profile.city);
+    this.selectedLocality.set(profile.locality);
 
+    this.localitiesLoading = true;
     this.locationsService.getLocalities(profile.city.name).subscribe((localities) => {
       this.localities = localities;
-      this.form.controls.localityName.setValue(profile.locality.name, { emitEvent: false });
-      this.setLocalityEnabled(localities.length > 0);
+      this.localitiesLoading = false;
+
+      const match = localities.find((item) => item.name === profile.locality.name);
+      if (match) {
+        this.selectedLocality.set(match);
+      }
     });
-  }
-
-  private setLocalityEnabled(enabled: boolean): void {
-    const control = this.form.controls.localityName;
-
-    if (enabled) {
-      control.enable({ emitEvent: false });
-      return;
-    }
-
-    control.disable({ emitEvent: false });
   }
 }

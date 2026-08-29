@@ -67,14 +67,14 @@ export class UserSessionService {
   readonly servicesHeading = computed(() => {
     const profile = this.profile();
     if (!profile) {
-      return 'Services';
+      return 'Shops/Services';
     }
 
     if ((profile.serviceScope ?? 'locality') === 'city') {
       return `City Services at ${profile.city.name}`;
     }
 
-    return `Services in ${profile.locality.name}`;
+    return `Shops/Services in ${profile.locality.name}`;
   });
 
   readonly serviceScope = computed<ServiceScope>(() => this.profile()?.serviceScope ?? 'locality');

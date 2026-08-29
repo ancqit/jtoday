@@ -10,7 +10,6 @@
 }
 
 .greet-card {
-  position: relative;
   width: min(100%, 28rem);
   padding: 2rem;
   border-radius: 1.25rem;
@@ -140,43 +139,6 @@ small {
 }
 
 .submit-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.greet-close {
-  position: absolute;
-  top: 0.85rem;
-  right: 0.85rem;
-  width: 2rem;
-  height: 2rem;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  border-radius: 999px;
-  background: rgba(15, 23, 42, 0.35);
-  color: rgba(248, 250, 252, 0.95);
-  cursor: pointer;
-}
-
-.greet-actions {
-  display: grid;
-  gap: 0.65rem;
-}
-
-.city-services-button {
-  padding: 0.85rem 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  border-radius: 0.75rem;
-  background: rgba(15, 23, 42, 0.42);
-  color: rgba(153, 246, 228, 0.95);
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.city-services-button:hover:not(:disabled) {
-  background: rgba(15, 23, 42, 0.55);
-}
-
-.city-services-button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }

@@ -2,14 +2,7 @@
   <header class="header-bar">
     <p class="greeting">
       <span class="greeting-hey wordmark-primary">Hey,</span>
-      <button
-        type="button"
-        class="greeting-name wordmark-prompt"
-        (click)="junctionPickerRequested.emit()"
-        aria-label="Change your Junction"
-      >
-        {{ session.displayName() }}
-      </button>
+      <span class="greeting-name wordmark-prompt">{{ session.displayName() }}</span>
     </p>
 
     <div class="junction-controls">
@@ -58,45 +51,81 @@
 
             <p class="settings-title">Change your Junction</p>
 
-            <form [formGroup]="form" class="settings-form" (ngSubmit)="applyJunctionChange()">
-              <label>
-                <span>City</span>
-                <select formControlName="cityName" aria-label="City">
-                  @for (city of cities; track city.id) {
-                    <option [value]="city.name">{{ city.name }}</option>
-                  }
-                </select>
-              </label>
+            <div class="settings-junction-form">
+              <div class="settings-picker-field">
+                <span class="settings-field-label">City</span>
+                @if (selectedCity()) {
+                  <p class="settings-selected-value">{{ selectedCity()!.name }}</p>
+                }
+                <button type="button" class="settings-picker-button" (click)="openCityPicker()">
+                  Choose city
+                </button>
+              </div>
 
-              <label>
-                <span>Locality</span>
-                <select formControlName="localityName" aria-label="Locality">
-                  <option value="" disabled>
-                    @if (localitiesLoading) {
-                      Loading localities...
-                    } @else if (!form.controls.cityName.value) {
-                      Select a city first
-                    } @else {
-                      Select a locality
-                    }
-                  </option>
-                  @for (locality of localities; track locality.id) {
-                    <option [value]="locality.name">{{ locality.name }}</option>
+              <div class="settings-picker-field">
+                <span class="settings-field-label">Locality</span>
+                @if (selectedLocality()) {
+                  <p class="settings-selected-value">{{ selectedLocality()!.name }}</p>
+                }
+                <button
+                  type="button"
+                  class="settings-picker-button"
+                  [disabled]="!selectedCity() || localitiesLoading"
+                  (click)="openLocalityPicker()"
+                >
+                  @if (localitiesLoading) {
+                    Loading localities...
+                  } @else {
+                    Choose locality
                   }
-                </select>
-              </label>
+                </button>
+              </div>
 
               <div class="settings-actions">
                 <button type="button" class="btn-secondary" (click)="closeSettings()">Cancel</button>
-                <button type="submit" class="btn-primary" [disabled]="form.invalid">Apply</button>
+                <button
+                  type="button"
+                  class="btn-primary"
+                  [disabled]="!selectedCity() || !selectedLocality() || applyingJunction()"
+                  (click)="applyJunctionChange()"
+                >
+                  @if (applyingJunction()) {
+                    Applying...
+                  } @else {
+                    Apply
+                  }
+                </button>
               </div>
-            </form>
+            </div>
           </section>
         }
       </div>
     </div>
   </header>
 </div>
+
+@if (activePicker() === 'city') {
+  <app-location-picker-modal
+    title="Choose city"
+    [allowAdd]="false"
+    [options]="cityPickerOptions"
+    emptyMessage="No cities available."
+    (picked)="onCityPicked($event)"
+    (dismissed)="closePicker()"
+  />
+}
+
+@if (activePicker() === 'locality') {
+  <app-location-picker-modal
+    title="Choose locality"
+    [allowAdd]="false"
+    [options]="localityPickerOptions"
+    [loading]="localitiesLoading"
+    emptyMessage="No localities available for this city."
+    (picked)="onLocalityPicked($event)"
+    (dismissed)="closePicker()"
+  />
+}
 
 @if (profileModalOpen()) {
   <app-profile-modal (closed)="closeProfileModal()" />
