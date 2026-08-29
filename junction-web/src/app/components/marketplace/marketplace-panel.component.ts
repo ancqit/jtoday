@@ -54,22 +54,22 @@ export class MarketplacePanelComponent implements OnInit {
 
   private readonly productQuantities = signal<Record<string, number>>({});
 
-  private loadedJunctionKey: string | null = null;
+  private loadedCatalogKey: string | null = null;
 
   constructor() {
     effect(() => {
-      const junctionKey = this.session.junctionKey();
-      if (!junctionKey) {
+      const catalogKey = this.session.catalogKey();
+      if (!catalogKey) {
         return;
       }
 
-      if (this.loadedJunctionKey === null) {
-        this.loadedJunctionKey = junctionKey;
+      if (this.loadedCatalogKey === null) {
+        this.loadedCatalogKey = catalogKey;
         return;
       }
 
-      if (this.loadedJunctionKey !== junctionKey) {
-        this.loadedJunctionKey = junctionKey;
+      if (this.loadedCatalogKey !== catalogKey) {
+        this.loadedCatalogKey = catalogKey;
         this.openPanel();
       }
     });

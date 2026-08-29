@@ -16,7 +16,7 @@ import { CartStore } from '../../stores/cart.store';
 export class HomeComponent {
   readonly session = inject(UserSessionService);
   private readonly cart = inject(CartStore);
-  private lastJunctionKey: string | null = null;
+  private lastLocationKey: string | null = null;
 
   readonly hasCompletedWelcome = this.session.hasCompletedWelcome;
   readonly marketplaceOpen = signal(false);
@@ -24,17 +24,17 @@ export class HomeComponent {
 
   constructor() {
     effect(() => {
-      const junctionKey = this.session.junctionKey();
-      if (!junctionKey) {
+      const locationKey = this.session.locationKey();
+      if (!locationKey) {
         return;
       }
 
-      if (this.lastJunctionKey !== null && this.lastJunctionKey !== junctionKey) {
+      if (this.lastLocationKey !== null && this.lastLocationKey !== locationKey) {
         this.marketplaceOpen.set(false);
         this.cart.clear();
       }
 
-      this.lastJunctionKey = junctionKey;
+      this.lastLocationKey = locationKey;
     });
   }
 

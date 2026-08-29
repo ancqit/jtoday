@@ -14,7 +14,7 @@ npm start
 
 Open `http://localhost:4200`.
 
-The map uses **Leaflet** with CARTO Voyager raster tiles — no API key required.
+The map uses **Leaflet** tiles. By default it falls back to **OpenStreetMap** (no API key). For CARTO Voyager styling, request a free key at [carto.com/basemaps/apikey](https://carto.com/basemaps/apikey) and set `cartoApiKey` in `junction-web/src/environments/environment.prod.ts` (or your Vercel env as `NG_APP_CARTO_API_KEY` if you wire it in the build).
 
 Local API calls use same-origin `/api/*`, proxied to `https://junctionback.onrender.com` via `junction-web/proxy.conf.json`.
 

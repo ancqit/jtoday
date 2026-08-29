@@ -9,6 +9,7 @@ import {
   input,
 } from '@angular/core';
 import * as L from 'leaflet';
+import { resolveMapTileConfig } from '../../core/map.config';
 
 export interface MapTarget {
   latitude: number;
@@ -17,9 +18,7 @@ export interface MapTarget {
   zoom?: number;
 }
 
-const TILE_URL = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
-const TILE_ATTRIBUTION =
-  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
+const TILE = resolveMapTileConfig();
 
 @Component({
   selector: 'app-map',
@@ -61,10 +60,10 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       attributionControl: true,
     });
 
-    L.tileLayer(TILE_URL, {
-      attribution: TILE_ATTRIBUTION,
-      subdomains: 'abcd',
-      maxZoom: 20,
+    L.tileLayer(TILE.url, {
+      attribution: TILE.attribution,
+      subdomains: TILE.subdomains,
+      maxZoom: TILE.maxZoom,
     }).addTo(this.map);
 
     L.control.zoom({ position: 'bottomright' }).addTo(this.map);

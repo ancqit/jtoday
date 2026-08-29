@@ -79,7 +79,18 @@ export class UserSessionService {
 
   readonly serviceScope = computed<ServiceScope>(() => this.profile()?.serviceScope ?? 'locality');
 
-  readonly junctionKey = computed(() => {
+  /** City + locality only — used when clearing cart / closing marketplace on location change. */
+  readonly locationKey = computed(() => {
+    const profile = this.profile();
+    if (!profile) {
+      return null;
+    }
+
+    return `${profile.city.id}:${profile.locality.id}`;
+  });
+
+  /** Includes service scope — used to reload the marketplace catalog. */
+  readonly catalogKey = computed(() => {
     const profile = this.profile();
     if (!profile) {
       return null;
@@ -90,8 +101,10 @@ export class UserSessionService {
       return `${profile.city.id}:city`;
     }
 
-    return `${profile.city.id}:${profile.locality.id}`;
+    return `${profile.city.id}:${profile.locality.id}:locality`;
   });
+
+  readonly junctionKey = computed(() => this.catalogKey());
 
   constructor() {
     this.restoreProfile();
