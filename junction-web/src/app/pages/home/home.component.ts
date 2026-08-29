@@ -20,7 +20,6 @@ export class HomeComponent {
 
   readonly hasCompletedWelcome = this.session.hasCompletedWelcome;
   readonly marketplaceOpen = signal(false);
-  readonly junctionPickerOpen = signal(false);
   private readonly previewTarget = signal<MapTarget | null>(null);
 
   constructor() {
@@ -57,47 +56,28 @@ export class HomeComponent {
     this.session.completeWelcome(event.name, event.city, event.locality, 'locality');
   }
 
-  onCityServicesSelected(event: { name: string; city: City }): void {
-    this.session.completeCityServices(event.name, event.city);
-  }
-
-  onJunctionPickerSubmitted(event: { name: string; city: City; locality: Locality }): void {
-    const profile = this.session.userProfile();
-    if (!profile) {
-      return;
-    }
-
-    if (event.city.name !== profile.city.name) {
-      this.session.updateCity(event.city, event.locality, 'locality');
-    } else if (event.locality.name !== profile.locality.name) {
-      this.session.updateLocality(event.locality);
-      this.session.updateServiceScope('locality', event.locality);
-    } else {
-      this.session.updateServiceScope('locality', event.locality);
-    }
-
-    this.closeJunctionPicker();
-  }
-
-  onJunctionPickerCityServices(event: { name: string; city: City }): void {
-    this.session.completeCityServices(event.name, event.city);
-    this.closeJunctionPicker();
-  }
-
   onLocationPreview(target: MapTarget): void {
     this.previewTarget.set(target);
   }
 
-  openJunctionPicker(): void {
-    this.junctionPickerOpen.set(true);
+  openLocalityServices(): void {
+    if (this.marketplaceOpen() && this.session.serviceScope() === 'locality') {
+      this.closeMarketplace();
+      return;
+    }
+
+    this.session.updateServiceScope('locality');
+    this.marketplaceOpen.set(true);
   }
 
-  closeJunctionPicker(): void {
-    this.junctionPickerOpen.set(false);
-  }
+  openCityServices(): void {
+    if (this.marketplaceOpen() && this.session.serviceScope() === 'city') {
+      this.closeMarketplace();
+      return;
+    }
 
-  toggleMarketplace(): void {
-    this.marketplaceOpen.update((open) => !open);
+    this.session.updateServiceScope('city');
+    this.marketplaceOpen.set(true);
   }
 
   closeMarketplace(): void {

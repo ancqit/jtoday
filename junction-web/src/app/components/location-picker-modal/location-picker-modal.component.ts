@@ -18,6 +18,8 @@ export class LocationPickerModalComponent {
   readonly loading = input(false);
   readonly emptyMessage = input('Nothing to show yet.');
   readonly addSectionLabel = input('Add a new one');
+  /** When false, only existing options can be picked (no custom add). */
+  readonly allowAdd = input(true);
   readonly errorMessage = input<string | null>(null);
   readonly validating = input(false);
 
