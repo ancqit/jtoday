@@ -6,7 +6,7 @@ import { SKIP_SESSION_AUTH } from './http-context';
 import { SessionService } from './session.service';
 
 /** junctionBack routes that accept the junction.today session JWT. */
-const SESSION_PROTECTED_PATHS = ['/session', '/locations/', '/shops', '/products'] as const;
+const SESSION_PROTECTED_PATHS = ['/session', '/locations/', '/shops', '/products', '/orders'] as const;
 
 function isPublicNoticesTodayRequest(url: string, method: string): boolean {
   return method === 'GET' && url.includes('/notices/today');

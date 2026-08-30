@@ -5,6 +5,25 @@ import { CartStore } from '../stores/cart.store';
 import { SavedOrder } from '../models/order.model';
 import { UserProfile } from '../models/location.model';
 
+/** Normalize to E.164 for junctionBack customer_phone, or omit if unknown. */
+function toE164Phone(raw?: string | null): string | undefined {
+  if (!raw?.trim()) {
+    return undefined;
+  }
+  const compact = raw.replace(/[^\d+]/g, '');
+  if (/^\+[1-9]\d{7,14}$/.test(compact)) {
+    return compact;
+  }
+  const digits = raw.replace(/\D/g, '');
+  if (digits.length === 10) {
+    return `+91${digits}`;
+  }
+  if (digits.length === 12 && digits.startsWith('91')) {
+    return `+${digits}`;
+  }
+  return undefined;
+}
+
 @Injectable({ providedIn: 'root' })
 export class OrdersService {
   private readonly ordersApi = inject(OrdersApi);
@@ -29,7 +48,7 @@ export class OrdersService {
     const payload: CreateOrderPayload = {
       store_id: shopId,
       customer_name: profile.name.trim(),
-      customer_phone: profile.phoneNumber?.trim() || undefined,
+      customer_phone: toE164Phone(profile.phoneNumber),
       customer_email: profile.email?.trim() || undefined,
       items: cart.lines().map((line) => ({
         product_id: line.productId,
@@ -47,6 +66,7 @@ export class OrdersService {
         payment_status: 'pending',
       },
       status: 'pending',
+      source: 'junction.today',
       notes: 'Pay at store — customer will pay when collecting the order.',
     };
 
