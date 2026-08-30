@@ -393,38 +393,29 @@
   line-height: 1.4;
 }
 
-.shop-row-hours-wrap {
-  display: grid;
-  gap: 0.15rem;
-  flex-shrink: 0;
-  min-width: 7.5rem;
-  padding: 0.55rem 0.7rem;
-  border-radius: 0.7rem;
-  background: #f0fdfa;
-  text-align: right;
-}
-
-.shop-row-phone-wrap {
-  display: grid;
-  gap: 0.15rem;
-  flex-shrink: 0;
-  min-width: 7.5rem;
-  padding: 0.55rem 0.7rem;
-  border-radius: 0.7rem;
-  background: rgba(248, 250, 252, 0.95);
-  text-align: right;
-}
-
+.shop-row-hours-wrap,
+.shop-row-phone-wrap,
 .shop-row-notice-wrap {
   display: grid;
   gap: 0.15rem;
   flex-shrink: 0;
   min-width: 7.5rem;
-  max-width: 12rem;
   padding: 0.55rem 0.7rem;
   border-radius: 0.7rem;
-  background: rgba(254, 243, 199, 0.55);
   text-align: right;
+}
+
+.shop-row-hours-wrap {
+  background: #f0fdfa;
+}
+
+.shop-row-phone-wrap {
+  background: rgba(248, 250, 252, 0.95);
+}
+
+.shop-row-notice-wrap {
+  max-width: 12rem;
+  background: rgba(254, 243, 199, 0.55);
 }
 
 .shop-row-notice-wrap .shop-detail-value {
