@@ -1,0 +1,49 @@
+<div class="shop-profile-backdrop" role="dialog" aria-modal="true" [attr.aria-label]="shop().name + ' profile'" (click)="onDismiss()">
+  <section class="shop-profile-card" (click)="$event.stopPropagation()">
+    <header class="shop-profile-header">
+      <div class="shop-profile-hero">
+        <app-authorized-image [src]="imageSource(shop())" [alt]="shop().name" />
+      </div>
+      <div>
+        <h2>{{ shop().name }}</h2>
+        @if (shop().shop_type_label) {
+          <p class="shop-profile-type">{{ shop().shop_type_label }}</p>
+        }
+      </div>
+      <button type="button" class="shop-profile-close" aria-label="Close" (click)="onDismiss()">×</button>
+    </header>
+
+    <div class="shop-profile-body">
+      @if (shop().owner_bio) {
+        <p class="shop-profile-bio">{{ shop().owner_bio }}</p>
+      } @else {
+        <p class="shop-profile-bio muted">This shop has not added a profile story yet.</p>
+      }
+
+      <dl class="shop-profile-details">
+        <div>
+          <dt>Location</dt>
+          <dd>{{ shop().locality }}, {{ shop().city }}</dd>
+        </div>
+        @if (hoursLabel(shop()); as hours) {
+          <div>
+            <dt>Hours</dt>
+            <dd>{{ hours }}</dd>
+          </div>
+        }
+        @if (phoneNumber(shop()); as phone) {
+          <div>
+            <dt>Phone</dt>
+            <dd><a [href]="'tel:' + phone">{{ phone }}</a></dd>
+          </div>
+        }
+        @if (notice()) {
+          <div>
+            <dt>Today&apos;s notice</dt>
+            <dd>{{ notice() }}</dd>
+          </div>
+        }
+      </dl>
+    </div>
+  </section>
+</div>

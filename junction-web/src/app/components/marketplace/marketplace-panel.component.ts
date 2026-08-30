@@ -1,11 +1,13 @@
 import { DatePipe } from '@angular/common';
-import { Component, effect, inject, OnInit, output, signal } from '@angular/core';
+import { Component, computed, effect, inject, OnInit, output, signal } from '@angular/core';
 import { AuthorizedImageComponent } from '../authorized-image/authorized-image.component';
 import { ProductGalleryModalComponent } from '../product-gallery-modal/product-gallery-modal.component';
 import { ProfileModalComponent } from '../profile-modal/profile-modal.component';
+import { ShopProfileModalComponent } from '../shop-profile-modal/shop-profile-modal.component';
 import { Product } from '../../models/product.model';
 import { SavedOrder } from '../../models/order.model';
 import { Shop } from '../../models/shop.model';
+import { ShopTypeInfo } from '../../models/shop-type.model';
 import { resolveProductImageSource, resolveProductImageSources } from '../../core/product-image.util';
 import { resolveShopProfileImageSource } from '../../core/shop-image.util';
 import { formatShopHours } from '../../core/shop-hours.util';
@@ -22,7 +24,13 @@ type ProductsLayout = 'card' | 'list';
 
 @Component({
   selector: 'app-marketplace-panel',
-  imports: [DatePipe, AuthorizedImageComponent, ProductGalleryModalComponent, ProfileModalComponent],
+  imports: [
+    DatePipe,
+    AuthorizedImageComponent,
+    ProductGalleryModalComponent,
+    ProfileModalComponent,
+    ShopProfileModalComponent,
+  ],
   templateUrl: './marketplace-panel.component.html',
   styleUrl: './marketplace-panel.component.scss',
 })
@@ -46,15 +54,75 @@ export class MarketplacePanelComponent implements OnInit {
   readonly shopsLayout = signal<ShopsLayout>('card');
   readonly productsLayout = signal<ProductsLayout>('card');
   readonly galleryProduct = signal<Product | null>(null);
+  readonly profileShop = signal<Shop | null>(null);
   readonly checkoutProfileOpen = signal(false);
   readonly actionMessage = signal<string | null>(null);
   readonly shopNotices = signal<Record<string, string>>({});
+  readonly shopTypes = signal<ShopTypeInfo[]>([]);
+  readonly activeShopType = signal<string | null>(null);
+  readonly activeProductCategory = signal<string | null>(null);
+  readonly activeProductTag = signal<string | null>(null);
   readonly placingOrder = signal(false);
   readonly paymentMethod = signal<'pay_at_store'>('pay_at_store');
 
   private readonly productQuantities = signal<Record<string, number>>({});
 
   private loadedJunctionKey: string | null = null;
+
+  readonly visibleShopTypes = computed(() => {
+    const present = new Set(
+      this.shops()
+        .map((shop) => shop.shop_type?.trim())
+        .filter((value): value is string => Boolean(value)),
+    );
+    return this.shopTypes().filter((type) => present.has(type.value));
+  });
+
+  readonly filteredShops = computed(() => {
+    const type = this.activeShopType();
+    if (!type) {
+      return this.shops();
+    }
+    return this.shops().filter((shop) => shop.shop_type === type);
+  });
+
+  readonly productCategories = computed(() => {
+    const categories = new Set<string>();
+    for (const product of this.products()) {
+      const category = product.category?.trim();
+      if (category) {
+        categories.add(category);
+      }
+    }
+    return [...categories].sort((a, b) => a.localeCompare(b));
+  });
+
+  readonly productTags = computed(() => {
+    const tags = new Set<string>();
+    for (const product of this.products()) {
+      for (const tag of product.tags ?? []) {
+        const trimmed = tag.trim();
+        if (trimmed) {
+          tags.add(trimmed);
+        }
+      }
+    }
+    return [...tags].sort((a, b) => a.localeCompare(b));
+  });
+
+  readonly filteredProducts = computed(() => {
+    const category = this.activeProductCategory();
+    const tag = this.activeProductTag();
+    return this.products().filter((product) => {
+      if (category && product.category !== category) {
+        return false;
+      }
+      if (tag && !(product.tags ?? []).includes(tag)) {
+        return false;
+      }
+      return true;
+    });
+  });
 
   constructor() {
     effect(() => {
@@ -76,6 +144,9 @@ export class MarketplacePanelComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.catalog.getShopTypes().subscribe({
+      next: (types) => this.shopTypes.set(types),
+    });
     this.openPanel();
   }
 
@@ -86,6 +157,10 @@ export class MarketplacePanelComponent implements OnInit {
     this.completedOrder.set(null);
     this.error.set(null);
     this.shopNotices.set({});
+    this.activeShopType.set(null);
+    this.activeProductCategory.set(null);
+    this.activeProductTag.set(null);
+    this.profileShop.set(null);
     this.loadShops();
   }
 
@@ -128,7 +203,33 @@ export class MarketplacePanelComponent implements OnInit {
     this.selectedShop.set(shop);
     this.cart.setShop(shop.id, shop.name);
     this.view.set('products');
+    this.activeProductCategory.set(null);
+    this.activeProductTag.set(null);
     this.loadProducts(shop.id);
+  }
+
+  openShopProfile(shop: Shop, event?: Event): void {
+    event?.preventDefault();
+    event?.stopPropagation();
+    this.profileShop.set(shop);
+  }
+
+  closeShopProfile(): void {
+    this.profileShop.set(null);
+  }
+
+  setShopTypeFilter(type: string | null): void {
+    this.activeShopType.set(type);
+  }
+
+  setProductCategoryFilter(category: string | null): void {
+    this.activeProductCategory.set(category);
+    this.activeProductTag.set(null);
+  }
+
+  setProductTagFilter(tag: string | null): void {
+    this.activeProductTag.set(tag);
+    this.activeProductCategory.set(null);
   }
 
   addToCart(product: Product): void {

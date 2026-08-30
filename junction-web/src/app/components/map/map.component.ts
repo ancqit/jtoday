@@ -34,6 +34,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 
   private map: L.Map | null = null;
   private marker: L.Marker | null = null;
+  private lastFlyKey: string | null = null;
   private readonly host = inject(ElementRef<HTMLElement>);
 
   constructor() {
@@ -116,10 +117,15 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 
     const center = L.latLng(target.latitude, target.longitude);
     const zoom = target.zoom ?? 13;
+    const flyKey = `${target.latitude.toFixed(5)},${target.longitude.toFixed(5)},${zoom}`;
+    if (flyKey === this.lastFlyKey) {
+      return;
+    }
+    this.lastFlyKey = flyKey;
 
     this.map.flyTo(center, zoom, {
       animate: true,
-      duration: 2.4,
+      duration: zoom === this.map.getZoom() ? 0.8 : 1.4,
     });
 
     if (!this.marker) {

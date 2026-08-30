@@ -1,0 +1,102 @@
+.shop-profile-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(15, 23, 42, 0.45);
+}
+
+.shop-profile-card {
+  width: min(100%, 28rem);
+  border-radius: 1rem;
+  background: #f8fafc;
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  box-shadow: 0 20px 48px rgba(15, 23, 42, 0.2);
+  overflow: hidden;
+}
+
+.shop-profile-header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.75rem;
+  align-items: start;
+  padding: 1rem 1rem 0.5rem;
+}
+
+.shop-profile-hero {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background: #e2e8f0;
+}
+
+.shop-profile-header h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: #334155;
+}
+
+.shop-profile-type {
+  margin: 0.2rem 0 0;
+  font-size: 0.82rem;
+  color: #0f766e;
+  font-weight: 600;
+}
+
+.shop-profile-close {
+  border: 0;
+  background: transparent;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  color: #64748b;
+}
+
+.shop-profile-body {
+  padding: 0.5rem 1rem 1rem;
+}
+
+.shop-profile-bio {
+  margin: 0 0 0.85rem;
+  color: #475569;
+  line-height: 1.45;
+}
+
+.shop-profile-bio.muted {
+  color: #94a3b8;
+}
+
+.shop-profile-details {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.shop-profile-details div {
+  display: grid;
+  gap: 0.1rem;
+}
+
+.shop-profile-details dt {
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+.shop-profile-details dd {
+  margin: 0;
+  color: #334155;
+}
+
+.shop-profile-details a {
+  color: #0f766e;
+  text-decoration: none;
+}
+
+.shop-profile-details a:hover {
+  text-decoration: underline;
+}

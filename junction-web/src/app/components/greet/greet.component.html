@@ -38,6 +38,8 @@
         >
           @if (localitiesLoading) {
             Loading localities...
+          } @else if (selectedCity()) {
+            {{ selectedCity()!.name }} Junction — pick locality
           } @else {
             Add your locality
           }

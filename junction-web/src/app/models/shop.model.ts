@@ -14,4 +14,7 @@ export interface Shop {
   avatar_url?: string | null;
   /** @deprecated Use avatar_url from junctionBack shop catalog */
   profile_image_url?: string | null;
+  shop_type?: string | null;
+  shop_type_label?: string | null;
+  owner_bio?: string | null;
 }

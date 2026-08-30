@@ -78,10 +78,65 @@
 .shops-toolbar,
 .products-toolbar {
   display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
   margin-bottom: 0.75rem;
+}
+
+.filter-chip-row {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.45rem;
+  overflow-x: auto;
+  padding-bottom: 0.35rem;
+  margin-bottom: 0.75rem;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+.filter-chip {
+  flex: 0 0 auto;
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  border-radius: 999px;
+  padding: 0.35rem 0.75rem;
+  background: rgba(255, 255, 255, 0.85);
+  color: #475569;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.filter-chip.active {
+  background: #0f766e;
+  border-color: #0f766e;
+  color: #fff;
+}
+
+.filter-chip-tag {
+  background: rgba(240, 253, 250, 0.95);
+}
+
+.pro-shop-card,
+.pro-shop-row {
+  cursor: pointer;
+}
+
+.shop-card-media-button,
+.shop-row-media-button {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+.product-description {
+  margin: 0.2rem 0 0.35rem;
+  font-size: 0.82rem;
+  line-height: 1.35;
+  color: #64748b;
 }
 
 .services-heading {
