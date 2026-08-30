@@ -16,25 +16,28 @@ import { CartStore } from '../../stores/cart.store';
 export class HomeComponent {
   readonly session = inject(UserSessionService);
   private readonly cart = inject(CartStore);
-  private lastJunctionKey: string | null = null;
+  private lastLocationKey: string | null = null;
 
   readonly hasCompletedWelcome = this.session.hasCompletedWelcome;
   readonly marketplaceOpen = signal(false);
+  readonly greetOpen = signal(false);
   private readonly previewTarget = signal<MapTarget | null>(null);
 
   constructor() {
+    // Only reset cart/marketplace when city or locality changes — not when
+    // toggling locality ↔ city scope (Shops/Services vs City Junction).
     effect(() => {
-      const junctionKey = this.session.junctionKey();
-      if (!junctionKey) {
+      const locationKey = this.session.locationKey();
+      if (!locationKey) {
         return;
       }
 
-      if (this.lastJunctionKey !== null && this.lastJunctionKey !== junctionKey) {
+      if (this.lastLocationKey !== null && this.lastLocationKey !== locationKey) {
         this.marketplaceOpen.set(false);
         this.cart.clear();
       }
 
-      this.lastJunctionKey = junctionKey;
+      this.lastLocationKey = locationKey;
     });
   }
 
@@ -59,10 +62,22 @@ export class HomeComponent {
 
   onGreetSubmitted(event: { name: string; city: City; locality: Locality }): void {
     this.session.completeWelcome(event.name, event.city, event.locality, 'locality');
+    this.greetOpen.set(false);
   }
 
   onLocationPreview(target: MapTarget): void {
     this.previewTarget.set(target);
+  }
+
+  openGreet(): void {
+    this.greetOpen.set(true);
+  }
+
+  closeGreet(): void {
+    if (!this.hasCompletedWelcome()) {
+      return;
+    }
+    this.greetOpen.set(false);
   }
 
   openLocalityServices(): void {

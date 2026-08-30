@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, output, signal } from '@angular/core';
+import { Component, OnInit, effect, inject, input, output, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { City, Locality } from '../../models/location.model';
 import { LocationsService } from '../../services/locations.service';
@@ -22,7 +22,13 @@ export class GreetComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly locationsService = inject(LocationsService);
 
+  readonly allowDismiss = input(false);
+  readonly initialName = input('');
+  readonly initialCity = input<City | null>(null);
+  readonly initialLocality = input<Locality | null>(null);
+
   readonly submitted = output<{ name: string; city: City; locality: Locality }>();
+  readonly dismissed = output<void>();
   readonly locationPreview = output<{
     latitude: number;
     longitude: number;
@@ -43,10 +49,44 @@ export class GreetComponent implements OnInit {
   readonly submitError = signal<string | null>(null);
 
   private pendingAddJunction = false;
+  private hydratedFromInitial = false;
 
   readonly form = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.minLength(2)]],
   });
+
+  constructor() {
+    effect(() => {
+      if (this.hydratedFromInitial) {
+        return;
+      }
+
+      const name = this.initialName().trim();
+      const city = this.initialCity();
+      const locality = this.initialLocality();
+      if (!name && !city) {
+        return;
+      }
+
+      this.hydratedFromInitial = true;
+      if (name) {
+        this.form.controls.name.setValue(name);
+      }
+      if (city) {
+        this.selectedCity.set(city);
+        this.localitiesLoading = true;
+        this.locationsService.getLocalities(city.name).subscribe((localities) => {
+          this.localities = localities;
+          this.localitiesLoading = false;
+          if (locality) {
+            const match =
+              localities.find((item) => item.name === locality.name) ?? locality;
+            this.selectedLocality.set(match);
+          }
+        });
+      }
+    });
+  }
 
   ngOnInit(): void {
     this.locationsService.getCities().subscribe((cities) => {
@@ -60,6 +100,13 @@ export class GreetComponent implements OnInit {
 
   get localityPickerOptions(): PickerOption[] {
     return this.localities.map((locality) => ({ id: locality.id, label: locality.name }));
+  }
+
+  dismiss(): void {
+    if (!this.allowDismiss()) {
+      return;
+    }
+    this.dismissed.emit();
   }
 
   openCityPicker(): void {
@@ -185,7 +232,10 @@ export class GreetComponent implements OnInit {
     });
   }
 
-  private resolveSubmitError(error: { status?: number; error?: { detail?: string | { msg?: string }[] } }): string {
+  private resolveSubmitError(error: {
+    status?: number;
+    error?: { detail?: string | { msg?: string }[] };
+  }): string {
     if (error.status === 404) {
       return 'Unable to save your Junction right now. Please try again shortly.';
     }
