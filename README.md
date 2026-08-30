@@ -14,7 +14,13 @@ npm start
 
 Open `http://localhost:4200`.
 
-The map uses **Leaflet** with CARTO Voyager raster tiles — **no Google Maps API key** and no Mapbox token. Do not add a Maps JavaScript API key for this app; geocoding falls back to built-in coordinates and OpenStreetMap Nominatim when needed.
+The map is always **Leaflet** (light, view-only).
+
+**CARTO Voyager** tiles now require a free API key (`?key=` on the tile URL) — without it CARTO stamps an “API key required” watermark. Request a key at [carto.com/basemaps/apikey](https://carto.com/basemaps/apikey/) (no CARTO account), set `LEAFLET_API_KEY` or `CARTO_API_KEY` on Vercel, and redeploy (`tools/inject-maps-env.mjs` bakes it in).
+
+If no key is set, the app uses **OpenStreetMap** tiles instead (no key, no watermark).
+
+Geocoding falls back to built-in coordinates and OpenStreetMap Nominatim when needed.
 
 Local API calls use same-origin `/api/*`, proxied to `https://junctionback.onrender.com` via `junction-web/proxy.conf.json`.
 
@@ -49,8 +55,23 @@ Deployment is configured in the repo-root `vercel.json` (same approach as juncti
 | --- | --- |
 | **Root Directory** | `.` (repository root) |
 | **Install command** | `npm install --prefix junction-web` |
-| **Build command** | `npm run build --prefix junction-web` |
+| **Build command** | `node tools/inject-maps-env.mjs && npm run build --prefix junction-web` |
 | **Output directory** | `junction-web/dist/junction-web/browser` |
+
+### Map tile API key (CARTO)
+
+CARTO raster basemaps require a free key. Without it you get an “API key required” watermark on the map.
+
+1. Request a key: [carto.com/basemaps/apikey](https://carto.com/basemaps/apikey/) (email + domain, no account)
+2. Vercel → Environment Variables (Production + Preview):
+
+| Name | Value |
+| --- | --- |
+| `LEAFLET_API_KEY` | Your CARTO basemap key (aliases: `CARTO_API_KEY`, `CARTO_BASEMAPS_API_KEY`) |
+
+3. Redeploy so `inject-maps-env.mjs` bakes the key into the build.
+
+Leave unset to use OpenStreetMap tiles (no watermark). Remove any unused `GOOGLE_MAPS_API_KEY` / MapTiler vars.
 
 Do not set a separate Root Directory to `junction-web` — keep it at the repository root so Vercel picks up `vercel.json` correctly.
 

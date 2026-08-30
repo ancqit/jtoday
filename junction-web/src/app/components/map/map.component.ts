@@ -9,6 +9,7 @@ import {
   input,
 } from '@angular/core';
 import * as L from 'leaflet';
+import { environment } from '../../../environments/environment';
 
 export interface MapTarget {
   latitude: number;
@@ -17,9 +18,22 @@ export interface MapTarget {
   zoom?: number;
 }
 
-const TILE_URL = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
-const TILE_ATTRIBUTION =
+/**
+ * CARTO Voyager — requires a free basemap API key since 2025/26.
+ * Request: https://carto.com/basemaps/apikey/
+ * URL shape: .../voyager/{z}/{x}/{y}.png?key=YOUR_KEY
+ */
+function cartoTileUrl(apiKey: string): string {
+  return `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${encodeURIComponent(apiKey)}`;
+}
+
+const CARTO_ATTRIBUTION =
   '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
+
+/** Free OSM raster — no API key; used when CARTO key is not configured. */
+const OSM_TILE_URL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+const OSM_ATTRIBUTION =
+  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 
 @Component({
   selector: 'app-map',
@@ -38,6 +52,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   private zoomControl: L.Control.Zoom | null = null;
   private lastFlyKey: string | null = null;
   private readonly host = inject(ElementRef<HTMLElement>);
+  private readonly leafletApiKey = (environment.leafletApiKey || '').trim();
 
   constructor() {
     effect(() => {
@@ -45,7 +60,6 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       if (!this.map || !nextTarget) {
         return;
       }
-
       this.flyToTarget(nextTarget);
     });
 
@@ -61,7 +75,6 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       center: [20.5937, 78.9629],
       zoom: 4,
       zoomControl: false,
-      // Compact attribution — avoids a noisy “API key” style watermark look.
       attributionControl: false,
       dragging: false,
       touchZoom: false,
@@ -71,19 +84,30 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       keyboard: false,
     });
 
+    const useCarto = Boolean(this.leafletApiKey);
     L.control
       .attribution({ prefix: false, position: 'bottomright' })
-      .addAttribution(TILE_ATTRIBUTION)
+      .addAttribution(useCarto ? CARTO_ATTRIBUTION : OSM_ATTRIBUTION)
       .addTo(this.map);
 
-    L.tileLayer(TILE_URL, {
-      attribution: '',
-      subdomains: 'abcd',
-      maxZoom: 20,
-      // Never surface tile provider errors as an on-map banner.
-      errorTileUrl:
-        'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
-    }).addTo(this.map);
+    if (useCarto) {
+      // Never request CARTO without ?key= — that paints the “API key required” watermark.
+      L.tileLayer(cartoTileUrl(this.leafletApiKey), {
+        attribution: '',
+        subdomains: 'abcd',
+        maxZoom: 20,
+        errorTileUrl:
+          'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
+      }).addTo(this.map);
+    } else {
+      L.tileLayer(OSM_TILE_URL, {
+        attribution: '',
+        subdomains: 'abc',
+        maxZoom: 19,
+        errorTileUrl:
+          'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
+      }).addTo(this.map);
+    }
 
     this.applyInteractionState(this.interactive());
 

@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { catchError, map, Observable, of } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { CreateOrderPayload, OrdersApi } from '../core/orders.api';
 import { CartStore } from '../stores/cart.store';
 import { SavedOrder } from '../models/order.model';
@@ -93,7 +93,6 @@ export class OrdersService {
         orderNumber: created.order_number,
         shopNotified: true,
       })),
-      catchError(() => of(localFallback)),
     );
   }
 }
