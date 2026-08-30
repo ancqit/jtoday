@@ -14,7 +14,9 @@ npm start
 
 Open `http://localhost:4200`.
 
-The map uses **Leaflet** with CARTO Voyager raster tiles — **no Google Maps API key** and no Mapbox token. Do not add a Maps JavaScript API key for this app; geocoding falls back to built-in coordinates and OpenStreetMap Nominatim when needed.
+The map uses **Google Maps** when `GOOGLE_MAPS_API_KEY` (or `MAPS_API_KEY` / `NG_APP_GOOGLE_MAPS_API_KEY`) is set on Vercel — injected at build time by `tools/inject-maps-env.mjs`. If the key is missing or invalid, it falls back to **Leaflet + CARTO** tiles (no key) and never shows Google’s “API key required” banner.
+
+Geocoding falls back to built-in coordinates and OpenStreetMap Nominatim when needed.
 
 Local API calls use same-origin `/api/*`, proxied to `https://junctionback.onrender.com` via `junction-web/proxy.conf.json`.
 
@@ -51,6 +53,16 @@ Deployment is configured in the repo-root `vercel.json` (same approach as juncti
 | **Install command** | `npm install --prefix junction-web` |
 | **Build command** | `npm run build --prefix junction-web` |
 | **Output directory** | `junction-web/dist/junction-web/browser` |
+
+### Map API key (optional)
+
+In Vercel → Project Settings → Environment Variables (Production + Preview), set:
+
+| Name | Value |
+| --- | --- |
+| `GOOGLE_MAPS_API_KEY` | Your Google Maps JavaScript API key |
+
+Restrict the key to HTTP referrers `https://www.junction.today/*` and `https://*.vercel.app/*`, and enable **Maps JavaScript API**. Redeploy after saving so `inject-maps-env.mjs` bakes the key into the build.
 
 Do not set a separate Root Directory to `junction-web` — keep it at the repository root so Vercel picks up `vercel.json` correctly.
 

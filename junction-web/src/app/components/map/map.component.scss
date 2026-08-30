@@ -56,3 +56,10 @@
 :host ::ng-deep .leaflet-control-attribution a {
   color: inherit;
 }
+
+/* Never show Google Maps “API key required” / development watermarks if the key fails. */
+:host ::ng-deep .gm-err-container,
+:host ::ng-deep .gm-style .gm-style-cc,
+:host ::ng-deep .dismissButton {
+  display: none !important;
+}
