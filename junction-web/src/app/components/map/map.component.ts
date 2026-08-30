@@ -18,18 +18,22 @@ export interface MapTarget {
   zoom?: number;
 }
 
-/** Free public tiles (no API key). */
-const CARTO_TILE_URL = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+/**
+ * CARTO Voyager — requires a free basemap API key since 2025/26.
+ * Request: https://carto.com/basemaps/apikey/
+ * URL shape: .../voyager/{z}/{x}/{y}.png?key=YOUR_KEY
+ */
+function cartoTileUrl(apiKey: string): string {
+  return `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${encodeURIComponent(apiKey)}`;
+}
+
 const CARTO_ATTRIBUTION =
   '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
 
-/** MapTiler streets — used when `environment.leafletApiKey` is set (Vercel LEAFLET_API_KEY). */
-function mapTilerTileUrl(apiKey: string): string {
-  return `https://api.maptiler.com/maps/streets-v2/{z}/{x}/{y}.png?key=${encodeURIComponent(apiKey)}`;
-}
-
-const MAPTILER_ATTRIBUTION =
-  '&copy; <a href="https://www.maptiler.com/copyright/">MapTiler</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+/** Free OSM raster — no API key; used when CARTO key is not configured. */
+const OSM_TILE_URL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+const OSM_ATTRIBUTION =
+  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 
 @Component({
   selector: 'app-map',
@@ -80,25 +84,26 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       keyboard: false,
     });
 
-    const useMapTiler = Boolean(this.leafletApiKey);
+    const useCarto = Boolean(this.leafletApiKey);
     L.control
       .attribution({ prefix: false, position: 'bottomright' })
-      .addAttribution(useMapTiler ? MAPTILER_ATTRIBUTION : CARTO_ATTRIBUTION)
+      .addAttribution(useCarto ? CARTO_ATTRIBUTION : OSM_ATTRIBUTION)
       .addTo(this.map);
 
-    if (useMapTiler) {
-      L.tileLayer(mapTilerTileUrl(this.leafletApiKey), {
+    if (useCarto) {
+      // Never request CARTO without ?key= — that paints the “API key required” watermark.
+      L.tileLayer(cartoTileUrl(this.leafletApiKey), {
         attribution: '',
+        subdomains: 'abcd',
         maxZoom: 20,
-        // Invalid key → blank tile, never a Google-style “API key required” banner.
         errorTileUrl:
           'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
       }).addTo(this.map);
     } else {
-      L.tileLayer(CARTO_TILE_URL, {
+      L.tileLayer(OSM_TILE_URL, {
         attribution: '',
-        subdomains: 'abcd',
-        maxZoom: 20,
+        subdomains: 'abc',
+        maxZoom: 19,
         errorTileUrl:
           'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
       }).addTo(this.map);

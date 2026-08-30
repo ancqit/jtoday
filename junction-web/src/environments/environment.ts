@@ -1,8 +1,9 @@
 export const environment = {
   production: false,
   /**
-   * Optional MapTiler key for Leaflet tiles in local `ng serve`.
-   * Or set LEAFLET_API_KEY / MAPTILER_API_KEY in the shell before building.
+   * Free CARTO basemap key for local `ng serve`.
+   * Request: https://carto.com/basemaps/apikey/
+   * Leave empty to use OpenStreetMap tiles (no watermark).
    */
   leafletApiKey: '',
 };

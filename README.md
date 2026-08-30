@@ -14,7 +14,11 @@ npm start
 
 Open `http://localhost:4200`.
 
-The map is always **Leaflet** (light, view-only). Tiles default to free **CARTO/OSM** (no key). Optionally set `LEAFLET_API_KEY` (or `MAPTILER_API_KEY`) on Vercel to use **MapTiler** streets tiles — injected at build time by `tools/inject-maps-env.mjs`. Leaflet itself has no Google API key; that is what caused the “API key required” banner before.
+The map is always **Leaflet** (light, view-only).
+
+**CARTO Voyager** tiles now require a free API key (`?key=` on the tile URL) — without it CARTO stamps an “API key required” watermark. Request a key at [carto.com/basemaps/apikey](https://carto.com/basemaps/apikey/) (no CARTO account), set `LEAFLET_API_KEY` or `CARTO_API_KEY` on Vercel, and redeploy (`tools/inject-maps-env.mjs` bakes it in).
+
+If no key is set, the app uses **OpenStreetMap** tiles instead (no key, no watermark).
 
 Geocoding falls back to built-in coordinates and OpenStreetMap Nominatim when needed.
 
@@ -54,15 +58,20 @@ Deployment is configured in the repo-root `vercel.json` (same approach as juncti
 | **Build command** | `node tools/inject-maps-env.mjs && npm run build --prefix junction-web` |
 | **Output directory** | `junction-web/dist/junction-web/browser` |
 
-### Map tile API key (optional)
+### Map tile API key (CARTO)
 
-Leaflet does not use a Google Maps key. For optional paid/reliable tiles with Leaflet, create a free [MapTiler](https://www.maptiler.com/) key and set on Vercel (Production + Preview):
+CARTO raster basemaps require a free key. Without it you get an “API key required” watermark on the map.
+
+1. Request a key: [carto.com/basemaps/apikey](https://carto.com/basemaps/apikey/) (email + domain, no account)
+2. Vercel → Environment Variables (Production + Preview):
 
 | Name | Value |
 | --- | --- |
-| `LEAFLET_API_KEY` | Your MapTiler API key (aliases: `MAPTILER_API_KEY`, `LEAFLET_TILE_API_KEY`) |
+| `LEAFLET_API_KEY` | Your CARTO basemap key (aliases: `CARTO_API_KEY`, `CARTO_BASEMAPS_API_KEY`) |
 
-Leave it unset to keep free CARTO tiles. Redeploy after saving so the key is baked into the build. You can remove any old `GOOGLE_MAPS_API_KEY` — it is unused.
+3. Redeploy so `inject-maps-env.mjs` bakes the key into the build.
+
+Leave unset to use OpenStreetMap tiles (no watermark). Remove any unused `GOOGLE_MAPS_API_KEY` / MapTiler vars.
 
 Do not set a separate Root Directory to `junction-web` — keep it at the repository root so Vercel picks up `vercel.json` correctly.
 
