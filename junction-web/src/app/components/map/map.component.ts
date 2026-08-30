@@ -61,7 +61,8 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       center: [20.5937, 78.9629],
       zoom: 4,
       zoomControl: false,
-      attributionControl: true,
+      // Compact attribution — avoids a noisy “API key” style watermark look.
+      attributionControl: false,
       dragging: false,
       touchZoom: false,
       doubleClickZoom: false,
@@ -70,10 +71,18 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       keyboard: false,
     });
 
+    L.control
+      .attribution({ prefix: false, position: 'bottomright' })
+      .addAttribution(TILE_ATTRIBUTION)
+      .addTo(this.map);
+
     L.tileLayer(TILE_URL, {
-      attribution: TILE_ATTRIBUTION,
+      attribution: '',
       subdomains: 'abcd',
       maxZoom: 20,
+      // Never surface tile provider errors as an on-map banner.
+      errorTileUrl:
+        'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
     }).addTo(this.map);
 
     this.applyInteractionState(this.interactive());

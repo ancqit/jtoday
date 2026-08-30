@@ -1,4 +1,5 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
+import { TranslatePipe } from '../../core/i18n/translate.pipe';
 import { City, Locality } from '../../models/location.model';
 import { UserSessionService } from '../../services/user-session.service';
 import { HeaderBarComponent } from '../../components/header-bar/header-bar.component';
@@ -9,7 +10,7 @@ import { CartStore } from '../../stores/cart.store';
 
 @Component({
   selector: 'app-home',
-  imports: [MapComponent, GreetComponent, HeaderBarComponent, MarketplacePanelComponent],
+  imports: [MapComponent, GreetComponent, HeaderBarComponent, MarketplacePanelComponent, TranslatePipe],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
 })
@@ -42,6 +43,13 @@ export class HomeComponent {
   }
 
   readonly mapTarget = computed<MapTarget | null>(() => {
+    const preview = this.previewTarget();
+    const greetActive = !this.hasCompletedWelcome() || this.greetOpen();
+    // While greet is open, prefer live city/locality picks so the map pans.
+    if (greetActive && preview) {
+      return preview;
+    }
+
     const profile = this.session.userProfile();
     if (profile) {
       const scope = profile.serviceScope ?? 'locality';
@@ -57,7 +65,7 @@ export class HomeComponent {
       };
     }
 
-    return this.previewTarget();
+    return preview;
   });
 
   onGreetSubmitted(event: { name: string; city: City; locality: Locality }): void {

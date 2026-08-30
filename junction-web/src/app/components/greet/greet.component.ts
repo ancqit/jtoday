@@ -1,5 +1,7 @@
 import { Component, OnInit, effect, inject, input, output, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { I18nService } from '../../core/i18n/i18n.service';
+import { TranslatePipe } from '../../core/i18n/translate.pipe';
 import { City, Locality } from '../../models/location.model';
 import { LocationsService } from '../../services/locations.service';
 import {
@@ -14,13 +16,14 @@ const LOCALITY_GEOCODE_ERROR =
 
 @Component({
   selector: 'app-greet',
-  imports: [ReactiveFormsModule, LocationPickerModalComponent],
+  imports: [ReactiveFormsModule, LocationPickerModalComponent, TranslatePipe],
   templateUrl: './greet.component.html',
   styleUrl: './greet.component.scss',
 })
 export class GreetComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly locationsService = inject(LocationsService);
+  readonly i18n = inject(I18nService);
 
   readonly allowDismiss = input(false);
   readonly initialName = input('');

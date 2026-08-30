@@ -4,42 +4,64 @@
       <div class="greet-title-row">
         <h1 id="greet-title" class="wordmark-primary">
           @if (allowDismiss()) {
-            Your Junction
+            {{ 'greet.yourJunction' | t }}
           } @else {
-            Welcome
+            {{ 'greet.welcome' | t }}
           }
         </h1>
-        @if (allowDismiss()) {
-          <button type="button" class="greet-close" aria-label="Close" (click)="dismiss()">
-            ×
-          </button>
-        }
+        <div class="greet-title-actions">
+          <div class="lang-toggle" role="group" [attr.aria-label]="'Language'">
+            <button
+              type="button"
+              class="lang-btn"
+              [class.active]="i18n.lang() === 'hi'"
+              (click)="i18n.setLang('hi')"
+            >
+              {{ 'greet.lang.hi' | t }}
+            </button>
+            <button
+              type="button"
+              class="lang-btn"
+              [class.active]="i18n.lang() === 'en'"
+              (click)="i18n.setLang('en')"
+            >
+              {{ 'greet.lang.en' | t }}
+            </button>
+          </div>
+          @if (allowDismiss()) {
+            <button type="button" class="greet-close" [attr.aria-label]="'greet.close' | t" (click)="dismiss()">
+              ×
+            </button>
+          }
+        </div>
       </div>
-      <p class="wordmark-prompt">Select your Junction.</p>
+      <p class="wordmark-prompt">{{ 'greet.prompt' | t }}</p>
     </div>
 
     <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
       <label>
-        <span>Your name</span>
-        <input type="text" formControlName="name" placeholder="Enter your name" autocomplete="name" />
+        <span>{{ 'greet.name' | t }}</span>
+        <input type="text" formControlName="name" [placeholder]="'greet.namePlaceholder' | t" autocomplete="name" />
         @if (form.controls.name.touched && form.controls.name.invalid) {
-          <small>Please enter your name.</small>
+          <small>{{ 'greet.nameRequired' | t }}</small>
         }
       </label>
 
       <div class="picker-field">
-        <span class="field-label">City</span>
+        <span class="field-label">{{ 'greet.city' | t }}</span>
         @if (selectedCity()) {
           <p class="selected-value">{{ selectedCity()!.name }}</p>
         }
-        <button type="button" class="add-action-button" (click)="openCityPicker()">Add your city</button>
+        <button type="button" class="add-action-button" (click)="openCityPicker()">
+          {{ 'greet.addCity' | t }}
+        </button>
         @if (form.controls.name.touched && !selectedCity()) {
-          <small>Please choose a city.</small>
+          <small>{{ 'greet.cityRequired' | t }}</small>
         }
       </div>
 
       <div class="picker-field">
-        <span class="field-label">Locality</span>
+        <span class="field-label">{{ 'greet.locality' | t }}</span>
         @if (selectedLocality()) {
           <p class="selected-value">{{ selectedLocality()!.name }}</p>
         }
@@ -50,23 +72,23 @@
           (click)="openLocalityPicker()"
         >
           @if (localitiesLoading) {
-            Loading localities...
+            {{ 'greet.loadingLocalities' | t }}
           } @else if (selectedCity()) {
-            {{ selectedCity()!.name }} Junction — pick locality
+            {{ 'greet.pickLocality' | t: { city: selectedCity()!.name } }}
           } @else {
-            Add your locality
+            {{ 'greet.addLocality' | t }}
           }
         </button>
         @if (form.controls.name.touched && selectedCity() && !localitiesLoading && !selectedLocality()) {
-          <small>Please choose a locality.</small>
+          <small>{{ 'greet.localityRequired' | t }}</small>
         }
       </div>
 
       <button type="submit" class="submit-button" [disabled]="submitting()">
         @if (submitting()) {
-          Saving your Junction...
+          {{ 'greet.saving' | t }}
         } @else {
-          Continue
+          {{ 'greet.continue' | t }}
         }
       </button>
       @if (submitError()) {
@@ -78,10 +100,10 @@
 
 @if (activePicker() === 'city') {
   <app-location-picker-modal
-    title="Add your city"
-    addSectionLabel="Add a new city"
+    [title]="'greet.picker.cityTitle' | t"
+    [addSectionLabel]="'greet.picker.cityAdd' | t"
     [options]="cityPickerOptions"
-    emptyMessage="No cities available."
+    [emptyMessage]="'greet.picker.cityEmpty' | t"
     (picked)="onCityPicked($event)"
     (dismissed)="closePicker()"
   />
@@ -89,13 +111,13 @@
 
 @if (activePicker() === 'locality') {
   <app-location-picker-modal
-    title="Add your locality"
-    addSectionLabel="Add a new locality"
+    [title]="'greet.picker.localityTitle' | t"
+    [addSectionLabel]="'greet.picker.localityAdd' | t"
     [options]="localityPickerOptions"
     [loading]="localitiesLoading"
     [validating]="localityValidating()"
     [errorMessage]="localityGeocodeError()"
-    emptyMessage="No localities available for this city."
+    [emptyMessage]="'greet.picker.localityEmpty' | t"
     (picked)="onLocalityPicked($event)"
     (dismissed)="closePicker()"
     (errorCleared)="clearLocalityGeocodeError()"

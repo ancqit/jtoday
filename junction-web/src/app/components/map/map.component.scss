@@ -43,6 +43,16 @@
 }
 
 :host ::ng-deep .leaflet-control-attribution {
-  font-size: 0.65rem;
-  background: rgba(255, 255, 255, 0.82);
+  max-width: min(52vw, 14rem);
+  font-size: 0.58rem;
+  line-height: 1.2;
+  color: rgba(15, 23, 42, 0.55);
+  background: rgba(255, 255, 255, 0.55);
+  box-shadow: none;
+  border-radius: 0.35rem 0 0 0;
+  padding: 0.15rem 0.35rem;
+}
+
+:host ::ng-deep .leaflet-control-attribution a {
+  color: inherit;
 }
