@@ -18,41 +18,18 @@ export interface MapTarget {
   zoom?: number;
 }
 
-/** Free raster tiles — used when no Google Maps API key is configured. */
-const LEAFLET_TILE_URL = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
-const LEAFLET_TILE_ATTRIBUTION =
+/** Free public tiles (no API key). */
+const CARTO_TILE_URL = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+const CARTO_ATTRIBUTION =
   '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
 
-/** Minimal Google Maps typings (avoid adding @types/google.maps dependency). */
-type GoogleLatLngLiteral = { lat: number; lng: number };
-
-interface GoogleMapInstance {
-  panTo(latLng: GoogleLatLngLiteral): void;
-  setZoom(zoom: number): void;
+/** MapTiler streets — used when `environment.leafletApiKey` is set (Vercel LEAFLET_API_KEY). */
+function mapTilerTileUrl(apiKey: string): string {
+  return `https://api.maptiler.com/maps/streets-v2/{z}/{x}/{y}.png?key=${encodeURIComponent(apiKey)}`;
 }
 
-interface GoogleMarkerInstance {
-  setMap(map: GoogleMapInstance | null): void;
-  setPosition(latLng: GoogleLatLngLiteral): void;
-}
-
-interface GoogleMapsApi {
-  Map: new (
-    el: HTMLElement,
-    opts: Record<string, unknown>,
-  ) => GoogleMapInstance;
-  Marker: new (opts: {
-    map: GoogleMapInstance;
-    position: GoogleLatLngLiteral;
-    clickable?: boolean;
-  }) => GoogleMarkerInstance;
-}
-
-declare global {
-  interface Window {
-    google?: { maps?: GoogleMapsApi };
-  }
-}
+const MAPTILER_ATTRIBUTION =
+  '&copy; <a href="https://www.maptiler.com/copyright/">MapTiler</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 
 @Component({
   selector: 'app-map',
@@ -66,98 +43,31 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   readonly interactive = input(false);
   readonly target = input<MapTarget | null>(null);
 
-  private leafletMap: L.Map | null = null;
-  private leafletMarker: L.Marker | null = null;
+  private map: L.Map | null = null;
+  private marker: L.Marker | null = null;
   private zoomControl: L.Control.Zoom | null = null;
-  private googleMap: GoogleMapInstance | null = null;
-  private googleMarker: GoogleMarkerInstance | null = null;
   private lastFlyKey: string | null = null;
   private readonly host = inject(ElementRef<HTMLElement>);
-  private readonly googleMapsApiKey = (environment.googleMapsApiKey || '').trim();
-  private usingGoogle = false;
+  private readonly leafletApiKey = (environment.leafletApiKey || '').trim();
 
   constructor() {
     effect(() => {
       const nextTarget = this.target();
-      if (!nextTarget) {
+      if (!this.map || !nextTarget) {
         return;
       }
-      if (this.usingGoogle) {
-        if (this.googleMap) {
-          this.flyGoogle(nextTarget);
-        }
-        return;
-      }
-      if (this.leafletMap) {
-        this.flyLeaflet(nextTarget);
-      }
+      this.flyToTarget(nextTarget);
     });
 
     effect(() => {
       const enabled = this.interactive();
       this.host.nativeElement.classList.toggle('map--disabled', !enabled);
-      if (!this.usingGoogle) {
-        this.applyLeafletInteraction(enabled);
-      }
+      this.applyInteractionState(enabled);
     });
   }
 
   ngAfterViewInit(): void {
-    if (this.googleMapsApiKey) {
-      void this.initGoogleMap(this.googleMapsApiKey);
-      return;
-    }
-    this.initLeafletMap();
-  }
-
-  ngOnDestroy(): void {
-    this.leafletMarker?.remove();
-    this.zoomControl?.remove();
-    this.leafletMap?.remove();
-    this.googleMarker?.setMap(null);
-    this.googleMap = null;
-  }
-
-  private async initGoogleMap(apiKey: string): Promise<void> {
-    try {
-      await this.loadGoogleMapsScript(apiKey);
-    } catch {
-      // Key missing/invalid — fall back silently so the UI never shows Google's red banner.
-      this.initLeafletMap();
-      return;
-    }
-
-    const maps = window.google?.maps;
-    if (!maps) {
-      this.initLeafletMap();
-      return;
-    }
-
-    this.usingGoogle = true;
-    const initial = this.target();
-    this.googleMap = new maps.Map(this.mapContainer.nativeElement, {
-      center: {
-        lat: initial?.latitude ?? 20.5937,
-        lng: initial?.longitude ?? 78.9629,
-      },
-      zoom: initial?.zoom ?? 4,
-      disableDefaultUI: true,
-      gestureHandling: this.interactive() ? 'greedy' : 'none',
-      keyboardShortcuts: false,
-      clickableIcons: false,
-      mapTypeControl: false,
-      streetViewControl: false,
-      fullscreenControl: false,
-    });
-
-    if (initial) {
-      this.flyGoogle(initial);
-    }
-  }
-
-  private initLeafletMap(): void {
-    this.usingGoogle = false;
-    this.leafletMap = L.map(this.mapContainer.nativeElement, {
+    this.map = L.map(this.mapContainer.nativeElement, {
       center: [20.5937, 78.9629],
       zoom: 4,
       zoomControl: false,
@@ -170,66 +80,56 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       keyboard: false,
     });
 
+    const useMapTiler = Boolean(this.leafletApiKey);
     L.control
       .attribution({ prefix: false, position: 'bottomright' })
-      .addAttribution(LEAFLET_TILE_ATTRIBUTION)
-      .addTo(this.leafletMap);
+      .addAttribution(useMapTiler ? MAPTILER_ATTRIBUTION : CARTO_ATTRIBUTION)
+      .addTo(this.map);
 
-    L.tileLayer(LEAFLET_TILE_URL, {
-      attribution: '',
-      subdomains: 'abcd',
-      maxZoom: 20,
-      errorTileUrl:
-        'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
-    }).addTo(this.leafletMap);
+    if (useMapTiler) {
+      L.tileLayer(mapTilerTileUrl(this.leafletApiKey), {
+        attribution: '',
+        maxZoom: 20,
+        // Invalid key → blank tile, never a Google-style “API key required” banner.
+        errorTileUrl:
+          'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
+      }).addTo(this.map);
+    } else {
+      L.tileLayer(CARTO_TILE_URL, {
+        attribution: '',
+        subdomains: 'abcd',
+        maxZoom: 20,
+        errorTileUrl:
+          'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
+      }).addTo(this.map);
+    }
 
-    this.applyLeafletInteraction(this.interactive());
+    this.applyInteractionState(this.interactive());
 
     const initialTarget = this.target();
     if (initialTarget) {
-      this.flyLeaflet(initialTarget);
+      this.flyToTarget(initialTarget);
     }
   }
 
-  private loadGoogleMapsScript(apiKey: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (window.google?.maps) {
-        resolve();
-        return;
-      }
-
-      const existing = document.querySelector<HTMLScriptElement>('script[data-junction-google-maps]');
-      if (existing) {
-        existing.addEventListener('load', () => resolve(), { once: true });
-        existing.addEventListener('error', () => reject(new Error('Google Maps failed to load')), {
-          once: true,
-        });
-        return;
-      }
-
-      const script = document.createElement('script');
-      script.dataset['junctionGoogleMaps'] = '1';
-      script.async = true;
-      script.defer = true;
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(apiKey)}&v=weekly`;
-      script.onload = () => resolve();
-      script.onerror = () => reject(new Error('Google Maps failed to load'));
-      document.head.appendChild(script);
-    });
+  ngOnDestroy(): void {
+    this.marker?.remove();
+    this.zoomControl?.remove();
+    this.map?.remove();
   }
 
-  private applyLeafletInteraction(enabled: boolean): void {
-    if (!this.leafletMap) {
+  private applyInteractionState(enabled: boolean): void {
+    if (!this.map) {
       return;
     }
 
     const handlers: Array<{ enable: () => void; disable: () => void } | undefined> = [
-      this.leafletMap.dragging,
-      this.leafletMap.touchZoom,
-      this.leafletMap.doubleClickZoom,
-      this.leafletMap.scrollWheelZoom,
-      this.leafletMap.boxZoom,
-      this.leafletMap.keyboard,
+      this.map.dragging,
+      this.map.touchZoom,
+      this.map.doubleClickZoom,
+      this.map.scrollWheelZoom,
+      this.map.boxZoom,
+      this.map.keyboard,
     ];
 
     for (const handler of handlers) {
@@ -246,7 +146,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     if (enabled) {
       if (!this.zoomControl) {
         this.zoomControl = L.control.zoom({ position: 'bottomright' });
-        this.zoomControl.addTo(this.leafletMap);
+        this.zoomControl.addTo(this.map);
       }
     } else if (this.zoomControl) {
       this.zoomControl.remove();
@@ -254,8 +154,8 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  private flyLeaflet(target: MapTarget): void {
-    if (!this.leafletMap) {
+  private flyToTarget(target: MapTarget): void {
+    if (!this.map) {
       return;
     }
 
@@ -267,46 +167,17 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     }
     this.lastFlyKey = flyKey;
 
-    this.leafletMap.flyTo(center, zoom, {
+    this.map.flyTo(center, zoom, {
       animate: true,
-      duration: zoom === this.leafletMap.getZoom() ? 0.8 : 1.4,
+      duration: zoom === this.map.getZoom() ? 0.8 : 1.4,
     });
 
-    if (!this.leafletMarker) {
-      this.leafletMarker = L.marker(center, {
-        icon: this.createMarkerIcon(),
-        interactive: false,
-      }).addTo(this.leafletMap);
+    if (!this.marker) {
+      this.marker = L.marker(center, { icon: this.createMarkerIcon(), interactive: false }).addTo(
+        this.map,
+      );
     } else {
-      this.leafletMarker.setLatLng(center);
-    }
-  }
-
-  private flyGoogle(target: MapTarget): void {
-    const maps = window.google?.maps;
-    if (!this.googleMap || !maps) {
-      return;
-    }
-
-    const zoom = target.zoom ?? 13;
-    const flyKey = `${target.latitude.toFixed(5)},${target.longitude.toFixed(5)},${zoom}`;
-    if (flyKey === this.lastFlyKey) {
-      return;
-    }
-    this.lastFlyKey = flyKey;
-
-    const center = { lat: target.latitude, lng: target.longitude };
-    this.googleMap.panTo(center);
-    this.googleMap.setZoom(zoom);
-
-    if (!this.googleMarker) {
-      this.googleMarker = new maps.Marker({
-        map: this.googleMap,
-        position: center,
-        clickable: false,
-      });
-    } else {
-      this.googleMarker.setPosition(center);
+      this.marker.setLatLng(center);
     }
   }
 

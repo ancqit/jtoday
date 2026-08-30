@@ -1,5 +1,8 @@
 export const environment = {
   production: false,
-  /** Optional. Set locally if you want Google Maps in `ng serve`. */
-  googleMapsApiKey: '',
+  /**
+   * Optional MapTiler key for Leaflet tiles in local `ng serve`.
+   * Or set LEAFLET_API_KEY / MAPTILER_API_KEY in the shell before building.
+   */
+  leafletApiKey: '',
 };

@@ -14,7 +14,7 @@ npm start
 
 Open `http://localhost:4200`.
 
-The map uses **Google Maps** when `GOOGLE_MAPS_API_KEY` (or `MAPS_API_KEY` / `NG_APP_GOOGLE_MAPS_API_KEY`) is set on Vercel — injected at build time by `tools/inject-maps-env.mjs`. If the key is missing or invalid, it falls back to **Leaflet + CARTO** tiles (no key) and never shows Google’s “API key required” banner.
+The map is always **Leaflet** (light, view-only). Tiles default to free **CARTO/OSM** (no key). Optionally set `LEAFLET_API_KEY` (or `MAPTILER_API_KEY`) on Vercel to use **MapTiler** streets tiles — injected at build time by `tools/inject-maps-env.mjs`. Leaflet itself has no Google API key; that is what caused the “API key required” banner before.
 
 Geocoding falls back to built-in coordinates and OpenStreetMap Nominatim when needed.
 
@@ -51,18 +51,18 @@ Deployment is configured in the repo-root `vercel.json` (same approach as juncti
 | --- | --- |
 | **Root Directory** | `.` (repository root) |
 | **Install command** | `npm install --prefix junction-web` |
-| **Build command** | `npm run build --prefix junction-web` |
+| **Build command** | `node tools/inject-maps-env.mjs && npm run build --prefix junction-web` |
 | **Output directory** | `junction-web/dist/junction-web/browser` |
 
-### Map API key (optional)
+### Map tile API key (optional)
 
-In Vercel → Project Settings → Environment Variables (Production + Preview), set:
+Leaflet does not use a Google Maps key. For optional paid/reliable tiles with Leaflet, create a free [MapTiler](https://www.maptiler.com/) key and set on Vercel (Production + Preview):
 
 | Name | Value |
 | --- | --- |
-| `GOOGLE_MAPS_API_KEY` | Your Google Maps JavaScript API key |
+| `LEAFLET_API_KEY` | Your MapTiler API key (aliases: `MAPTILER_API_KEY`, `LEAFLET_TILE_API_KEY`) |
 
-Restrict the key to HTTP referrers `https://www.junction.today/*` and `https://*.vercel.app/*`, and enable **Maps JavaScript API**. Redeploy after saving so `inject-maps-env.mjs` bakes the key into the build.
+Leave it unset to keep free CARTO tiles. Redeploy after saving so the key is baked into the build. You can remove any old `GOOGLE_MAPS_API_KEY` — it is unused.
 
 Do not set a separate Root Directory to `junction-web` — keep it at the repository root so Vercel picks up `vercel.json` correctly.
 

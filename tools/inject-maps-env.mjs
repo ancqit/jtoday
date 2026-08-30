@@ -1,9 +1,13 @@
 /**
- * Writes Vercel/CI map env into environment.prod.ts before `ng build`.
- * Supported names (first match wins):
- *   GOOGLE_MAPS_API_KEY
- *   NG_APP_GOOGLE_MAPS_API_KEY
- *   MAPS_API_KEY
+ * Writes Vercel/CI Leaflet tile API key into environment.prod.ts before `ng build`.
+ *
+ * Leaflet itself has no API key — this key is for a tile provider used *with* Leaflet.
+ * Supported env names (first match wins):
+ *   LEAFLET_API_KEY
+ *   MAPTILER_API_KEY
+ *   LEAFLET_TILE_API_KEY
+ *
+ * When set, tiles load from MapTiler. When empty, free CARTO/OSM tiles are used (no key).
  */
 import { writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -13,21 +17,21 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const target = join(root, 'junction-web', 'src', 'environments', 'environment.prod.ts');
 
 const key = (
-  process.env.GOOGLE_MAPS_API_KEY ||
-  process.env.NG_APP_GOOGLE_MAPS_API_KEY ||
-  process.env.MAPS_API_KEY ||
+  process.env.LEAFLET_API_KEY ||
+  process.env.MAPTILER_API_KEY ||
+  process.env.LEAFLET_TILE_API_KEY ||
   ''
 ).trim();
 
 const contents = `export const environment = {
   production: true,
-  googleMapsApiKey: ${JSON.stringify(key)},
+  leafletApiKey: ${JSON.stringify(key)},
 };
 `;
 
 writeFileSync(target, contents, 'utf8');
 console.log(
   key
-    ? `[inject-maps-env] Wrote googleMapsApiKey (${key.length} chars) into environment.prod.ts`
-    : '[inject-maps-env] No GOOGLE_MAPS_API_KEY / MAPS_API_KEY — map will use Leaflet (no Google key).',
+    ? `[inject-maps-env] Wrote leafletApiKey (${key.length} chars) — MapTiler tiles`
+    : '[inject-maps-env] No LEAFLET_API_KEY / MAPTILER_API_KEY — free CARTO tiles',
 );
