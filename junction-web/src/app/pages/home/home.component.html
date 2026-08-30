@@ -13,9 +13,9 @@
             (click)="openLocalityServices()"
           >
             @if (marketplaceOpen() && session.serviceScope() === 'locality') {
-              Close shops/services
+              {{ 'home.closeShops' | t }}
             } @else {
-              Shops/Services
+              {{ 'home.shopsServices' | t }}
             }
           </button>
 
@@ -28,9 +28,9 @@
               (click)="openCityServices()"
             >
               @if (marketplaceOpen() && session.serviceScope() === 'city') {
-                Close {{ profile.city.name }} Junction
+                {{ 'home.closeCity' | t: { city: profile.city.name } }}
               } @else {
-                {{ profile.city.name }} Junction
+                {{ 'home.cityJunction' | t: { city: profile.city.name } }}
               }
             </button>
           }
@@ -41,7 +41,7 @@
             target="_blank"
             rel="noopener noreferrer"
           >
-            Add services
+            {{ 'home.addServices' | t }}
           </a>
         </div>
       </div>

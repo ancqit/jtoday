@@ -34,6 +34,38 @@
   gap: 0.75rem;
 }
 
+.greet-title-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.lang-toggle {
+  display: inline-flex;
+  padding: 0.15rem;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+}
+
+.lang-btn {
+  border: 0;
+  background: transparent;
+  color: rgba(248, 250, 252, 0.78);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 0.28rem 0.55rem;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.lang-btn.active {
+  background: rgba(20, 184, 166, 0.92);
+  color: #042f2e;
+}
+
 .greet-close {
   flex-shrink: 0;
   width: 2rem;
