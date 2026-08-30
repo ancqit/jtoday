@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { map, Observable, switchMap } from 'rxjs';
 import { Product } from '../models/product.model';
 import { Shop } from '../models/shop.model';
+import { ShopTypeInfo } from '../models/shop-type.model';
 import { CatalogApi } from '../core/catalog.api';
 import { SessionService } from '../core/session.service';
 
@@ -32,6 +33,13 @@ export class CatalogService {
   getProducts(shopId: string): Observable<Product[]> {
     return this.session.ensureSession().pipe(
       switchMap(() => this.catalogApi.productsForShop(shopId)),
+    );
+  }
+
+  /** junctionBack: GET /shops/types (session JWT) */
+  getShopTypes(): Observable<ShopTypeInfo[]> {
+    return this.session.ensureSession().pipe(
+      switchMap(() => this.catalogApi.shopTypes()),
     );
   }
 }

@@ -2,11 +2,18 @@
   <header class="header-bar">
     <p class="greeting">
       <span class="greeting-hey wordmark-primary">Hey,</span>
-      <span class="greeting-name wordmark-prompt">{{ session.displayName() }}</span>
+      <button
+        type="button"
+        class="greeting-name wordmark-prompt greeting-name-button"
+        (click)="openProfileModal()"
+        aria-label="Open your profile"
+      >
+        {{ session.displayName() }}
+      </button>
     </p>
 
     <div class="junction-controls">
-      <div class="junction-copy">
+      <div class="junction-copy junction-copy-button" role="button" tabindex="0" (click)="toggleSettings()" (keydown.enter)="toggleSettings()">
         <p class="wordmark-secondary">Your Junction</p>
         <p class="junction-name wordmark-primary">{{ session.junctionLabel() }}</p>
       </div>

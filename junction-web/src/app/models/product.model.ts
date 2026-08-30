@@ -16,4 +16,5 @@ export interface Product {
   image_cdn?: string | null;
   image?: ProductImage | null;
   images?: ProductImage[];
+  tags?: string[];
 }

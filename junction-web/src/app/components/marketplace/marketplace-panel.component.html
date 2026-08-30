@@ -83,20 +83,54 @@
           </div>
         </div>
 
+        @if (visibleShopTypes().length > 0) {
+          <div class="filter-chip-row" role="group" aria-label="Filter shops by type">
+            <button
+              type="button"
+              class="filter-chip"
+              [class.active]="!activeShopType()"
+              (click)="setShopTypeFilter(null)"
+            >
+              All
+            </button>
+            @for (type of visibleShopTypes(); track type.value) {
+              <button
+                type="button"
+                class="filter-chip"
+                [class.active]="activeShopType() === type.value"
+                (click)="setShopTypeFilter(type.value)"
+              >
+                {{ type.label }}
+              </button>
+            }
+          </div>
+        }
+
+        @if (filteredShops().length === 0 && shops().length > 0 && !error()) {
+          <p class="status-message">No open services match this filter.</p>
+        }
+
         @if (shops().length === 0 && !error()) {
           <p class="status-message">No open services in your area yet.</p>
         }
 
         @if (shopsLayout() === 'card') {
           <div class="card-grid shop-card-grid">
-            @for (shop of shops(); track shop.id) {
-              <button type="button" class="shop-card pro-shop-card" (click)="selectShop(shop)">
-                <div class="shop-card-media">
-                  <app-authorized-image
-                    [src]="shopProfileImageSource(shop)"
-                    [alt]="shop.name"
-                  />
-                </div>
+            @for (shop of filteredShops(); track shop.id) {
+              <article class="shop-card pro-shop-card" (click)="selectShop(shop)">
+                <button
+                  type="button"
+                  class="shop-card-media-button"
+                  (click)="openShopProfile(shop, $event)"
+                  [attr.aria-label]="'About ' + shop.name"
+                >
+                  <div class="shop-card-media">
+                    <app-authorized-image
+                      [src]="shopProfileImageSource(shop)"
+                      [alt]="shop.name"
+                    />
+                  </div>
+                </button>
                 <div class="shop-card-content">
                   <h3 class="shop-name">{{ shop.name }}</h3>
                   <div class="shop-card-body">
@@ -124,19 +158,26 @@
                     }
                   </div>
                 </div>
-              </button>
+              </article>
             }
           </div>
         } @else {
           <div class="shop-list">
-            @for (shop of shops(); track shop.id) {
-              <button type="button" class="shop-row pro-shop-row" (click)="selectShop(shop)">
-                <div class="shop-row-media">
-                  <app-authorized-image
-                    [src]="shopProfileImageSource(shop)"
-                    [alt]="shop.name"
-                  />
-                </div>
+            @for (shop of filteredShops(); track shop.id) {
+              <article class="shop-row pro-shop-row" (click)="selectShop(shop)">
+                <button
+                  type="button"
+                  class="shop-row-media-button"
+                  (click)="openShopProfile(shop, $event)"
+                  [attr.aria-label]="'About ' + shop.name"
+                >
+                  <div class="shop-row-media">
+                    <app-authorized-image
+                      [src]="shopProfileImageSource(shop)"
+                      [alt]="shop.name"
+                    />
+                  </div>
+                </button>
                 <div class="shop-row-main">
                   <h3 class="shop-name">{{ shop.name }}</h3>
                   <p class="shop-detail">
@@ -162,7 +203,7 @@
                     <span class="shop-detail-value">{{ notice }}</span>
                   </div>
                 }
-              </button>
+              </article>
             }
           </div>
         }
@@ -171,6 +212,39 @@
       @if (!loading() && view() === 'products') {
         @if (products().length === 0 && !error()) {
           <p class="status-message">This shop has no products listed yet.</p>
+        }
+
+        @if (productCategories().length > 0 || productTags().length > 0) {
+          <div class="filter-chip-row" role="group" aria-label="Filter products">
+            <button
+              type="button"
+              class="filter-chip"
+              [class.active]="!activeProductCategory() && !activeProductTag()"
+              (click)="setProductCategoryFilter(null)"
+            >
+              All
+            </button>
+            @for (category of productCategories(); track category) {
+              <button
+                type="button"
+                class="filter-chip"
+                [class.active]="activeProductCategory() === category"
+                (click)="setProductCategoryFilter(category)"
+              >
+                {{ category }}
+              </button>
+            }
+            @for (tag of productTags(); track tag) {
+              <button
+                type="button"
+                class="filter-chip filter-chip-tag"
+                [class.active]="activeProductTag() === tag"
+                (click)="setProductTagFilter(tag)"
+              >
+                {{ tag }}
+              </button>
+            }
+          </div>
         }
 
         <div class="products-toolbar">
@@ -198,7 +272,7 @@
 
         @if (productsLayout() === 'card') {
           <div class="card-grid product-card-grid">
-            @for (product of products(); track product.id) {
+            @for (product of filteredProducts(); track product.id) {
               <article class="product-card compact-product-card">
                 <button
                   type="button"
@@ -219,6 +293,9 @@
                 </button>
                 <div class="product-copy">
                   <h3>{{ product.name }}</h3>
+                  @if (product.description?.trim()) {
+                    <p class="product-description">{{ product.description }}</p>
+                  }
                   <p class="product-meta">{{ product.category }} · {{ product.unit }}</p>
                   <p class="product-price">{{ formatMoney(product.price, product.currency) }}</p>
                 </div>
@@ -247,7 +324,7 @@
           </div>
         } @else {
           <div class="product-list">
-            @for (product of products(); track product.id) {
+            @for (product of filteredProducts(); track product.id) {
               <article class="product-row compact-product-row">
                 <button
                   type="button"
@@ -263,6 +340,9 @@
                 </button>
                 <div class="product-row-copy">
                   <h3>{{ product.name }}</h3>
+                  @if (product.description?.trim()) {
+                    <p class="product-description">{{ product.description }}</p>
+                  }
                   <p class="product-meta">{{ product.category }} · {{ product.unit }}</p>
                   <p class="product-price">{{ formatMoney(product.price, product.currency) }}</p>
                 </div>
@@ -379,6 +459,14 @@
     </div>
   </section>
 </div>
+
+@if (profileShop(); as shop) {
+  <app-shop-profile-modal
+    [shop]="shop"
+    [notice]="shopNotice(shop)"
+    (closed)="closeShopProfile()"
+  />
+}
 
 @if (galleryProduct(); as product) {
   <app-product-gallery-modal

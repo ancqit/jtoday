@@ -28,9 +28,9 @@
               (click)="openCityServices()"
             >
               @if (marketplaceOpen() && session.serviceScope() === 'city') {
-                Close city services
+                Close {{ profile.city.name }} Junction
               } @else {
-                City Services at {{ profile.city.name }}
+                {{ profile.city.name }} Junction
               }
             </button>
           }
@@ -56,7 +56,7 @@
 
   <main class="map-stage">
     <app-map
-      [interactive]="!hasCompletedWelcome()"
+      [interactive]="hasCompletedWelcome()"
       [target]="mapTarget()"
     />
   </main>

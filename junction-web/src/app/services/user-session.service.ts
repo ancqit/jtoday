@@ -71,7 +71,7 @@ export class UserSessionService {
     }
 
     if ((profile.serviceScope ?? 'locality') === 'city') {
-      return `City Services at ${profile.city.name}`;
+      return `${profile.city.name} Junction`;
     }
 
     return `Shops/Services in ${profile.locality.name}`;

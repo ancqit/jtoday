@@ -2,6 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Product } from '../models/product.model';
 import { Shop } from '../models/shop.model';
+import { ShopTypeInfo } from '../models/shop-type.model';
 import { ApiService } from './api.service';
 
 /**
@@ -28,5 +29,9 @@ export class CatalogApi {
 
   productsForShop(shopId: string): Observable<Product[]> {
     return this.api.get<Product[]>(`/shops/${shopId}/products`);
+  }
+
+  shopTypes(): Observable<ShopTypeInfo[]> {
+    return this.api.get<ShopTypeInfo[]>('/shops/types');
   }
 }

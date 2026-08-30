@@ -41,11 +41,16 @@ export class HomeComponent {
   readonly mapTarget = computed<MapTarget | null>(() => {
     const profile = this.session.userProfile();
     if (profile) {
+      const scope = profile.serviceScope ?? 'locality';
+      const latitude =
+        scope === 'city' ? profile.city.latitude : profile.locality.latitude;
+      const longitude =
+        scope === 'city' ? profile.city.longitude : profile.locality.longitude;
       return {
-        latitude: profile.locality.latitude,
-        longitude: profile.locality.longitude,
+        latitude,
+        longitude,
         label: this.session.junctionLabel(),
-        zoom: profile.serviceScope === 'city' ? 12 : 15,
+        zoom: scope === 'city' ? 12 : 15,
       };
     }
 
