@@ -1,8 +1,7 @@
-import { HttpContext } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, switchMap } from 'rxjs';
 import { ApiService } from './api.service';
-import { SKIP_SESSION_AUTH } from './http-context';
+import { SessionService } from './session.service';
 
 export interface OrderLineItemPayload {
   product_id?: string;
@@ -30,6 +29,7 @@ export interface CreateOrderPayload {
   billing: OrderBillingPayload;
   status: 'pending';
   notes?: string;
+  source?: 'junction.today';
 }
 
 export interface CreatedOrder {
@@ -38,19 +38,22 @@ export interface CreatedOrder {
   store_id: string;
   customer_name: string;
   status: string;
+  source?: string | null;
   created_at: string;
 }
 
 /**
- * junctionBack POST /orders — create order and notify the shop.
- * Documented as public; sent without session JWT so customer orders are not blocked.
+ * junctionBack POST /orders — create order with junction.today session JWT.
+ * Shop is notified via the owner Orders inbox (GET /orders?store_id=).
  */
 @Injectable({ providedIn: 'root' })
 export class OrdersApi {
   private readonly api = inject(ApiService);
-  private readonly publicContext = new HttpContext().set(SKIP_SESSION_AUTH, true);
+  private readonly session = inject(SessionService);
 
   create(payload: CreateOrderPayload): Observable<CreatedOrder> {
-    return this.api.post<CreatedOrder>('/orders', payload, { context: this.publicContext });
+    return this.session.ensureSession().pipe(
+      switchMap(() => this.api.post<CreatedOrder>('/orders', payload)),
+    );
   }
 }

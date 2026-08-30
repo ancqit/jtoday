@@ -57,3 +57,9 @@ Do not set a separate Root Directory to `junction-web` — keep it at the reposi
 ### API proxy
 
 `/api/*` requests are rewritten to `https://junctionback.onrender.com/*`, matching `proxy.conf.json` used by `ng serve`.
+
+## Shared shop orders (PR agent)
+
+Branch **`feature/shared-shop-orders`** posts checkout orders to junctionBack so Front Web owners see them.
+
+Agent brief (push + `gh pr create` copy-paste): [docs/SHARED_SHOP_ORDERS_PR.md](./docs/SHARED_SHOP_ORDERS_PR.md)
