@@ -1,13 +1,13 @@
 import { HttpContext } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { catchError, Observable, of } from 'rxjs';
+import { catchError, map, Observable, of } from 'rxjs';
 import { Notice } from '../models/notice.model';
 import { ApiService } from './api.service';
 import { SKIP_SESSION_AUTH } from './http-context';
 
 /**
  * junctionBack notice reads (https://github.com/ancqit/junctionBack).
- * GET /notices/today?store_id= — public; do not send session JWT (main rejects it).
+ * GET /notices/today?store_id= — public 0-or-1 list; do not send session JWT.
  */
 @Injectable({ providedIn: 'root' })
 export class NoticesApi {
@@ -21,11 +21,19 @@ export class NoticesApi {
     }
 
     return this.api
-      .get<Notice>(
+      .get<Notice[] | Notice>(
         '/notices/today',
         { store_id: trimmed },
         { context: this.publicContext },
       )
-      .pipe(catchError(() => of(null)));
+      .pipe(
+        map((payload) => {
+          if (Array.isArray(payload)) {
+            return payload[0] ?? null;
+          }
+          return payload?.message != null ? payload : null;
+        }),
+        catchError(() => of(null)),
+      );
   }
 }
