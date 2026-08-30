@@ -29,11 +29,13 @@ const TILE_ATTRIBUTION =
 export class MapComponent implements AfterViewInit, OnDestroy {
   @ViewChild('mapContainer', { static: true }) mapContainer!: ElementRef<HTMLDivElement>;
 
-  readonly interactive = input(true);
+  /** When false (default for Junction Today), users cannot pan/zoom — only programmatic flyTo. */
+  readonly interactive = input(false);
   readonly target = input<MapTarget | null>(null);
 
   private map: L.Map | null = null;
   private marker: L.Marker | null = null;
+  private zoomControl: L.Control.Zoom | null = null;
   private lastFlyKey: string | null = null;
   private readonly host = inject(ElementRef<HTMLElement>);
 
@@ -60,6 +62,12 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       zoom: 4,
       zoomControl: false,
       attributionControl: true,
+      dragging: false,
+      touchZoom: false,
+      doubleClickZoom: false,
+      scrollWheelZoom: false,
+      boxZoom: false,
+      keyboard: false,
     });
 
     L.tileLayer(TILE_URL, {
@@ -68,7 +76,6 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       maxZoom: 20,
     }).addTo(this.map);
 
-    L.control.zoom({ position: 'bottomright' }).addTo(this.map);
     this.applyInteractionState(this.interactive());
 
     const initialTarget = this.target();
@@ -79,6 +86,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.marker?.remove();
+    this.zoomControl?.remove();
     this.map?.remove();
   }
 
@@ -87,7 +95,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       return;
     }
 
-    const handlers: Array<{ enable: () => void; disable: () => void }> = [
+    const handlers: Array<{ enable: () => void; disable: () => void } | undefined> = [
       this.map.dragging,
       this.map.touchZoom,
       this.map.doubleClickZoom,
@@ -97,6 +105,9 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     ];
 
     for (const handler of handlers) {
+      if (!handler) {
+        continue;
+      }
       if (enabled) {
         handler.enable();
       } else {
@@ -104,9 +115,14 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       }
     }
 
-    const zoomControl = this.map.zoomControl?.getContainer();
-    if (zoomControl instanceof HTMLElement) {
-      zoomControl.style.display = enabled ? '' : 'none';
+    if (enabled) {
+      if (!this.zoomControl) {
+        this.zoomControl = L.control.zoom({ position: 'bottomright' });
+        this.zoomControl.addTo(this.map);
+      }
+    } else if (this.zoomControl) {
+      this.zoomControl.remove();
+      this.zoomControl = null;
     }
   }
 
@@ -129,7 +145,9 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     });
 
     if (!this.marker) {
-      this.marker = L.marker(center, { icon: this.createMarkerIcon() }).addTo(this.map);
+      this.marker = L.marker(center, { icon: this.createMarkerIcon(), interactive: false }).addTo(
+        this.map,
+      );
     } else {
       this.marker.setLatLng(center);
     }

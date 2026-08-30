@@ -1,8 +1,8 @@
-<div class="app-shell" [class.welcome-active]="!hasCompletedWelcome()">
+<div class="app-shell" [class.welcome-active]="!hasCompletedWelcome() || greetOpen()">
   @if (hasCompletedWelcome()) {
     <div class="app-layout">
       <div class="app-chrome">
-        <app-header-bar />
+        <app-header-bar (nameClicked)="openGreet()" />
 
         <div class="services-actions">
           <button
@@ -55,16 +55,19 @@
   }
 
   <main class="map-stage">
-    <app-map
-      [interactive]="hasCompletedWelcome()"
-      [target]="mapTarget()"
-    />
+    <!-- Map is view-only: programmatic pan only, no user drag/zoom. -->
+    <app-map [interactive]="false" [target]="mapTarget()" />
   </main>
 
-  @if (!hasCompletedWelcome()) {
+  @if (!hasCompletedWelcome() || greetOpen()) {
     <app-greet
+      [allowDismiss]="hasCompletedWelcome()"
+      [initialName]="session.displayName()"
+      [initialCity]="session.userProfile()?.city ?? null"
+      [initialLocality]="session.userProfile()?.locality ?? null"
       (submitted)="onGreetSubmitted($event)"
       (locationPreview)="onLocationPreview($event)"
+      (dismissed)="closeGreet()"
     />
   }
 </div>

@@ -14,7 +14,7 @@ npm start
 
 Open `http://localhost:4200`.
 
-The map uses **Leaflet** with CARTO Voyager raster tiles — no API key required.
+The map uses **Leaflet** with CARTO Voyager raster tiles — **no Google Maps API key** and no Mapbox token. Do not add a Maps JavaScript API key for this app; geocoding falls back to built-in coordinates and OpenStreetMap Nominatim when needed.
 
 Local API calls use same-origin `/api/*`, proxied to `https://junctionback.onrender.com` via `junction-web/proxy.conf.json`.
 

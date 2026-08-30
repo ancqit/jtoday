@@ -5,6 +5,7 @@ import {
   OnInit,
   effect,
   inject,
+  output,
   signal,
 } from '@angular/core';
 import { City, Locality, UserProfile } from '../../models/location.model';
@@ -28,6 +29,9 @@ export class HeaderBarComponent implements OnInit {
   private readonly locationsService = inject(LocationsService);
   private readonly host = inject(ElementRef<HTMLElement>);
   readonly session = inject(UserSessionService);
+
+  /** Emitted when the user taps their display name — parent should open greet. */
+  readonly nameClicked = output<void>();
 
   cities: City[] = [];
   localities: Locality[] = [];
@@ -99,6 +103,11 @@ export class HeaderBarComponent implements OnInit {
     }
 
     this.closeSettings();
+  }
+
+  onNameClick(): void {
+    this.closeSettings();
+    this.nameClicked.emit();
   }
 
   toggleSettings(): void {

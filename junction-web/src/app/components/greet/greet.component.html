@@ -1,7 +1,20 @@
 <div class="greet-backdrop" role="dialog" aria-modal="true" aria-labelledby="greet-title">
   <section class="greet-card">
     <div class="greet-wordmark">
-      <h1 id="greet-title" class="wordmark-primary">Welcome</h1>
+      <div class="greet-title-row">
+        <h1 id="greet-title" class="wordmark-primary">
+          @if (allowDismiss()) {
+            Your Junction
+          } @else {
+            Welcome
+          }
+        </h1>
+        @if (allowDismiss()) {
+          <button type="button" class="greet-close" aria-label="Close" (click)="dismiss()">
+            ×
+          </button>
+        }
+      </div>
       <p class="wordmark-prompt">Select your Junction.</p>
     </div>
 

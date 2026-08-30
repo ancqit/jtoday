@@ -79,6 +79,17 @@ export class UserSessionService {
 
   readonly serviceScope = computed<ServiceScope>(() => this.profile()?.serviceScope ?? 'locality');
 
+  /** City + locality only (ignores serviceScope). Used to reset cart when Junction changes. */
+  readonly locationKey = computed(() => {
+    const profile = this.profile();
+    if (!profile) {
+      return null;
+    }
+
+    return `${profile.city.id}:${profile.locality.id}`;
+  });
+
+  /** Includes serviceScope so map/catalog can distinguish locality vs city-wide views. */
   readonly junctionKey = computed(() => {
     const profile = this.profile();
     if (!profile) {
