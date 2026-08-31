@@ -145,6 +145,30 @@
   font-size: 0.82rem;
 }
 
+.profile-hint {
+  margin: 0;
+  color: #0f766e;
+  font-size: 0.82rem;
+}
+
+.btn-link {
+  justify-self: start;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #0f766e;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.btn-link:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 .profile-actions {
   display: flex;
   justify-content: flex-end;

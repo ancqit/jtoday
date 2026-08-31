@@ -12,6 +12,10 @@ function isPublicNoticesTodayRequest(url: string, method: string): boolean {
   return method === 'GET' && url.includes('/notices/today');
 }
 
+function isPublicCatalogAuthRequest(url: string): boolean {
+  return url.includes('/auth/catalog-otp') || url.includes('/auth/recaptcha-params');
+}
+
 function isApiRequest(url: string): boolean {
   const baseUrl = resolveApiBaseUrl();
   if (url.startsWith(baseUrl)) {
@@ -39,7 +43,8 @@ export const sessionInterceptor: HttpInterceptorFn = (request, next) => {
     isApiRequest(request.url) &&
     !isSessionCreateRequest(request.url, request.method) &&
     !request.context.get(SKIP_SESSION_AUTH) &&
-    !isPublicNoticesTodayRequest(request.url, request.method)
+    !isPublicNoticesTodayRequest(request.url, request.method) &&
+    !isPublicCatalogAuthRequest(request.url)
   ) {
     outgoing = request.clone({
       setHeaders: { Authorization: `Bearer ${token}` },
@@ -53,7 +58,8 @@ export const sessionInterceptor: HttpInterceptorFn = (request, next) => {
         !isApiRequest(request.url) ||
         isSessionCreateRequest(request.url, request.method) ||
         request.context.get(SKIP_SESSION_AUTH) ||
-        isPublicNoticesTodayRequest(request.url, request.method)
+        isPublicNoticesTodayRequest(request.url, request.method) ||
+        isPublicCatalogAuthRequest(request.url)
       ) {
         return throwError(() => error);
       }
