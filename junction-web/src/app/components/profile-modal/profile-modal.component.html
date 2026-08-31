@@ -11,9 +11,9 @@
         </h2>
         <p class="profile-subtitle">
           @if (mode() === 'checkout') {
-            Add contact details and authenticate to place your order.
+            Add contact details and verify your phone on WhatsApp to place your order.
           } @else {
-            Save your email and phone. You authenticate when you place an order.
+            Save your email and phone. You verify on WhatsApp when you place an order.
           }
         </p>
       </div>
@@ -40,7 +40,7 @@
           <span class="profile-level-marker">3</span>
           <div>
             <strong>Authenticated</strong>
-            <p>Verified when you place an order.</p>
+            <p>Verified by WhatsApp OTP when you place an order.</p>
           </div>
         </li>
       </ol>
@@ -57,7 +57,7 @@
         </label>
 
         <label>
-          <span>Phone</span>
+          <span>Phone (WhatsApp)</span>
           <input type="tel" formControlName="phoneNumber" autocomplete="tel" placeholder="+91 98765 43210" />
           @if (form.controls.phoneNumber.touched && form.controls.phoneNumber.invalid) {
             <small>Enter a valid phone number.</small>
@@ -67,7 +67,7 @@
 
       @if (mode() === 'checkout' && session.hasContactProfile() && profileLevel() !== 'authenticated') {
         <label>
-          <span>Verification code</span>
+          <span>WhatsApp verification code</span>
           <input
             type="text"
             formControlName="verificationCode"
@@ -79,6 +79,17 @@
             <small>Enter a 6-digit code.</small>
           }
         </label>
+        @if (otpHint()) {
+          <p class="profile-hint">{{ otpHint() }}</p>
+        }
+        <button
+          type="button"
+          class="btn-link"
+          [disabled]="sendingOtp()"
+          (click)="sendWhatsAppOtp()"
+        >
+          {{ sendingOtp() ? 'Sending…' : otpSessionId() ? 'Resend WhatsApp code' : 'Send WhatsApp code' }}
+        </button>
       }
 
       @if (error()) {
@@ -88,12 +99,12 @@
       <div class="profile-actions">
         <button type="button" class="btn-secondary" (click)="onDismiss()">Cancel</button>
         @if (!session.hasContactProfile()) {
-          <button type="button" class="btn-primary" [disabled]="saving()" (click)="onSaveContact()">
-            {{ saving() ? 'Saving...' : mode() === 'checkout' ? 'Save & continue' : 'Save contact' }}
+          <button type="button" class="btn-primary" [disabled]="saving() || sendingOtp()" (click)="onSaveContact()">
+            {{ saving() || sendingOtp() ? 'Saving...' : mode() === 'checkout' ? 'Save & send WhatsApp code' : 'Save contact' }}
           </button>
         } @else if (mode() === 'checkout' && profileLevel() !== 'authenticated') {
-          <button type="submit" class="btn-primary" [disabled]="saving()">
-            {{ saving() ? 'Verifying...' : 'Authenticate & place order' }}
+          <button type="submit" class="btn-primary" [disabled]="saving() || sendingOtp() || !otpSessionId()">
+            {{ saving() ? 'Verifying...' : 'Verify & place order' }}
           </button>
         } @else if (mode() === 'settings') {
           <button type="button" class="btn-primary" [disabled]="saving()" (click)="onSaveContact()">

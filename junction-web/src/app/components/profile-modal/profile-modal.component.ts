@@ -1,5 +1,8 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, computed, inject, input, output, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { finalize } from 'rxjs';
+import { WhatsAppOtpApi } from '../../core/whatsapp-otp.api';
 import { ProfileLevel } from '../../models/location.model';
 import { UserSessionService } from '../../services/user-session.service';
 
@@ -11,6 +14,7 @@ import { UserSessionService } from '../../services/user-session.service';
 })
 export class ProfileModalComponent {
   private readonly fb = inject(FormBuilder);
+  private readonly whatsappOtp = inject(WhatsAppOtpApi);
   readonly session = inject(UserSessionService);
 
   readonly mode = input<'settings' | 'checkout'>('settings');
@@ -18,7 +22,10 @@ export class ProfileModalComponent {
   readonly checkoutCompleted = output<void>();
 
   readonly saving = signal(false);
+  readonly sendingOtp = signal(false);
   readonly error = signal<string | null>(null);
+  readonly otpHint = signal<string | null>(null);
+  readonly otpSessionId = signal<string | null>(null);
   readonly profileLevel = computed(() => this.session.profileLevel());
 
   readonly form = this.fb.nonNullable.group({
@@ -34,6 +41,10 @@ export class ProfileModalComponent {
         email: profile.email ?? '',
         phoneNumber: profile.phoneNumber ?? '',
       });
+    }
+
+    if (this.mode() === 'checkout' && this.session.hasContactProfile() && this.profileLevel() !== 'authenticated') {
+      this.sendWhatsAppOtp();
     }
   }
 
@@ -55,6 +66,7 @@ export class ProfileModalComponent {
     this.form.controls.email.markAsTouched();
     this.form.controls.phoneNumber.markAsTouched();
     this.error.set(null);
+    this.otpHint.set(null);
 
     if (this.form.controls.email.invalid || this.form.controls.phoneNumber.invalid) {
       return;
@@ -63,15 +75,49 @@ export class ProfileModalComponent {
     const { email, phoneNumber } = this.form.getRawValue();
     this.saving.set(true);
     this.session.updateContactProfile(email.trim(), phoneNumber.trim());
+    this.otpSessionId.set(null);
+    this.form.controls.verificationCode.reset('');
     this.saving.set(false);
 
     if (this.mode() === 'checkout' && this.session.hasContactProfile()) {
+      this.sendWhatsAppOtp();
       return;
     }
 
     if (this.mode() === 'settings') {
       this.closed.emit();
     }
+  }
+
+  sendWhatsAppOtp(): void {
+    if (!this.session.hasContactProfile()) {
+      this.error.set('Add your email and phone first.');
+      return;
+    }
+
+    const phone = this.session.userProfile()?.phoneNumber?.trim() || this.form.controls.phoneNumber.value.trim();
+    const name = this.session.userProfile()?.name?.trim();
+    this.error.set(null);
+    this.otpHint.set(null);
+    this.sendingOtp.set(true);
+
+    this.whatsappOtp
+      .requestOtp(phone, name)
+      .pipe(finalize(() => this.sendingOtp.set(false)))
+      .subscribe({
+        next: (res) => {
+          this.otpSessionId.set(res.session_id);
+          if (res.debug_otp) {
+            this.otpHint.set(`Debug OTP: ${res.debug_otp}`);
+            this.form.controls.verificationCode.setValue(res.debug_otp);
+          } else {
+            this.otpHint.set('We sent a 6-digit code on WhatsApp.');
+          }
+        },
+        error: (err: unknown) => {
+          this.error.set(this.readError(err, 'Could not send WhatsApp OTP.'));
+        },
+      });
   }
 
   onAuthenticate(): void {
@@ -82,6 +128,13 @@ export class ProfileModalComponent {
       return;
     }
 
+    const sessionId = this.otpSessionId();
+    if (!sessionId) {
+      this.error.set('Request a WhatsApp code first.');
+      this.sendWhatsAppOtp();
+      return;
+    }
+
     const code = this.form.controls.verificationCode.value.trim();
     if (!/^\d{6}$/.test(code)) {
       this.form.controls.verificationCode.markAsTouched();
@@ -89,15 +142,41 @@ export class ProfileModalComponent {
       return;
     }
 
+    const phone = this.session.userProfile()?.phoneNumber?.trim() || this.form.controls.phoneNumber.value.trim();
     this.saving.set(true);
-    this.session.authenticateProfile();
-    this.saving.set(false);
 
-    if (this.mode() === 'checkout') {
-      this.checkoutCompleted.emit();
-      return;
+    this.whatsappOtp
+      .verifyOtp(phone, code, sessionId)
+      .pipe(finalize(() => this.saving.set(false)))
+      .subscribe({
+        next: () => {
+          this.session.authenticateProfile();
+          this.otpSessionId.set(null);
+          this.otpHint.set(null);
+
+          if (this.mode() === 'checkout') {
+            this.checkoutCompleted.emit();
+            return;
+          }
+
+          this.closed.emit();
+        },
+        error: (err: unknown) => {
+          this.error.set(this.readError(err, 'Invalid or expired verification code.'));
+        },
+      });
+  }
+
+  private readError(err: unknown, fallback: string): string {
+    if (err instanceof HttpErrorResponse) {
+      const detail = err.error?.detail;
+      if (typeof detail === 'string' && detail.trim()) {
+        return detail.trim();
+      }
+      if (Array.isArray(detail) && detail[0]?.msg) {
+        return String(detail[0].msg);
+      }
     }
-
-    this.closed.emit();
+    return fallback;
   }
 }
