@@ -43,7 +43,7 @@ const OSM_ATTRIBUTION =
 export class MapComponent implements AfterViewInit, OnDestroy {
   @ViewChild('mapContainer', { static: true }) mapContainer!: ElementRef<HTMLDivElement>;
 
-  /** When false (default for Junction Today), users cannot pan/zoom — only programmatic flyTo. */
+  /** When false (default for Junction Today), users cannot pan — zoom +/- still works. */
   readonly interactive = input(false);
   readonly target = input<MapTarget | null>(null);
 
@@ -65,7 +65,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 
     effect(() => {
       const enabled = this.interactive();
-      this.host.nativeElement.classList.toggle('map--disabled', !enabled);
+      this.host.nativeElement.classList.toggle('map--locked', !enabled);
       this.applyInteractionState(enabled);
     });
   }
@@ -109,6 +109,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       }).addTo(this.map);
     }
 
+    this.ensureZoomControl();
     this.applyInteractionState(this.interactive());
 
     const initialTarget = this.target();
@@ -123,10 +124,21 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     this.map?.remove();
   }
 
+  private ensureZoomControl(): void {
+    if (!this.map || this.zoomControl) {
+      return;
+    }
+    this.zoomControl = L.control.zoom({ position: 'bottomright' });
+    this.zoomControl.addTo(this.map);
+  }
+
   private applyInteractionState(enabled: boolean): void {
     if (!this.map) {
       return;
     }
+
+    // Always keep +/- zoom; only gate freehand exploration (pan / gesture zoom).
+    this.ensureZoomControl();
 
     const handlers: Array<{ enable: () => void; disable: () => void } | undefined> = [
       this.map.dragging,
@@ -146,16 +158,6 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       } else {
         handler.disable();
       }
-    }
-
-    if (enabled) {
-      if (!this.zoomControl) {
-        this.zoomControl = L.control.zoom({ position: 'bottomright' });
-        this.zoomControl.addTo(this.map);
-      }
-    } else if (this.zoomControl) {
-      this.zoomControl.remove();
-      this.zoomControl = null;
     }
   }
 

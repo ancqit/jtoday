@@ -10,20 +10,43 @@
   z-index: 0;
 }
 
-:host(.map--disabled) {
-  pointer-events: none;
-}
-
-:host(.map--disabled) .map-canvas {
+:host(.map--locked) .map-canvas {
   filter: saturate(0.92) brightness(0.96);
 }
 
-:host(.map--disabled)::after {
+:host(.map--locked)::after {
   content: '';
   position: absolute;
   inset: 0;
   z-index: 1;
+  pointer-events: none;
   background: rgba(15, 23, 42, 0.06);
+}
+
+:host(.map--locked) ::ng-deep .leaflet-control-container {
+  z-index: 2;
+}
+
+:host ::ng-deep .leaflet-control-zoom {
+  border: 0 !important;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.16);
+  overflow: hidden;
+  border-radius: 0.55rem;
+}
+
+:host ::ng-deep .leaflet-control-zoom a {
+  width: 2rem !important;
+  height: 2rem !important;
+  line-height: 2rem !important;
+  font-size: 1.15rem !important;
+  color: var(--forest, #194b31) !important;
+  background: rgba(255, 252, 245, 0.96) !important;
+  border-bottom-color: rgba(25, 75, 49, 0.12) !important;
+}
+
+:host ::ng-deep .leaflet-control-zoom a:hover {
+  background: #fff !important;
+  color: var(--forest-mid, #17633e) !important;
 }
 
 :host ::ng-deep .junction-marker {
