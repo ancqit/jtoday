@@ -21,7 +21,6 @@ import { CartStore } from '../../stores/cart.store';
 import { OrderStore } from '../../stores/order.store';
 
 type MarketplaceView = 'shops' | 'products' | 'cart' | 'receipt';
-type CatalogTab = 'shops' | 'blog';
 type ShopsLayout = 'card' | 'list';
 type ProductsLayout = 'card' | 'list';
 
@@ -49,7 +48,8 @@ export class MarketplacePanelComponent implements OnInit {
   readonly closed = output<void>();
 
   readonly view = signal<MarketplaceView>('shops');
-  readonly catalogTab = signal<CatalogTab>('shops');
+  /** When true, show Junction blogs; when false, show shops. */
+  readonly blogOpen = signal(false);
   readonly shops = signal<Shop[]>([]);
   readonly blogs = signal<BlogEntry[]>([]);
   readonly products = signal<Product[]>([]);
@@ -73,6 +73,9 @@ export class MarketplacePanelComponent implements OnInit {
   readonly activeProductTag = signal<string | null>(null);
   readonly placingOrder = signal(false);
   readonly paymentMethod = signal<'pay_at_store'>('pay_at_store');
+  readonly commentDrafts = signal<Record<number, string>>({});
+  readonly commentingBlogNumber = signal<number | null>(null);
+  readonly commentError = signal<string | null>(null);
 
   private readonly productQuantities = signal<Record<string, number>>({});
 
@@ -162,7 +165,7 @@ export class MarketplacePanelComponent implements OnInit {
 
   openPanel(): void {
     this.view.set('shops');
-    this.catalogTab.set('shops');
+    this.blogOpen.set(false);
     this.selectedShop.set(null);
     this.selectedBlogNumber.set(null);
     this.products.set([]);
@@ -170,6 +173,9 @@ export class MarketplacePanelComponent implements OnInit {
     this.completedOrder.set(null);
     this.error.set(null);
     this.blogsError.set(null);
+    this.commentError.set(null);
+    this.commentDrafts.set({});
+    this.commentingBlogNumber.set(null);
     this.shopNotices.set({});
     this.activeShopType.set(null);
     this.activeProductCategory.set(null);
@@ -363,21 +369,73 @@ export class MarketplacePanelComponent implements OnInit {
     this.shopsLayout.set(layout);
   }
 
-  setCatalogTab(tab: CatalogTab): void {
-    this.catalogTab.set(tab);
-    if (tab === 'blog') {
+  /** Toggle Junction blogs on/off (off returns to shops). */
+  toggleBlogPanel(): void {
+    const next = !this.blogOpen();
+    this.blogOpen.set(next);
+    this.commentError.set(null);
+    if (next) {
       this.loadBlogs(false);
+    } else {
+      this.selectedBlogNumber.set(null);
     }
   }
 
-  toggleBlog(entry: BlogEntry): void {
+  toggleBlogEntry(entry: BlogEntry): void {
     this.selectedBlogNumber.update((current) =>
       current === entry.blogNumber ? null : entry.blogNumber,
     );
+    this.commentError.set(null);
   }
 
   isBlogExpanded(entry: BlogEntry): boolean {
     return this.selectedBlogNumber() === entry.blogNumber;
+  }
+
+  commentDraft(blogNumber: number): string {
+    return this.commentDrafts()[blogNumber] ?? '';
+  }
+
+  onCommentDraftInput(blogNumber: number, event: Event): void {
+    const value = (event.target as HTMLTextAreaElement).value;
+    this.commentDrafts.update((drafts) => ({ ...drafts, [blogNumber]: value }));
+  }
+
+  submitComment(entry: BlogEntry): void {
+    const profile = this.session.userProfile();
+    const identity = profile ? this.blogsService.commentIdentityFromProfile(profile) : null;
+    const body = this.commentDraft(entry.blogNumber).trim();
+
+    if (!identity) {
+      this.commentError.set('Set your name in your Junction profile before commenting.');
+      return;
+    }
+    if (!body) {
+      this.commentError.set('Write a comment first.');
+      return;
+    }
+
+    this.commentingBlogNumber.set(entry.blogNumber);
+    this.commentError.set(null);
+
+    this.blogsService
+      .addComment(entry.blogNumber, {
+        ...identity,
+        body,
+      })
+      .subscribe({
+        next: (updated) => {
+          this.blogs.update((list) =>
+            list.map((item) => (item.blogNumber === updated.blogNumber ? updated : item)),
+          );
+          this.commentDrafts.update((drafts) => ({ ...drafts, [entry.blogNumber]: '' }));
+          this.commentingBlogNumber.set(null);
+        },
+        error: () => {
+          this.commentingBlogNumber.set(null);
+          this.commentError.set('Unable to post comment. Try again.');
+        },
+      });
   }
 
   productImageSource(product: Product): string | null {
