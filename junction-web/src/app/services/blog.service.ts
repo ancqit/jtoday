@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
-import { BlogApi } from '../core/blog.api';
+import { BlogApi, BlogCommentCreateInput } from '../core/blog.api';
 import { BlogEntry } from '../models/blog.model';
 import { ServiceScope, UserProfile } from '../models/location.model';
 
@@ -17,6 +17,38 @@ export class BlogService {
     return this.blogApi.listForQuery(query).pipe(
       map((entries) => entries.filter((entry) => this.matchesScope(entry, city, locality, scope))),
     );
+  }
+
+  addComment(blogNumber: number, input: BlogCommentCreateInput): Observable<BlogEntry> {
+    return this.blogApi.addComment(blogNumber, {
+      body: input.body.trim(),
+      creatorName: input.creatorName.trim(),
+      creatorNumber: input.creatorNumber.trim(),
+      nameTag: input.nameTag.trim(),
+    });
+  }
+
+  /** Build comment identity from the junction.today profile. */
+  commentIdentityFromProfile(profile: UserProfile): BlogCommentCreateInput | null {
+    const creatorName = profile.name.trim();
+    if (!creatorName) {
+      return null;
+    }
+
+    const digits = (profile.phoneNumber ?? '').replace(/\D/g, '');
+    const creatorNumber = digits.slice(-4) || '0000';
+    const slug =
+      creatorName
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '')
+        .slice(0, 16) || 'user';
+
+    return {
+      body: '',
+      creatorName,
+      creatorNumber,
+      nameTag: `${slug}#${creatorNumber}`,
+    };
   }
 
   private matchesScope(

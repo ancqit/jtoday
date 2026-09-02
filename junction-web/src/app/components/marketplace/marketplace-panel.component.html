@@ -62,28 +62,17 @@
         <div class="shops-toolbar">
           <div class="shops-toolbar-copy">
             <h2 class="services-heading">{{ session.servicesHeading() }}</h2>
-            <div class="layout-toggle catalog-tab-toggle" role="group" aria-label="Shops or blog">
-              <button
-                type="button"
-                class="layout-toggle-option"
-                [class.active]="catalogTab() === 'shops'"
-                [attr.aria-pressed]="catalogTab() === 'shops'"
-                (click)="setCatalogTab('shops')"
-              >
-                Shops
-              </button>
-              <button
-                type="button"
-                class="layout-toggle-option"
-                [class.active]="catalogTab() === 'blog'"
-                [attr.aria-pressed]="catalogTab() === 'blog'"
-                (click)="setCatalogTab('blog')"
-              >
-                Blog
-              </button>
-            </div>
+            <button
+              type="button"
+              class="blog-toggle"
+              [class.active]="blogOpen()"
+              [attr.aria-pressed]="blogOpen()"
+              (click)="toggleBlogPanel()"
+            >
+              Blog
+            </button>
           </div>
-          @if (catalogTab() === 'shops') {
+          @if (!blogOpen()) {
             <div class="layout-toggle" role="group" aria-label="Service layout">
               <button
                 type="button"
@@ -107,7 +96,7 @@
           }
         </div>
 
-        @if (catalogTab() === 'blog') {
+        @if (blogOpen()) {
           @if (blogsLoading()) {
             <p class="status-message">Loading blogs...</p>
           } @else if (blogsError()) {
@@ -115,10 +104,13 @@
           } @else if (blogs().length === 0) {
             <p class="status-message">No blogs for this Junction yet.</p>
           } @else {
+            @if (commentError()) {
+              <p class="error-message">{{ commentError() }}</p>
+            }
             <div class="blog-list">
               @for (entry of blogs(); track entry.blogNumber) {
                 <article class="blog-row" [class.is-open]="isBlogExpanded(entry)">
-                  <button type="button" class="blog-row-header" (click)="toggleBlog(entry)">
+                  <button type="button" class="blog-row-header" (click)="toggleBlogEntry(entry)">
                     <span class="blog-number">#{{ entry.blogNumber }}</span>
                     <span class="blog-row-copy">
                       <strong>{{ entry.junction }}</strong>
@@ -129,20 +121,43 @@
                   @if (isBlogExpanded(entry)) {
                     <div class="blog-row-body">
                       <p class="blog-body-text">{{ entry.body }}</p>
-                      @if (entry.comments.length > 0) {
-                        <div class="blog-comments">
-                          <p class="blog-comments-heading">
-                            {{ entry.comments.length }}
-                            {{ entry.comments.length === 1 ? 'comment' : 'comments' }}
-                          </p>
-                          @for (comment of entry.comments; track comment.id) {
-                            <div class="blog-comment">
-                              <strong>{{ comment.nameTag }}</strong>
-                              <p>{{ comment.body }}</p>
-                            </div>
-                          }
-                        </div>
-                      }
+                      <div class="blog-comments">
+                        <p class="blog-comments-heading">
+                          {{ entry.comments.length }}
+                          {{ entry.comments.length === 1 ? 'comment' : 'comments' }}
+                        </p>
+                        @for (comment of entry.comments; track comment.id) {
+                          <div class="blog-comment">
+                            <strong>{{ comment.nameTag }}</strong>
+                            <p>{{ comment.body }}</p>
+                          </div>
+                        }
+                        <form class="blog-comment-form" (submit)="$event.preventDefault(); submitComment(entry)">
+                          <label class="blog-comment-label" [attr.for]="'blog-comment-' + entry.blogNumber">
+                            Add a comment
+                          </label>
+                          <textarea
+                            [id]="'blog-comment-' + entry.blogNumber"
+                            rows="2"
+                            maxlength="4000"
+                            [value]="commentDraft(entry.blogNumber)"
+                            (input)="onCommentDraftInput(entry.blogNumber, $event)"
+                            placeholder="Write a comment…"
+                            [disabled]="commentingBlogNumber() === entry.blogNumber"
+                          ></textarea>
+                          <button
+                            type="submit"
+                            class="primary-button blog-comment-submit"
+                            [disabled]="commentingBlogNumber() === entry.blogNumber"
+                          >
+                            @if (commentingBlogNumber() === entry.blogNumber) {
+                              Posting…
+                            } @else {
+                              Post comment
+                            }
+                          </button>
+                        </form>
+                      </div>
                     </div>
                   }
                 </article>
