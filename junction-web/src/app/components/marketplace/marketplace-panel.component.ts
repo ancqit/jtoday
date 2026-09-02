@@ -4,6 +4,7 @@ import { AuthorizedImageComponent } from '../authorized-image/authorized-image.c
 import { ProductGalleryModalComponent } from '../product-gallery-modal/product-gallery-modal.component';
 import { ProfileModalComponent } from '../profile-modal/profile-modal.component';
 import { ShopProfileModalComponent } from '../shop-profile-modal/shop-profile-modal.component';
+import { BlogEntry } from '../../models/blog.model';
 import { Product } from '../../models/product.model';
 import { SavedOrder } from '../../models/order.model';
 import { Shop } from '../../models/shop.model';
@@ -11,6 +12,7 @@ import { ShopTypeInfo } from '../../models/shop-type.model';
 import { resolveProductImageSource, resolveProductImageSources } from '../../core/product-image.util';
 import { resolveShopProfileImageSource } from '../../core/shop-image.util';
 import { formatShopHours } from '../../core/shop-hours.util';
+import { BlogService } from '../../services/blog.service';
 import { CatalogService } from '../../services/catalog.service';
 import { NoticesService } from '../../services/notices.service';
 import { OrdersService } from '../../services/orders.service';
@@ -19,6 +21,7 @@ import { CartStore } from '../../stores/cart.store';
 import { OrderStore } from '../../stores/order.store';
 
 type MarketplaceView = 'shops' | 'products' | 'cart' | 'receipt';
+type CatalogTab = 'shops' | 'blog';
 type ShopsLayout = 'card' | 'list';
 type ProductsLayout = 'card' | 'list';
 
@@ -36,6 +39,7 @@ type ProductsLayout = 'card' | 'list';
 })
 export class MarketplacePanelComponent implements OnInit {
   private readonly catalog = inject(CatalogService);
+  private readonly blogsService = inject(BlogService);
   private readonly notices = inject(NoticesService);
   private readonly ordersService = inject(OrdersService);
   readonly session = inject(UserSessionService);
@@ -45,12 +49,17 @@ export class MarketplacePanelComponent implements OnInit {
   readonly closed = output<void>();
 
   readonly view = signal<MarketplaceView>('shops');
+  readonly catalogTab = signal<CatalogTab>('shops');
   readonly shops = signal<Shop[]>([]);
+  readonly blogs = signal<BlogEntry[]>([]);
   readonly products = signal<Product[]>([]);
   readonly selectedShop = signal<Shop | null>(null);
+  readonly selectedBlogNumber = signal<number | null>(null);
   readonly completedOrder = signal<SavedOrder | null>(null);
   readonly loading = signal(false);
+  readonly blogsLoading = signal(false);
   readonly error = signal<string | null>(null);
+  readonly blogsError = signal<string | null>(null);
   readonly shopsLayout = signal<ShopsLayout>('card');
   readonly productsLayout = signal<ProductsLayout>('card');
   readonly galleryProduct = signal<Product | null>(null);
@@ -68,6 +77,7 @@ export class MarketplacePanelComponent implements OnInit {
   private readonly productQuantities = signal<Record<string, number>>({});
 
   private loadedJunctionKey: string | null = null;
+  private loadedBlogJunctionKey: string | null = null;
 
   readonly visibleShopTypes = computed(() => {
     const present = new Set(
@@ -152,15 +162,20 @@ export class MarketplacePanelComponent implements OnInit {
 
   openPanel(): void {
     this.view.set('shops');
+    this.catalogTab.set('shops');
     this.selectedShop.set(null);
+    this.selectedBlogNumber.set(null);
     this.products.set([]);
+    this.blogs.set([]);
     this.completedOrder.set(null);
     this.error.set(null);
+    this.blogsError.set(null);
     this.shopNotices.set({});
     this.activeShopType.set(null);
     this.activeProductCategory.set(null);
     this.activeProductTag.set(null);
     this.profileShop.set(null);
+    this.loadedBlogJunctionKey = null;
     this.loadShops();
   }
 
@@ -348,14 +363,21 @@ export class MarketplacePanelComponent implements OnInit {
     this.shopsLayout.set(layout);
   }
 
-  /** Opens junction.blog filtered to this locality or city Junction. */
-  junctionBlogUrl(): string {
-    const label = this.session.junctionLabel().trim();
-    const url = new URL('https://www.junction.blog/');
-    if (label) {
-      url.searchParams.set('junction', label);
+  setCatalogTab(tab: CatalogTab): void {
+    this.catalogTab.set(tab);
+    if (tab === 'blog') {
+      this.loadBlogs(false);
     }
-    return url.toString();
+  }
+
+  toggleBlog(entry: BlogEntry): void {
+    this.selectedBlogNumber.update((current) =>
+      current === entry.blogNumber ? null : entry.blogNumber,
+    );
+  }
+
+  isBlogExpanded(entry: BlogEntry): boolean {
+    return this.selectedBlogNumber() === entry.blogNumber;
   }
 
   productImageSource(product: Product): string | null {
@@ -429,6 +451,34 @@ export class MarketplacePanelComponent implements OnInit {
       error: () => {
         this.loading.set(false);
         this.error.set('Unable to load services for your Junction.');
+      },
+    });
+  }
+
+  private loadBlogs(force: boolean): void {
+    const profile = this.session.userProfile();
+    const junctionKey = this.session.junctionKey();
+    if (!profile || !junctionKey) {
+      this.blogsError.set('Choose your Junction first.');
+      return;
+    }
+
+    if (!force && this.loadedBlogJunctionKey === junctionKey) {
+      return;
+    }
+
+    this.blogsLoading.set(true);
+    this.blogsError.set(null);
+
+    this.blogsService.listForJunction(profile, this.session.serviceScope()).subscribe({
+      next: (entries) => {
+        this.blogs.set(entries);
+        this.loadedBlogJunctionKey = junctionKey;
+        this.blogsLoading.set(false);
+      },
+      error: () => {
+        this.blogsLoading.set(false);
+        this.blogsError.set('Unable to load blogs for your Junction.');
       },
     });
   }

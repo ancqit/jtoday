@@ -62,37 +62,94 @@
         <div class="shops-toolbar">
           <div class="shops-toolbar-copy">
             <h2 class="services-heading">{{ session.servicesHeading() }}</h2>
-            <a
-              class="junction-blog-link"
-              [href]="junctionBlogUrl()"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Blog
-            </a>
+            <div class="layout-toggle catalog-tab-toggle" role="group" aria-label="Shops or blog">
+              <button
+                type="button"
+                class="layout-toggle-option"
+                [class.active]="catalogTab() === 'shops'"
+                [attr.aria-pressed]="catalogTab() === 'shops'"
+                (click)="setCatalogTab('shops')"
+              >
+                Shops
+              </button>
+              <button
+                type="button"
+                class="layout-toggle-option"
+                [class.active]="catalogTab() === 'blog'"
+                [attr.aria-pressed]="catalogTab() === 'blog'"
+                (click)="setCatalogTab('blog')"
+              >
+                Blog
+              </button>
+            </div>
           </div>
-          <div class="layout-toggle" role="group" aria-label="Service layout">
-            <button
-              type="button"
-              class="layout-toggle-option"
-              [class.active]="shopsLayout() === 'card'"
-              [attr.aria-pressed]="shopsLayout() === 'card'"
-              (click)="setShopsLayout('card')"
-            >
-              Card
-            </button>
-            <button
-              type="button"
-              class="layout-toggle-option"
-              [class.active]="shopsLayout() === 'list'"
-              [attr.aria-pressed]="shopsLayout() === 'list'"
-              (click)="setShopsLayout('list')"
-            >
-              List
-            </button>
-          </div>
+          @if (catalogTab() === 'shops') {
+            <div class="layout-toggle" role="group" aria-label="Service layout">
+              <button
+                type="button"
+                class="layout-toggle-option"
+                [class.active]="shopsLayout() === 'card'"
+                [attr.aria-pressed]="shopsLayout() === 'card'"
+                (click)="setShopsLayout('card')"
+              >
+                Card
+              </button>
+              <button
+                type="button"
+                class="layout-toggle-option"
+                [class.active]="shopsLayout() === 'list'"
+                [attr.aria-pressed]="shopsLayout() === 'list'"
+                (click)="setShopsLayout('list')"
+              >
+                List
+              </button>
+            </div>
+          }
         </div>
 
+        @if (catalogTab() === 'blog') {
+          @if (blogsLoading()) {
+            <p class="status-message">Loading blogs...</p>
+          } @else if (blogsError()) {
+            <p class="error-message">{{ blogsError() }}</p>
+          } @else if (blogs().length === 0) {
+            <p class="status-message">No blogs for this Junction yet.</p>
+          } @else {
+            <div class="blog-list">
+              @for (entry of blogs(); track entry.blogNumber) {
+                <article class="blog-row" [class.is-open]="isBlogExpanded(entry)">
+                  <button type="button" class="blog-row-header" (click)="toggleBlog(entry)">
+                    <span class="blog-number">#{{ entry.blogNumber }}</span>
+                    <span class="blog-row-copy">
+                      <strong>{{ entry.junction }}</strong>
+                      <small>{{ entry.nameTag }} · {{ entry.createdAt | date: 'mediumDate' }}</small>
+                    </span>
+                    <span class="blog-chevron" aria-hidden="true">{{ isBlogExpanded(entry) ? '▾' : '▸' }}</span>
+                  </button>
+                  @if (isBlogExpanded(entry)) {
+                    <div class="blog-row-body">
+                      <p class="blog-body-text">{{ entry.body }}</p>
+                      @if (entry.comments.length > 0) {
+                        <div class="blog-comments">
+                          <p class="blog-comments-heading">
+                            {{ entry.comments.length }}
+                            {{ entry.comments.length === 1 ? 'comment' : 'comments' }}
+                          </p>
+                          @for (comment of entry.comments; track comment.id) {
+                            <div class="blog-comment">
+                              <strong>{{ comment.nameTag }}</strong>
+                              <p>{{ comment.body }}</p>
+                            </div>
+                          }
+                        </div>
+                      }
+                    </div>
+                  }
+                </article>
+              }
+            </div>
+          }
+        } @else {
         @if (visibleShopTypes().length > 0) {
           <div class="filter-chip-row" role="group" aria-label="Filter shops by type">
             <button
@@ -216,6 +273,7 @@
               </article>
             }
           </div>
+        }
         }
       }
 

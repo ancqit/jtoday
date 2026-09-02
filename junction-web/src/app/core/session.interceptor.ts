@@ -12,6 +12,10 @@ function isPublicNoticesTodayRequest(url: string, method: string): boolean {
   return method === 'GET' && url.includes('/notices/today');
 }
 
+function isPublicBlogEntriesRequest(url: string, method: string): boolean {
+  return method === 'GET' && url.includes('/blog/entries');
+}
+
 function isPublicCatalogAuthRequest(url: string): boolean {
   return url.includes('/auth/catalog-otp') || url.includes('/auth/recaptcha-params');
 }
@@ -44,6 +48,7 @@ export const sessionInterceptor: HttpInterceptorFn = (request, next) => {
     !isSessionCreateRequest(request.url, request.method) &&
     !request.context.get(SKIP_SESSION_AUTH) &&
     !isPublicNoticesTodayRequest(request.url, request.method) &&
+    !isPublicBlogEntriesRequest(request.url, request.method) &&
     !isPublicCatalogAuthRequest(request.url)
   ) {
     outgoing = request.clone({
@@ -59,6 +64,7 @@ export const sessionInterceptor: HttpInterceptorFn = (request, next) => {
         isSessionCreateRequest(request.url, request.method) ||
         request.context.get(SKIP_SESSION_AUTH) ||
         isPublicNoticesTodayRequest(request.url, request.method) ||
+        isPublicBlogEntriesRequest(request.url, request.method) ||
         isPublicCatalogAuthRequest(request.url)
       ) {
         return throwError(() => error);
