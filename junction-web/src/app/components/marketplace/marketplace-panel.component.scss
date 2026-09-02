@@ -241,17 +241,23 @@
   color: #94a3b8;
 }
 
-.blog-comment-form textarea {
+.blog-comment-form textarea,
+.blog-comment-form input,
+.blog-create-card input,
+.blog-comment textarea {
   width: 100%;
-  resize: vertical;
-  min-height: 3.25rem;
-  padding: 0.55rem 0.65rem;
+  padding: 0.5rem 0.65rem;
   border: 1px solid rgba(148, 163, 184, 0.45);
   border-radius: 0.6rem;
   background: #fff;
   color: #0f172a;
   font: inherit;
   font-size: 0.82rem;
+}
+
+.blog-comment-form textarea {
+  resize: vertical;
+  min-height: 3.25rem;
   line-height: 1.4;
 }
 
@@ -284,7 +290,6 @@
   font-size: 0.62rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
 }
 
 .blog-comment-menu {
@@ -372,19 +377,6 @@
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 0.4rem;
-}
-
-.blog-comment-form input,
-.blog-create-card input,
-.blog-comment textarea {
-  width: 100%;
-  padding: 0.5rem 0.65rem;
-  border: 1px solid rgba(148, 163, 184, 0.45);
-  border-radius: 0.6rem;
-  background: #fff;
-  color: #0f172a;
-  font: inherit;
-  font-size: 0.82rem;
 }
 
 .blog-shop-verified {
@@ -625,8 +617,6 @@
   box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
 }
 
-.cozy-shop-card,
-.cozy-shop-row,
 .pro-shop-card,
 .pro-shop-row {
   border: 1px solid rgba(226, 232, 240, 0.95);
@@ -643,11 +633,6 @@
   transform: translateY(-1px);
   border-color: rgba(94, 234, 212, 0.85);
   box-shadow: 0 14px 28px rgba(23, 99, 62, 0.1);
-}
-
-.shop-card-header,
-.shop-row-header {
-  display: block;
 }
 
 .pro-shop-card .shop-name,
@@ -770,49 +755,6 @@
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
-}
-
-.cozy-shop-card:hover,
-.cozy-shop-row:hover {
-  transform: translateY(-2px);
-  border-color: rgba(153, 246, 228, 0.75);
-  box-shadow:
-    0 16px 30px rgba(23, 99, 62, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.95);
-}
-
-.shop-card-top {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.shop-row-title {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.65rem;
-}
-
-.shop-status-pill {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.2rem 0.55rem;
-  border-radius: 999px;
-  background: rgba(248, 113, 113, 0.14);
-  color: #b91c1c;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-}
-
-.shop-status-pill.is-open {
-  background: rgba(16, 185, 129, 0.14);
-  color: #047857;
-}
-
-.shop-meta-icon {
-  opacity: 0.72;
-  margin-right: 0.2rem;
 }
 
 .shop-card {
@@ -1031,11 +973,6 @@
 .product-row-actions {
   grid-template-columns: auto auto;
   gap: 0.35rem;
-}
-
-.cozy-product-card {
-  overflow: hidden;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.92));
 }
 
 .product-media {
