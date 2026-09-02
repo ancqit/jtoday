@@ -12,7 +12,7 @@
   min-height: 0;
   border-radius: 1.25rem;
   overflow: hidden;
-  background: rgba(238, 242, 246, 0.92);
+  background: rgba(255, 252, 245, 0.92);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.55);
@@ -27,7 +27,7 @@
   gap: 0.75rem;
   padding: 1rem 1.25rem;
   border-bottom: 1px solid rgba(148, 163, 184, 0.25);
-  background: rgba(238, 242, 246, 0.72);
+  background: rgba(255, 252, 245, 0.72);
 }
 
 .marketplace-title h2,
@@ -41,7 +41,7 @@
 
 .shop-phone a,
 .shop-phone {
-  color: #0f766e;
+  color: var(--forest-mid);
   font-weight: 600;
   text-decoration: none;
 }
@@ -111,8 +111,8 @@
 }
 
 .blog-toggle.active {
-  background: #0f766e;
-  border-color: #0f766e;
+  background: var(--forest-mid);
+  border-color: var(--forest-mid);
   color: #fff;
 }
 
@@ -152,7 +152,7 @@
   flex-shrink: 0;
   font-size: 0.72rem;
   font-weight: 700;
-  color: #0f766e;
+  color: var(--forest-mid);
 }
 
 .blog-row-copy {
@@ -216,7 +216,7 @@
 .blog-comment strong {
   display: block;
   font-size: 0.72rem;
-  color: #0f766e;
+  color: var(--forest-mid);
 }
 
 .blog-comment p {
@@ -258,7 +258,7 @@
 .blog-comment-form textarea:focus {
   outline: 2px solid rgba(45, 212, 191, 0.45);
   outline-offset: 1px;
-  border-color: #0f766e;
+  border-color: var(--forest-mid);
 }
 
 .blog-comment-submit {
@@ -293,8 +293,8 @@
 }
 
 .filter-chip.active {
-  background: #0f766e;
-  border-color: #0f766e;
+  background: var(--forest-mid);
+  border-color: var(--forest-mid);
   color: #fff;
 }
 
@@ -366,7 +366,7 @@
 
 .layout-toggle-option.active {
   background: rgba(255, 255, 255, 0.95);
-  color: #0f766e;
+  color: var(--forest-mid);
   box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
 }
 
@@ -418,7 +418,7 @@
   border: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: 0.65rem;
   background: rgba(248, 250, 252, 0.8);
-  color: #0f766e;
+  color: var(--forest-mid);
   cursor: pointer;
 }
 
@@ -430,7 +430,7 @@
   border: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: 0.65rem;
   background: rgba(248, 250, 252, 0.8);
-  color: #0f766e;
+  color: var(--forest-mid);
   font-weight: 600;
   cursor: pointer;
 }
@@ -442,7 +442,7 @@
   height: 1.35rem;
   padding: 0 0.35rem;
   border-radius: 999px;
-  background: #0f766e;
+  background: var(--forest-mid);
   color: #fff;
   font-size: 0.75rem;
 }
@@ -481,7 +481,7 @@
 .pro-shop-row:hover {
   transform: translateY(-1px);
   border-color: rgba(94, 234, 212, 0.85);
-  box-shadow: 0 14px 28px rgba(15, 118, 110, 0.1);
+  box-shadow: 0 14px 28px rgba(23, 99, 62, 0.1);
 }
 
 .shop-card-header,
@@ -535,7 +535,7 @@
 }
 
 .shop-phone-value {
-  color: #0f766e;
+  color: var(--forest-mid);
   font-weight: 600;
   text-decoration: none;
   font-size: 0.74rem;
@@ -566,7 +566,7 @@
 }
 
 .shop-detail-hours .shop-detail-value {
-  color: #0f766e;
+  color: var(--forest-mid);
   font-weight: 600;
 }
 
@@ -616,7 +616,7 @@
   transform: translateY(-2px);
   border-color: rgba(153, 246, 228, 0.75);
   box-shadow:
-    0 16px 30px rgba(15, 118, 110, 0.12),
+    0 16px 30px rgba(23, 99, 62, 0.12),
     inset 0 1px 0 rgba(255, 255, 255, 0.95);
 }
 
@@ -729,7 +729,7 @@
   padding: 0.35rem 0.55rem;
   border-radius: 0.55rem;
   background: rgba(240, 253, 250, 0.9);
-  color: #0f766e;
+  color: var(--forest-mid);
   font-size: 0.8rem;
   font-weight: 600;
 }
@@ -875,7 +875,7 @@
 .product-price {
   margin: 0.5rem 0 0;
   font-weight: 700;
-  color: #0f766e;
+  color: var(--forest-mid);
 }
 
 .primary-button {
@@ -883,7 +883,7 @@
   padding: 0.8rem 1rem;
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 0.75rem;
-  background: linear-gradient(135deg, rgba(15, 118, 110, 0.92), rgba(20, 184, 166, 0.88));
+  background: linear-gradient(135deg, rgba(23, 99, 62, 0.92), rgba(20, 184, 166, 0.88));
   color: #fff;
   font-weight: 600;
   cursor: pointer;
@@ -964,7 +964,7 @@
   align-items: center;
   gap: 0.5rem;
   font-weight: 600;
-  color: #0f766e;
+  color: var(--forest-mid);
 }
 
 .payment-hint {
@@ -979,7 +979,7 @@
 }
 
 .receipt-notice {
-  color: #0f766e;
+  color: var(--forest-mid);
 }
 
 .error-message {

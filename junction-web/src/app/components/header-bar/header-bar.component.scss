@@ -12,13 +12,13 @@
   gap: 0.75rem;
   min-height: 3.25rem;
   padding: 0.6rem 1rem;
-  border-radius: 1rem;
-  background: rgba(238, 242, 246, 0.72);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.55);
-  color: #475569;
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+  border-radius: var(--radius);
+  background: var(--glass);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  color: var(--ink-soft);
+  box-shadow: var(--shadow);
   pointer-events: auto;
 }
 
@@ -54,7 +54,7 @@
 
 .junction-copy-button:hover,
 .junction-copy-button:focus-visible {
-  background: rgba(255, 255, 255, 0.45);
+  background: rgba(243, 215, 130, 0.28);
 }
 
 .greeting-name {
@@ -65,7 +65,7 @@
 
 .junction-copy .wordmark-secondary {
   font-size: 0.68rem;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
@@ -101,20 +101,22 @@
   width: 2.25rem;
   height: 2.25rem;
   padding: 0;
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  border-radius: 0.65rem;
-  background: rgba(248, 250, 252, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 0.7rem;
+  background: var(--glass-strong);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  color: #0f766e;
+  color: var(--forest-mid);
   cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .settings-button:hover,
 .settings-button[aria-expanded='true'] {
-  background: rgba(255, 255, 255, 0.92);
-  border-color: rgba(148, 163, 184, 0.8);
+  background: #fffdf8;
+  border-color: rgba(243, 215, 130, 0.85);
 }
 
 .settings-button svg {
@@ -130,17 +132,17 @@
   z-index: 40;
   width: min(18rem, calc(100vw - 2rem));
   padding: 1rem;
-  border-radius: 1rem;
-  background: linear-gradient(160deg, #0f766e, #14b8a6);
-  border: 1px solid #5eead4;
-  box-shadow: 0 12px 28px rgba(15, 118, 110, 0.22);
+  border-radius: var(--radius);
+  background: linear-gradient(160deg, var(--forest), var(--forest-mid));
+  border: 1px solid rgba(243, 215, 130, 0.45);
+  box-shadow: 0 14px 32px rgba(25, 75, 49, 0.28);
 }
 
 .settings-title {
   margin: 0 0 0.85rem;
   font-size: 0.85rem;
-  font-weight: 600;
-  color: #ffffff;
+  font-weight: 700;
+  color: #fffdf8;
 }
 
 .settings-profile-button {
@@ -148,33 +150,33 @@
   gap: 0.2rem;
   width: 100%;
   padding: 0.7rem 0.75rem;
-  border: 1px solid rgba(255, 255, 255, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.28);
   border-radius: 0.75rem;
-  background: rgba(255, 255, 255, 0.12);
-  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fffdf8;
   text-align: left;
   cursor: pointer;
   transition: background 0.15s ease;
 }
 
 .settings-profile-button:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(243, 215, 130, 0.18);
 }
 
 .settings-profile-title {
   font-size: 0.88rem;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .settings-profile-hint {
   font-size: 0.75rem;
-  color: rgba(236, 253, 245, 0.88);
+  color: rgba(247, 233, 184, 0.9);
 }
 
 .settings-divider {
   height: 1px;
   margin: 0.85rem 0;
-  background: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.22);
 }
 
 .settings-junction-form {
@@ -189,23 +191,23 @@
 
 .settings-field-label {
   font-size: 0.78rem;
-  color: #ecfdf5;
+  color: var(--gold-soft);
 }
 
 .settings-selected-value {
   margin: 0;
   font-size: 0.82rem;
-  font-weight: 600;
-  color: #ffffff;
+  font-weight: 700;
+  color: #fffdf8;
 }
 
 .settings-picker-button {
   width: 100%;
   padding: 0.6rem 0.75rem;
-  border: 1px solid #99f6e4;
+  border: 1px solid rgba(243, 215, 130, 0.55);
   border-radius: 0.65rem;
-  background: #f8fafc;
-  color: #0f172a;
+  background: #fffdf8;
+  color: var(--ink);
   font: inherit;
   font-size: 0.85rem;
   font-weight: 600;
@@ -214,8 +216,8 @@
 }
 
 .settings-picker-button:disabled {
-  background: #e2e8f0;
-  color: #64748b;
+  background: #e8e4d8;
+  color: var(--mute);
   cursor: not-allowed;
 }
 
@@ -228,32 +230,32 @@
   display: grid;
   gap: 0.35rem;
   font-size: 0.78rem;
-  color: #ecfdf5;
+  color: var(--gold-soft);
 }
 
 .settings-form select {
   width: 100%;
   padding: 0.6rem 0.75rem;
-  border: 1px solid #99f6e4;
+  border: 1px solid rgba(243, 215, 130, 0.55);
   border-radius: 0.65rem;
-  background: #f8fafc;
-  color: #0f172a;
+  background: #fffdf8;
+  color: var(--ink);
   font: inherit;
 }
 
 .settings-form select:disabled {
-  background: #e2e8f0;
-  color: #64748b;
+  background: #e8e4d8;
+  color: var(--mute);
   cursor: not-allowed;
 }
 
 .settings-form select option {
-  color: #0f172a;
-  background: #f8fafc;
+  color: var(--ink);
+  background: #fffdf8;
 }
 
 .settings-form select:focus {
-  outline: 2px solid #ccfbf1;
+  outline: 2px solid rgba(243, 215, 130, 0.85);
   outline-offset: 1px;
 }
 
@@ -270,20 +272,20 @@
   border-radius: 0.65rem;
   font: inherit;
   font-size: 0.85rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
 }
 
 .btn-secondary {
-  border: 1px solid #99f6e4;
+  border: 1px solid rgba(243, 215, 130, 0.55);
   background: transparent;
-  color: #ffffff;
+  color: #fffdf8;
 }
 
 .btn-primary {
-  border: 1px solid #ffffff;
-  background: #ffffff;
-  color: #0f766e;
+  border: 1px solid var(--gold);
+  background: var(--gold);
+  color: var(--forest);
 }
 
 .btn-primary:disabled {

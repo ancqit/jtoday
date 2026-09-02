@@ -1,5 +1,26 @@
 @import 'leaflet/dist/leaflet.css';
 
+:root {
+  color-scheme: light;
+  --ink: #0f1f17;
+  --ink-soft: #3d5248;
+  --mute: #6b7c72;
+  --forest: #194b31;
+  --forest-mid: #17633e;
+  --forest-bright: #1f7a4c;
+  --gold: #f3d782;
+  --gold-soft: #f7e9b8;
+  --paper: #f4f0e6;
+  --paper-deep: #ebe4d4;
+  --glass: rgba(255, 252, 245, 0.78);
+  --glass-strong: rgba(255, 252, 245, 0.92);
+  --line: rgba(25, 75, 49, 0.14);
+  --line-strong: rgba(25, 75, 49, 0.22);
+  --shadow: 0 10px 28px rgba(15, 31, 23, 0.1);
+  --radius: 0.9rem;
+  --font-ui: 'DM Sans', 'Segoe UI', sans-serif;
+}
+
 *,
 *::before,
 *::after {
@@ -13,14 +34,16 @@ body {
 
 body {
   margin: 0;
-  font-family: Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  color: #0f172a;
-  background: #0f172a;
+  font-family: var(--font-ui);
+  color: var(--ink);
+  background: #0f1f17;
+  -webkit-font-smoothing: antialiased;
 }
 
 button,
 input,
-select {
+select,
+textarea {
   font: inherit;
 }
 
@@ -29,23 +52,23 @@ select {
   font-size: 1.1rem;
   font-weight: 700;
   line-height: 1.15;
-  color: #334155;
+  color: var(--ink);
 }
 
 .wordmark-secondary {
   margin: 0;
   font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
+  font-weight: 700;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #94a3b8;
+  color: var(--mute);
 }
 
 .wordmark-prompt {
   margin: 0;
   font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
+  font-weight: 700;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #0f766e;
+  color: var(--forest-mid);
 }
