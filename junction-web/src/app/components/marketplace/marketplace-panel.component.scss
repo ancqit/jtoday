@@ -702,6 +702,34 @@
   min-width: 0;
 }
 
+.shop-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 0.2rem;
+}
+
+.shop-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.12rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+}
+
+.shop-badge-gst {
+  background: rgba(243, 215, 130, 0.45);
+  color: var(--forest, #194b31);
+}
+
+.shop-badge-id {
+  background: rgba(25, 75, 49, 0.1);
+  color: var(--forest-mid, #17633e);
+}
+
 .shop-meta,
 .shop-hours,
 .product-meta,
