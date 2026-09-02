@@ -62,8 +62,8 @@
 }
 
 .lang-btn.active {
-  background: rgba(20, 184, 166, 0.92);
-  color: #042f2e;
+  background: var(--gold);
+  color: var(--forest);
 }
 
 .greet-close {
@@ -86,7 +86,7 @@
 }
 
 .greet-wordmark .wordmark-prompt {
-  color: rgba(153, 246, 228, 0.92);
+  color: var(--gold);
   text-shadow: 0 1px 8px rgba(15, 23, 42, 0.45);
 }
 
@@ -136,7 +136,7 @@ input::placeholder {
 }
 
 input:focus {
-  outline: 2px solid rgba(20, 184, 166, 0.75);
+  outline: 2px solid rgba(31, 122, 76, 0.75);
   outline-offset: 1px;
   background: rgba(15, 23, 42, 0.52);
 }
@@ -146,7 +146,7 @@ input:focus {
   padding: 0.75rem 1rem;
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 0.75rem;
-  background: linear-gradient(135deg, rgba(15, 118, 110, 0.82), rgba(20, 184, 166, 0.78));
+  background: linear-gradient(135deg, rgba(23, 99, 62, 0.82), rgba(31, 122, 76, 0.78));
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   color: rgba(255, 255, 255, 0.96);
@@ -155,11 +155,11 @@ input:focus {
 }
 
 .add-action-button:hover:not(:disabled) {
-  background: linear-gradient(135deg, rgba(15, 118, 110, 0.92), rgba(20, 184, 166, 0.88));
+  background: linear-gradient(135deg, rgba(23, 99, 62, 0.92), rgba(31, 122, 76, 0.88));
 }
 
 .add-action-button:focus {
-  outline: 2px solid rgba(20, 184, 166, 0.75);
+  outline: 2px solid rgba(31, 122, 76, 0.75);
   outline-offset: 1px;
 }
 
@@ -178,7 +178,7 @@ small {
   padding: 0.85rem 1rem;
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 0.75rem;
-  background: linear-gradient(135deg, rgba(15, 118, 110, 0.82), rgba(20, 184, 166, 0.78));
+  background: linear-gradient(135deg, rgba(23, 99, 62, 0.82), rgba(31, 122, 76, 0.78));
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   color: rgba(255, 255, 255, 0.96);
@@ -187,7 +187,7 @@ small {
 }
 
 .submit-button:hover {
-  background: linear-gradient(135deg, rgba(15, 118, 110, 0.92), rgba(20, 184, 166, 0.88));
+  background: linear-gradient(135deg, rgba(23, 99, 62, 0.92), rgba(31, 122, 76, 0.88));
 }
 
 .submit-button:disabled {

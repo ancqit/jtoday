@@ -33,19 +33,22 @@
 .services-toggle,
 .city-services-button,
 .add-services-button {
-  padding: 0.6rem 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.55);
-  border-radius: 0.75rem;
-  background: rgba(238, 242, 246, 0.72);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  color: #0f766e;
+  padding: 0.55rem 0.95rem;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 0.8rem;
+  background: var(--glass);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  color: var(--forest-mid);
   font: inherit;
-  font-size: 0.85rem;
-  font-weight: 600;
+  font-size: 0.84rem;
+  font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
-  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  box-shadow: var(--shadow);
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
@@ -57,18 +60,18 @@
 .city-services-button:hover,
 .city-services-button.active,
 .add-services-button:hover {
-  background: rgba(255, 255, 255, 0.92);
-  border-color: rgba(148, 163, 184, 0.8);
+  background: var(--glass-strong);
+  border-color: rgba(243, 215, 130, 0.75);
 }
 
 .services-toggle.active {
-  color: #334155;
+  color: var(--ink);
 }
 
 .city-services-button.active {
-  color: #0f766e;
-  border-color: rgba(20, 184, 166, 0.55);
-  background: rgba(240, 253, 250, 0.95);
+  color: var(--forest);
+  border-color: rgba(243, 215, 130, 0.85);
+  background: rgba(247, 233, 184, 0.92);
 }
 
 .marketplace-slot {
