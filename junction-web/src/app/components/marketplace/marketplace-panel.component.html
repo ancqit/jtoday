@@ -279,86 +279,11 @@
             </div>
           }
 
-          <form class="blog-create-card" (submit)="$event.preventDefault(); submitCreateBlog()">
-            <h3>Create a blog</h3>
-            <p class="blog-create-hint">Junction and name are filled from your profile — change them if needed.</p>
-            @if (createBlogError()) {
-              <p class="error-message">{{ createBlogError() }}</p>
-            }
-            <label class="blog-comment-label" for="blog-create-junction">Junction</label>
-            <input
-              id="blog-create-junction"
-              type="text"
-              maxlength="160"
-              [value]="createJunction()"
-              (input)="onCreateJunctionInput($event)"
-              placeholder="Locality, City"
-            />
-            <label class="blog-comment-label">Post as</label>
-            <div class="blog-author-toggle" role="group" aria-label="Blog author type">
-              <button
-                type="button"
-                [class.active]="createAuthorKind() === 'person'"
-                (click)="setCreateAuthorKind('person')"
-              >
-                Name
-              </button>
-              <button
-                type="button"
-                [class.active]="createAuthorKind() === 'shop'"
-                (click)="setCreateAuthorKind('shop')"
-              >
-                Shop
-              </button>
-            </div>
-            @if (createAuthorKind() === 'person') {
-              <label class="blog-comment-label" for="blog-create-name">Name</label>
-              <input
-                id="blog-create-name"
-                type="text"
-                maxlength="100"
-                [value]="createName()"
-                (input)="onCreateNameInput($event)"
-                placeholder="Your name"
-              />
-            } @else {
-              <label class="blog-comment-label" for="blog-create-shop-phone">Shop phone</label>
-              <div class="blog-shop-verify-row">
-                <input
-                  id="blog-create-shop-phone"
-                  type="tel"
-                  maxlength="20"
-                  [value]="createShopPhone()"
-                  (input)="onCreateShopPhoneInput($event)"
-                  placeholder="Shop phone number"
-                />
-                <button
-                  type="button"
-                  class="ghost-button"
-                  [disabled]="verifyingCreateShop()"
-                  (click)="verifyCreateShop()"
-                >
-                  {{ verifyingCreateShop() ? 'Checking…' : 'Verify' }}
-                </button>
-              </div>
-              @if (createShopIdentity(); as shop) {
-                <p class="blog-shop-verified">Verified shop: {{ shop.shop_name }}</p>
-              }
-            }
-            <label class="blog-comment-label" for="blog-create-body">Your note</label>
-            <textarea
-              id="blog-create-body"
-              rows="3"
-              maxlength="8000"
-              [value]="createBody()"
-              (input)="onCreateBodyInput($event)"
-              placeholder="What happened at this Junction?"
-              [disabled]="creatingBlog()"
-            ></textarea>
-            <button type="submit" class="primary-button blog-comment-submit" [disabled]="creatingBlog()">
-              {{ creatingBlog() ? 'Creating…' : 'Create a blog' }}
+          <div class="blog-create-footer">
+            <button type="button" class="primary-button blog-create-trigger" (click)="openCreateBlogSheet()">
+              Create a blog
             </button>
-          </form>
+          </div>
         } @else {
         @if (visibleShopTypes().length > 0) {
           <div class="filter-chip-row" role="group" aria-label="Filter shops by type">
@@ -780,4 +705,113 @@
     (closed)="closeCheckoutProfile()"
     (checkoutCompleted)="onCheckoutProfileCompleted()"
   />
+}
+
+@if (createBlogSheetOpen()) {
+  <div
+    class="action-sheet-root"
+    role="presentation"
+    (click)="closeCreateBlogSheet()"
+    (keydown.escape)="closeCreateBlogSheet()"
+  >
+    <div
+      class="action-sheet"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="blog-create-sheet-title"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="action-sheet-group">
+        <header class="action-sheet-header">
+          <h3 id="blog-create-sheet-title">Create a blog</h3>
+          <p>Junction and name are filled from your profile — change them if needed.</p>
+        </header>
+
+        <form class="action-sheet-form" (submit)="$event.preventDefault(); submitCreateBlog()">
+          @if (createBlogError()) {
+            <p class="error-message">{{ createBlogError() }}</p>
+          }
+          <label class="blog-comment-label" for="blog-create-junction">Junction</label>
+          <input
+            id="blog-create-junction"
+            type="text"
+            maxlength="160"
+            [value]="createJunction()"
+            (input)="onCreateJunctionInput($event)"
+            placeholder="Locality, City"
+          />
+          <label class="blog-comment-label">Post as</label>
+          <div class="blog-author-toggle" role="group" aria-label="Blog author type">
+            <button
+              type="button"
+              [class.active]="createAuthorKind() === 'person'"
+              (click)="setCreateAuthorKind('person')"
+            >
+              Name
+            </button>
+            <button
+              type="button"
+              [class.active]="createAuthorKind() === 'shop'"
+              (click)="setCreateAuthorKind('shop')"
+            >
+              Shop
+            </button>
+          </div>
+          @if (createAuthorKind() === 'person') {
+            <label class="blog-comment-label" for="blog-create-name">Name</label>
+            <input
+              id="blog-create-name"
+              type="text"
+              maxlength="100"
+              [value]="createName()"
+              (input)="onCreateNameInput($event)"
+              placeholder="Your name"
+            />
+          } @else {
+            <label class="blog-comment-label" for="blog-create-shop-phone">Shop phone</label>
+            <div class="blog-shop-verify-row">
+              <input
+                id="blog-create-shop-phone"
+                type="tel"
+                maxlength="20"
+                [value]="createShopPhone()"
+                (input)="onCreateShopPhoneInput($event)"
+                placeholder="Shop phone number"
+              />
+              <button
+                type="button"
+                class="ghost-button"
+                [disabled]="verifyingCreateShop()"
+                (click)="verifyCreateShop()"
+              >
+                {{ verifyingCreateShop() ? 'Checking…' : 'Verify' }}
+              </button>
+            </div>
+            @if (createShopIdentity(); as shop) {
+              <p class="blog-shop-verified">Verified shop: {{ shop.shop_name }}</p>
+            }
+          }
+          <label class="blog-comment-label" for="blog-create-body">Your note</label>
+          <textarea
+            id="blog-create-body"
+            rows="4"
+            maxlength="8000"
+            [value]="createBody()"
+            (input)="onCreateBodyInput($event)"
+            placeholder="What happened at this Junction?"
+            [disabled]="creatingBlog()"
+          ></textarea>
+          <button type="submit" class="action-sheet-button action-sheet-button-primary" [disabled]="creatingBlog()">
+            {{ creatingBlog() ? 'Creating…' : 'Create a blog' }}
+          </button>
+        </form>
+      </div>
+
+      <div class="action-sheet-group action-sheet-group-cancel">
+        <button type="button" class="action-sheet-button action-sheet-button-cancel" (click)="closeCreateBlogSheet()">
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
 }
