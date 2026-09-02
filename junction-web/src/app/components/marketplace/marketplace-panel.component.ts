@@ -348,6 +348,16 @@ export class MarketplacePanelComponent implements OnInit {
     this.shopsLayout.set(layout);
   }
 
+  /** Opens junction.blog filtered to this locality or city Junction. */
+  junctionBlogUrl(): string {
+    const label = this.session.junctionLabel().trim();
+    const url = new URL('https://www.junction.blog/');
+    if (label) {
+      url.searchParams.set('junction', label);
+    }
+    return url.toString();
+  }
+
   productImageSource(product: Product): string | null {
     return resolveProductImageSource(product);
   }

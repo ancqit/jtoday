@@ -60,7 +60,17 @@
 
       @if (!loading() && view() === 'shops') {
         <div class="shops-toolbar">
-          <h2 class="services-heading">{{ session.servicesHeading() }}</h2>
+          <div class="shops-toolbar-copy">
+            <h2 class="services-heading">{{ session.servicesHeading() }}</h2>
+            <a
+              class="junction-blog-link"
+              [href]="junctionBlogUrl()"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Blog
+            </a>
+          </div>
           <div class="layout-toggle" role="group" aria-label="Service layout">
             <button
               type="button"

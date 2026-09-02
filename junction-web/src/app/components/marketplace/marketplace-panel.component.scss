@@ -72,26 +72,47 @@
   flex: 1;
   min-height: 0;
   overflow: auto;
-  padding: 1.25rem;
+  padding: 0.85rem;
 }
 
 .shops-toolbar,
 .products-toolbar {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.65rem;
+  gap: 0.5rem;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.55rem;
+}
+
+.shops-toolbar-copy {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.55rem;
+  min-width: 0;
+}
+
+.junction-blog-link {
+  flex-shrink: 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #0f766e;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(15, 118, 110, 0.35);
+}
+
+.junction-blog-link:hover {
+  border-bottom-color: #0f766e;
 }
 
 .filter-chip-row {
   display: flex;
   flex-wrap: nowrap;
-  gap: 0.45rem;
+  gap: 0.35rem;
   overflow-x: auto;
-  padding-bottom: 0.35rem;
-  margin-bottom: 0.75rem;
+  padding-bottom: 0.25rem;
+  margin-bottom: 0.55rem;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
 }
@@ -100,11 +121,11 @@
   flex: 0 0 auto;
   border: 1px solid rgba(148, 163, 184, 0.45);
   border-radius: 999px;
-  padding: 0.35rem 0.75rem;
+  padding: 0.25rem 0.6rem;
   background: rgba(255, 255, 255, 0.85);
   color: #475569;
   font: inherit;
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   font-weight: 600;
   cursor: pointer;
 }
@@ -141,7 +162,7 @@
 
 .services-heading {
   margin: 0;
-  font-size: 1rem;
+  font-size: 0.88rem;
   font-weight: 700;
   color: #334155;
 }
@@ -165,14 +186,14 @@
 }
 
 .layout-toggle-option {
-  min-width: 4.25rem;
-  padding: 0.45rem 0.85rem;
+  min-width: 3.5rem;
+  padding: 0.3rem 0.65rem;
   border: 0;
   border-radius: 999px;
   background: transparent;
   color: #64748b;
   font: inherit;
-  font-size: 0.82rem;
+  font-size: 0.72rem;
   font-weight: 600;
   cursor: pointer;
   transition:
@@ -189,20 +210,20 @@
 
 .shop-list {
   display: grid;
-  gap: 0.5rem;
+  gap: 0.35rem;
 }
 
 .shop-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: 0.65rem;
   width: 100%;
-  padding: 0.85rem 1rem;
+  padding: 0.55rem 0.7rem;
   border: 1px solid rgba(255, 255, 255, 0.55);
-  border-radius: 0.85rem;
+  border-radius: 0.7rem;
   background: rgba(255, 255, 255, 0.72);
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+  box-shadow: 0 3px 10px rgba(15, 23, 42, 0.04);
   text-align: left;
   cursor: pointer;
 }
@@ -266,7 +287,7 @@
 
 .card-grid {
   display: grid;
-  gap: 0.85rem;
+  gap: 0.55rem;
   grid-template-columns: 1fr;
 }
 
@@ -313,49 +334,49 @@
 
 .shop-card-body {
   display: grid;
-  gap: 0.45rem;
-  padding-top: 0.55rem;
+  gap: 0.28rem;
+  padding-top: 0.35rem;
   border-top: 1px solid rgba(226, 232, 240, 0.9);
 }
 
 .pro-shop-card {
   display: flex;
   align-items: stretch;
-  gap: 0.75rem;
-  padding: 0.85rem 0.9rem;
+  gap: 0.55rem;
+  padding: 0.55rem 0.65rem;
 }
 
 .shop-card-media,
 .shop-row-media {
   flex-shrink: 0;
-  width: 3.5rem;
-  height: 3.5rem;
-  border-radius: 0.75rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.55rem;
   overflow: hidden;
   background: linear-gradient(145deg, #e2e8f0, #f8fafc);
 }
 
 .shop-card-content {
   display: grid;
-  gap: 0.35rem;
+  gap: 0.2rem;
   min-width: 0;
   flex: 1;
 }
 
 .shop-card-content .shop-card-body {
-  padding-top: 0.45rem;
+  padding-top: 0.3rem;
 }
 
 .shop-row-media {
-  width: 2.75rem;
-  height: 2.75rem;
+  width: 2.15rem;
+  height: 2.15rem;
 }
 
 .shop-phone-value {
   color: #0f766e;
   font-weight: 600;
   text-decoration: none;
-  font-size: 0.82rem;
+  font-size: 0.74rem;
 }
 
 .shop-phone-value:hover {
@@ -369,7 +390,7 @@
 }
 
 .shop-detail-label {
-  font-size: 0.68rem;
+  font-size: 0.6rem;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -377,9 +398,9 @@
 }
 
 .shop-detail-value {
-  font-size: 0.84rem;
+  font-size: 0.74rem;
   color: #475569;
-  line-height: 1.35;
+  line-height: 1.3;
 }
 
 .shop-detail-hours .shop-detail-value {
@@ -397,11 +418,11 @@
 .shop-row-phone-wrap,
 .shop-row-notice-wrap {
   display: grid;
-  gap: 0.15rem;
+  gap: 0.1rem;
   flex-shrink: 0;
-  min-width: 7.5rem;
-  padding: 0.55rem 0.7rem;
-  border-radius: 0.7rem;
+  min-width: 5.75rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: 0.55rem;
   text-align: right;
 }
 
@@ -512,10 +533,10 @@
 
 .shop-name {
   margin: 0;
-  font-size: 1rem;
+  font-size: 0.86rem;
   font-weight: 700;
   color: #0f172a;
-  line-height: 1.25;
+  line-height: 1.2;
   min-width: 0;
 }
 
@@ -836,7 +857,7 @@
   }
 
   .pro-shop-card {
-    padding: 1rem 1.05rem;
+    padding: 0.6rem 0.7rem;
   }
 }
 
@@ -862,11 +883,11 @@
   }
 
   .marketplace-body {
-    padding: 0.85rem;
+    padding: 0.7rem;
   }
 
   .shops-toolbar {
-    margin-bottom: 0.85rem;
+    margin-bottom: 0.55rem;
   }
 
   .pro-shop-row {
