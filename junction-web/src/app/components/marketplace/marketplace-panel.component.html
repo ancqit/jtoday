@@ -215,6 +215,16 @@
                 </button>
                 <div class="shop-card-content">
                   <h3 class="shop-name">{{ shop.name }}</h3>
+                  @if (shop.gst_verified || shop.digilocker_verified) {
+                    <div class="shop-badges" aria-label="Verification badges">
+                      @if (shop.gst_verified) {
+                        <span class="shop-badge shop-badge-gst">GST verified</span>
+                      }
+                      @if (shop.digilocker_verified) {
+                        <span class="shop-badge shop-badge-id">DigiLocker verified</span>
+                      }
+                    </div>
+                  }
                   <div class="shop-card-body">
                     <p class="shop-detail">
                       <span class="shop-detail-label">Location</span>
@@ -262,6 +272,16 @@
                 </button>
                 <div class="shop-row-main">
                   <h3 class="shop-name">{{ shop.name }}</h3>
+                  @if (shop.gst_verified || shop.digilocker_verified) {
+                    <div class="shop-badges" aria-label="Verification badges">
+                      @if (shop.gst_verified) {
+                        <span class="shop-badge shop-badge-gst">GST verified</span>
+                      }
+                      @if (shop.digilocker_verified) {
+                        <span class="shop-badge shop-badge-id">DigiLocker verified</span>
+                      }
+                    </div>
+                  }
                   <p class="shop-detail">
                     <span class="shop-detail-label">Location</span>
                     <span class="shop-detail-value">{{ shop.locality }}, {{ shop.city }}</span>

@@ -17,4 +17,8 @@ export interface Shop {
   shop_type?: string | null;
   shop_type_label?: string | null;
   owner_bio?: string | null;
+  /** Owner DigiLocker / gov-ID verification from junctionBack shop catalog. */
+  digilocker_verified?: boolean | null;
+  /** Owner GSTIN verification from junctionBack shop catalog. */
+  gst_verified?: boolean | null;
 }
