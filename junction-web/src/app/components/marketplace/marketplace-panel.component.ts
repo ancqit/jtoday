@@ -184,6 +184,7 @@ export class MarketplacePanelComponent implements OnInit {
   openPanel(): void {
     this.view.set('shops');
     this.blogOpen.set(false);
+    this.createBlogSheetOpen.set(false);
     this.selectedShop.set(null);
     this.selectedBlogNumber.set(null);
     this.products.set([]);
