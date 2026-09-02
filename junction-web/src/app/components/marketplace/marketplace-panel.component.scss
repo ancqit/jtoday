@@ -88,22 +88,124 @@
 .shops-toolbar-copy {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
+  align-items: center;
   gap: 0.55rem;
   min-width: 0;
 }
 
-.junction-blog-link {
+.catalog-tab-toggle {
   flex-shrink: 0;
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: #0f766e;
-  text-decoration: none;
-  border-bottom: 1px solid rgba(15, 118, 110, 0.35);
 }
 
-.junction-blog-link:hover {
-  border-bottom-color: #0f766e;
+.blog-list {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.blog-row {
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  border-radius: 0.7rem;
+  background: #fff;
+  box-shadow: 0 3px 10px rgba(15, 23, 42, 0.04);
+  overflow: hidden;
+}
+
+.blog-row.is-open {
+  border-color: rgba(94, 234, 212, 0.85);
+}
+
+.blog-row-header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.55rem;
+  align-items: center;
+  width: 100%;
+  padding: 0.55rem 0.7rem;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+.blog-number {
+  flex-shrink: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #0f766e;
+}
+
+.blog-row-copy {
+  display: grid;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.blog-row-copy strong {
+  font-size: 0.84rem;
+  color: #0f172a;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.blog-row-copy small {
+  font-size: 0.7rem;
+  color: #64748b;
+}
+
+.blog-chevron {
+  color: #94a3b8;
+  font-size: 0.75rem;
+}
+
+.blog-row-body {
+  padding: 0 0.7rem 0.7rem;
+  border-top: 1px solid rgba(226, 232, 240, 0.9);
+}
+
+.blog-body-text {
+  margin: 0.55rem 0 0;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: #334155;
+  white-space: pre-wrap;
+}
+
+.blog-comments {
+  margin-top: 0.65rem;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.blog-comments-heading {
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+.blog-comment {
+  padding: 0.45rem 0.55rem;
+  border-radius: 0.55rem;
+  background: rgba(248, 250, 252, 0.95);
+}
+
+.blog-comment strong {
+  display: block;
+  font-size: 0.72rem;
+  color: #0f766e;
+}
+
+.blog-comment p {
+  margin: 0.2rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  color: #475569;
+  white-space: pre-wrap;
 }
 
 .filter-chip-row {
