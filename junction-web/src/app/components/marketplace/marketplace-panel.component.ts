@@ -4,7 +4,7 @@ import { AuthorizedImageComponent } from '../authorized-image/authorized-image.c
 import { ProductGalleryModalComponent } from '../product-gallery-modal/product-gallery-modal.component';
 import { ProfileModalComponent } from '../profile-modal/profile-modal.component';
 import { ShopProfileModalComponent } from '../shop-profile-modal/shop-profile-modal.component';
-import { BlogEntry } from '../../models/blog.model';
+import { BlogComment, BlogEntry, BlogAuthorKind, BlogShopIdentity } from '../../models/blog.model';
 import { Product } from '../../models/product.model';
 import { SavedOrder } from '../../models/order.model';
 import { Shop } from '../../models/shop.model';
@@ -76,6 +76,23 @@ export class MarketplacePanelComponent implements OnInit {
   readonly commentDrafts = signal<Record<number, string>>({});
   readonly commentingBlogNumber = signal<number | null>(null);
   readonly commentError = signal<string | null>(null);
+  readonly commentAuthorKind = signal<BlogAuthorKind>('person');
+  readonly commentNameDraft = signal('');
+  readonly commentShopPhone = signal('');
+  readonly commentShopIdentity = signal<BlogShopIdentity | null>(null);
+  readonly verifyingCommentShop = signal(false);
+  readonly commentMenuKey = signal<string | null>(null);
+  readonly editingCommentKey = signal<string | null>(null);
+  readonly editCommentDraft = signal('');
+  readonly createJunction = signal('');
+  readonly createName = signal('');
+  readonly createBody = signal('');
+  readonly createAuthorKind = signal<BlogAuthorKind>('person');
+  readonly createShopPhone = signal('');
+  readonly createShopIdentity = signal<BlogShopIdentity | null>(null);
+  readonly verifyingCreateShop = signal(false);
+  readonly creatingBlog = signal(false);
+  readonly createBlogError = signal<string | null>(null);
 
   private readonly productQuantities = signal<Record<string, number>>({});
 
@@ -374,7 +391,10 @@ export class MarketplacePanelComponent implements OnInit {
     const next = !this.blogOpen();
     this.blogOpen.set(next);
     this.commentError.set(null);
+    this.createBlogError.set(null);
+    this.commentMenuKey.set(null);
     if (next) {
+      this.seedCreateForm();
       this.loadBlogs(false);
     } else {
       this.selectedBlogNumber.set(null);
@@ -386,10 +406,40 @@ export class MarketplacePanelComponent implements OnInit {
       current === entry.blogNumber ? null : entry.blogNumber,
     );
     this.commentError.set(null);
+    this.commentMenuKey.set(null);
   }
 
   isBlogExpanded(entry: BlogEntry): boolean {
     return this.selectedBlogNumber() === entry.blogNumber;
+  }
+
+  menuKey(blogNumber: number, commentId: string): string {
+    return `${blogNumber}:${commentId}`;
+  }
+
+  canManageComment(comment: BlogComment): boolean {
+    const person = this.resolvePersonCommentIdentity();
+    if (
+      person &&
+      person.creatorNumber === comment.creatorNumber &&
+      person.nameTag.toLowerCase() === comment.nameTag.toLowerCase()
+    ) {
+      return true;
+    }
+    const shop = this.commentShopIdentity();
+    if (
+      shop &&
+      shop.creator_number === comment.creatorNumber &&
+      shop.name_tag.toLowerCase() === comment.nameTag.toLowerCase()
+    ) {
+      return true;
+    }
+    const createShop = this.createShopIdentity();
+    return Boolean(
+      createShop &&
+        createShop.creator_number === comment.creatorNumber &&
+        createShop.name_tag.toLowerCase() === comment.nameTag.toLowerCase(),
+    );
   }
 
   commentDraft(blogNumber: number): string {
@@ -401,17 +451,164 @@ export class MarketplacePanelComponent implements OnInit {
     this.commentDrafts.update((drafts) => ({ ...drafts, [blogNumber]: value }));
   }
 
-  submitComment(entry: BlogEntry): void {
-    const profile = this.session.userProfile();
-    const identity = profile ? this.blogsService.commentIdentityFromProfile(profile) : null;
-    const body = this.commentDraft(entry.blogNumber).trim();
+  onCommentNameInput(event: Event): void {
+    this.commentNameDraft.set((event.target as HTMLInputElement).value);
+  }
 
-    if (!identity) {
-      this.commentError.set('Set your name in your Junction profile before commenting.');
+  onCommentShopPhoneInput(event: Event): void {
+    this.commentShopPhone.set((event.target as HTMLInputElement).value);
+    this.commentShopIdentity.set(null);
+  }
+
+  setCommentAuthorKind(kind: BlogAuthorKind): void {
+    this.commentAuthorKind.set(kind);
+    this.commentError.set(null);
+  }
+
+  setCreateAuthorKind(kind: BlogAuthorKind): void {
+    this.createAuthorKind.set(kind);
+    this.createBlogError.set(null);
+  }
+
+  onCreateJunctionInput(event: Event): void {
+    this.createJunction.set((event.target as HTMLInputElement).value);
+  }
+
+  onCreateNameInput(event: Event): void {
+    this.createName.set((event.target as HTMLInputElement).value);
+  }
+
+  onCreateBodyInput(event: Event): void {
+    this.createBody.set((event.target as HTMLTextAreaElement).value);
+  }
+
+  onCreateShopPhoneInput(event: Event): void {
+    this.createShopPhone.set((event.target as HTMLInputElement).value);
+    this.createShopIdentity.set(null);
+  }
+
+  onEditCommentDraftInput(event: Event): void {
+    this.editCommentDraft.set((event.target as HTMLTextAreaElement).value);
+  }
+
+  toggleCommentMenu(blogNumber: number, commentId: string, event: Event): void {
+    event.stopPropagation();
+    const key = this.menuKey(blogNumber, commentId);
+    this.commentMenuKey.update((current) => (current === key ? null : key));
+  }
+
+  startEditComment(entry: BlogEntry, comment: BlogComment): void {
+    this.commentMenuKey.set(null);
+    this.editingCommentKey.set(this.menuKey(entry.blogNumber, comment.id));
+    this.editCommentDraft.set(comment.body);
+  }
+
+  cancelEditComment(): void {
+    this.editingCommentKey.set(null);
+    this.editCommentDraft.set('');
+  }
+
+  saveEditComment(entry: BlogEntry, comment: BlogComment): void {
+    const body = this.editCommentDraft().trim();
+    if (!body) {
+      this.commentError.set('Comment cannot be empty.');
       return;
     }
+    this.commentError.set(null);
+    this.blogsService
+      .updateComment(entry.blogNumber, comment.id, body, {
+        creatorNumber: comment.creatorNumber,
+        nameTag: comment.nameTag,
+      })
+      .subscribe({
+        next: (updated) => {
+          this.replaceBlog(updated);
+          this.cancelEditComment();
+        },
+        error: () => {
+          this.commentError.set('Unable to edit comment. You can only edit your own.');
+        },
+      });
+  }
+
+  deleteComment(entry: BlogEntry, comment: BlogComment): void {
+    this.commentMenuKey.set(null);
+    this.commentError.set(null);
+    this.blogsService
+      .deleteComment(entry.blogNumber, comment.id, {
+        creatorNumber: comment.creatorNumber,
+        nameTag: comment.nameTag,
+      })
+      .subscribe({
+        next: (updated) => this.replaceBlog(updated),
+        error: () => {
+          this.commentError.set('Unable to delete comment. You can only delete your own.');
+        },
+      });
+  }
+
+  verifyCommentShop(): void {
+    const phone = this.commentShopPhone().trim();
+    if (!phone) {
+      this.commentError.set('Enter the shop phone number to verify.');
+      return;
+    }
+    this.verifyingCommentShop.set(true);
+    this.commentError.set(null);
+    this.blogsService.verifyShopPhone(phone).subscribe({
+      next: (shop) => {
+        this.commentShopIdentity.set(shop);
+        this.verifyingCommentShop.set(false);
+      },
+      error: () => {
+        this.commentShopIdentity.set(null);
+        this.verifyingCommentShop.set(false);
+        this.commentError.set('No shop found for that phone number.');
+      },
+    });
+  }
+
+  verifyCreateShop(): void {
+    const phone = this.createShopPhone().trim();
+    if (!phone) {
+      this.createBlogError.set('Enter the shop phone number to verify.');
+      return;
+    }
+    this.verifyingCreateShop.set(true);
+    this.createBlogError.set(null);
+    this.blogsService.verifyShopPhone(phone).subscribe({
+      next: (shop) => {
+        this.createShopIdentity.set(shop);
+        this.verifyingCreateShop.set(false);
+      },
+      error: () => {
+        this.createShopIdentity.set(null);
+        this.verifyingCreateShop.set(false);
+        this.createBlogError.set('No shop found for that phone number.');
+      },
+    });
+  }
+
+  submitComment(entry: BlogEntry): void {
+    const body = this.commentDraft(entry.blogNumber).trim();
     if (!body) {
       this.commentError.set('Write a comment first.');
+      return;
+    }
+
+    const identity =
+      this.commentAuthorKind() === 'shop'
+        ? this.commentShopIdentity()
+          ? this.blogsService.shopIdentityFromLookup(this.commentShopIdentity()!)
+          : null
+        : this.resolvePersonCommentIdentity();
+
+    if (!identity) {
+      this.commentError.set(
+        this.commentAuthorKind() === 'shop'
+          ? 'Verify a shop phone before commenting as a shop.'
+          : 'Enter a name (or set it in your Junction profile) before commenting.',
+      );
       return;
     }
 
@@ -425,9 +622,7 @@ export class MarketplacePanelComponent implements OnInit {
       })
       .subscribe({
         next: (updated) => {
-          this.blogs.update((list) =>
-            list.map((item) => (item.blogNumber === updated.blogNumber ? updated : item)),
-          );
+          this.replaceBlog(updated);
           this.commentDrafts.update((drafts) => ({ ...drafts, [entry.blogNumber]: '' }));
           this.commentingBlogNumber.set(null);
         },
@@ -436,6 +631,119 @@ export class MarketplacePanelComponent implements OnInit {
           this.commentError.set('Unable to post comment. Try again.');
         },
       });
+  }
+
+  submitCreateBlog(): void {
+    const junction = this.createJunction().trim();
+    const body = this.createBody().trim();
+    if (!junction) {
+      this.createBlogError.set('Junction is required.');
+      return;
+    }
+    if (!body) {
+      this.createBlogError.set('Write a note first.');
+      return;
+    }
+
+    const identity =
+      this.createAuthorKind() === 'shop'
+        ? this.createShopIdentity()
+          ? this.blogsService.shopIdentityFromLookup(this.createShopIdentity()!)
+          : null
+        : this.resolvePersonCreateIdentity();
+
+    if (!identity) {
+      this.createBlogError.set(
+        this.createAuthorKind() === 'shop'
+          ? 'Verify a shop phone before creating as a shop.'
+          : 'Enter a name before creating a blog.',
+      );
+      return;
+    }
+
+    this.creatingBlog.set(true);
+    this.createBlogError.set(null);
+    this.blogsService
+      .createEntry({
+        junction,
+        body,
+        ...identity,
+        tags: [identity.nameTag, junction],
+      })
+      .subscribe({
+        next: (created) => {
+          this.blogs.update((list) => [created, ...list.filter((item) => item.blogNumber !== created.blogNumber)]);
+          this.createBody.set('');
+          this.creatingBlog.set(false);
+          this.selectedBlogNumber.set(created.blogNumber);
+        },
+        error: () => {
+          this.creatingBlog.set(false);
+          this.createBlogError.set('Unable to create blog. Try again.');
+        },
+      });
+  }
+
+  private resolvePersonCommentIdentity() {
+    const profile = this.session.userProfile();
+    const name = this.commentNameDraft().trim() || profile?.name?.trim() || '';
+    if (!name) {
+      return null;
+    }
+    const base = profile ? this.blogsService.personIdentityFromProfile({ ...profile, name }) : null;
+    if (base) {
+      return { ...base, creatorName: name };
+    }
+    const digits = (profile?.phoneNumber ?? '').replace(/\D/g, '');
+    const creatorNumber = digits.slice(-4) || '0000';
+    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '').slice(0, 16) || 'user';
+    return {
+      creatorName: name,
+      creatorNumber,
+      nameTag: `${slug}#${creatorNumber}`,
+      authorKind: 'person' as const,
+      shopId: null,
+    };
+  }
+
+  private resolvePersonCreateIdentity() {
+    const profile = this.session.userProfile();
+    const name = this.createName().trim() || profile?.name?.trim() || '';
+    if (!name) {
+      return null;
+    }
+    const base = profile ? this.blogsService.personIdentityFromProfile({ ...profile, name }) : null;
+    if (base) {
+      return { ...base, creatorName: name };
+    }
+    const digits = (profile?.phoneNumber ?? '').replace(/\D/g, '');
+    const creatorNumber = digits.slice(-4) || '0000';
+    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '').slice(0, 16) || 'user';
+    return {
+      creatorName: name,
+      creatorNumber,
+      nameTag: `${slug}#${creatorNumber}`,
+      authorKind: 'person' as const,
+      shopId: null,
+    };
+  }
+
+  private seedCreateForm(): void {
+    const profile = this.session.userProfile();
+    if (!profile) {
+      return;
+    }
+    this.createJunction.set(this.blogsService.defaultJunction(profile, this.session.serviceScope()));
+    this.createName.set(profile.name.trim());
+    this.commentNameDraft.set(profile.name.trim());
+    this.createShopPhone.set(profile.phoneNumber?.replace(/^\+91/, '') ?? '');
+    this.commentShopPhone.set(profile.phoneNumber?.replace(/^\+91/, '') ?? '');
+  }
+
+  private replaceBlog(updated: BlogEntry): void {
+    this.blogs.update((list) =>
+      list.map((item) => (item.blogNumber === updated.blogNumber ? updated : item)),
+    );
   }
 
   productImageSource(product: Product): string | null {
