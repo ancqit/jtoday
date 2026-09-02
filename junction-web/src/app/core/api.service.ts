@@ -29,12 +29,17 @@ export class ApiService {
     return this.http.put<T>(this.url(path), body);
   }
 
-  patch<T>(path: string, body: unknown): Observable<T> {
-    return this.http.patch<T>(this.url(path), body);
+  patch<T>(path: string, body: unknown, options?: ApiGetOptions): Observable<T> {
+    return this.http.patch<T>(this.url(path), body, {
+      context: options?.context,
+    });
   }
 
-  delete(path: string): Observable<void> {
-    return this.http.delete<void>(this.url(path));
+  delete<T = void>(path: string, body?: unknown, options?: ApiGetOptions): Observable<T> {
+    return this.http.delete<T>(this.url(path), {
+      body,
+      context: options?.context,
+    });
   }
 
   private url(path: string): string {

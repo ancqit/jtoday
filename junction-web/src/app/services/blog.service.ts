@@ -1,7 +1,13 @@
 import { inject, Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
-import { BlogApi, BlogCommentCreateInput } from '../core/blog.api';
-import { BlogEntry } from '../models/blog.model';
+import {
+  BlogApi,
+  BlogAuthorInput,
+  BlogCommentCreateInput,
+  BlogCommentOwnerInput,
+  BlogEntryCreateInput,
+} from '../core/blog.api';
+import { BlogEntry, BlogShopIdentity } from '../models/blog.model';
 import { ServiceScope, UserProfile } from '../models/location.model';
 
 @Injectable({ providedIn: 'root' })
@@ -19,17 +25,61 @@ export class BlogService {
     );
   }
 
+  createEntry(input: BlogEntryCreateInput): Observable<BlogEntry> {
+    return this.blogApi.createEntry({
+      ...input,
+      junction: input.junction.trim(),
+      body: input.body.trim(),
+      creatorName: input.creatorName.trim(),
+      creatorNumber: input.creatorNumber.trim(),
+      nameTag: input.nameTag.trim(),
+      tags: input.tags ?? [],
+      authorKind: input.authorKind ?? 'person',
+      shopId: input.shopId ?? null,
+    });
+  }
+
   addComment(blogNumber: number, input: BlogCommentCreateInput): Observable<BlogEntry> {
     return this.blogApi.addComment(blogNumber, {
       body: input.body.trim(),
       creatorName: input.creatorName.trim(),
       creatorNumber: input.creatorNumber.trim(),
       nameTag: input.nameTag.trim(),
+      authorKind: input.authorKind ?? 'person',
+      shopId: input.shopId ?? null,
     });
   }
 
-  /** Build comment identity from the junction.today profile. */
-  commentIdentityFromProfile(profile: UserProfile): BlogCommentCreateInput | null {
+  updateComment(
+    blogNumber: number,
+    commentId: string,
+    body: string,
+    owner: BlogCommentOwnerInput,
+  ): Observable<BlogEntry> {
+    return this.blogApi.updateComment(blogNumber, commentId, body.trim(), owner);
+  }
+
+  deleteComment(
+    blogNumber: number,
+    commentId: string,
+    owner: BlogCommentOwnerInput,
+  ): Observable<BlogEntry> {
+    return this.blogApi.deleteComment(blogNumber, commentId, owner);
+  }
+
+  verifyShopPhone(phoneNumber: string): Observable<BlogShopIdentity> {
+    return this.blogApi.verifyShopPhone(phoneNumber.trim());
+  }
+
+  /** Default junction string for create form. */
+  defaultJunction(profile: UserProfile, scope: ServiceScope): string {
+    const city = profile.city.name.trim();
+    const locality = profile.locality.name.trim();
+    return scope === 'city' ? city : `${locality}, ${city}`;
+  }
+
+  /** Build person identity from the junction.today profile. */
+  personIdentityFromProfile(profile: UserProfile): BlogAuthorInput | null {
     const creatorName = profile.name.trim();
     if (!creatorName) {
       return null;
@@ -44,10 +94,30 @@ export class BlogService {
         .slice(0, 16) || 'user';
 
     return {
-      body: '',
       creatorName,
       creatorNumber,
       nameTag: `${slug}#${creatorNumber}`,
+      authorKind: 'person',
+      shopId: null,
+    };
+  }
+
+  /** @deprecated use personIdentityFromProfile */
+  commentIdentityFromProfile(profile: UserProfile): BlogCommentCreateInput | null {
+    const identity = this.personIdentityFromProfile(profile);
+    if (!identity) {
+      return null;
+    }
+    return { ...identity, body: '' };
+  }
+
+  shopIdentityFromLookup(shop: BlogShopIdentity): BlogAuthorInput {
+    return {
+      creatorName: shop.creator_name,
+      creatorNumber: shop.creator_number,
+      nameTag: shop.name_tag,
+      authorKind: 'shop',
+      shopId: shop.shop_id,
     };
   }
 
