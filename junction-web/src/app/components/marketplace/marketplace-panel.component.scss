@@ -243,7 +243,8 @@
 
 .blog-comment-form textarea,
 .blog-comment-form input,
-.blog-create-card input,
+.action-sheet-form input,
+.action-sheet-form textarea,
 .blog-comment textarea {
   width: 100%;
   padding: 0.5rem 0.65rem;
@@ -386,27 +387,117 @@
   font-weight: 600;
 }
 
-.blog-create-card {
+.blog-create-footer {
   margin-top: 1rem;
   display: grid;
-  gap: 0.45rem;
-  padding: 0.85rem 0.9rem;
-  border-radius: 0.85rem;
-  border: 1px solid rgba(25, 75, 49, 0.18);
-  background: rgba(255, 252, 245, 0.9);
 }
 
-.blog-create-card h3 {
+.blog-create-trigger {
+  width: 100%;
+}
+
+.action-sheet-root {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0.75rem;
+  background: rgba(15, 23, 42, 0.45);
+  animation: action-sheet-fade 0.18s ease;
+}
+
+.action-sheet {
+  width: min(100%, 28rem);
+  display: grid;
+  gap: 0.55rem;
+  animation: action-sheet-rise 0.22s ease;
+}
+
+.action-sheet-group {
+  overflow: hidden;
+  border-radius: 0.9rem;
+  background: rgba(255, 252, 245, 0.98);
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.18);
+}
+
+.action-sheet-group-cancel {
+  background: #fff;
+}
+
+.action-sheet-header {
+  padding: 0.95rem 1rem 0.55rem;
+  text-align: center;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+}
+
+.action-sheet-header h3 {
   margin: 0;
   font-size: 0.95rem;
-  color: var(--forest);
+  color: var(--forest, #194b31);
 }
 
-.blog-create-hint {
-  margin: 0;
+.action-sheet-header p {
+  margin: 0.35rem 0 0;
   font-size: 0.74rem;
-  color: #64748b;
   line-height: 1.35;
+  color: #64748b;
+}
+
+.action-sheet-form {
+  display: grid;
+  gap: 0.45rem;
+  padding: 0.85rem 1rem 1rem;
+  max-height: min(70vh, 32rem);
+  overflow: auto;
+}
+
+.action-sheet-button {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 0.95rem 1rem;
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.action-sheet-button-primary {
+  margin-top: 0.35rem;
+  border-radius: 0.75rem;
+  background: linear-gradient(135deg, rgba(23, 99, 62, 0.92), rgba(20, 184, 166, 0.88));
+  color: #fff;
+}
+
+.action-sheet-button-primary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.action-sheet-button-cancel {
+  color: var(--forest-mid, #17633e);
+}
+
+@keyframes action-sheet-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes action-sheet-rise {
+  from {
+    transform: translateY(1.25rem);
+    opacity: 0.7;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 .ghost-button {

@@ -93,6 +93,7 @@ export class MarketplacePanelComponent implements OnInit {
   readonly verifyingCreateShop = signal(false);
   readonly creatingBlog = signal(false);
   readonly createBlogError = signal<string | null>(null);
+  readonly createBlogSheetOpen = signal(false);
 
   private readonly productQuantities = signal<Record<string, number>>({});
 
@@ -398,7 +399,19 @@ export class MarketplacePanelComponent implements OnInit {
       this.loadBlogs(false);
     } else {
       this.selectedBlogNumber.set(null);
+      this.closeCreateBlogSheet();
     }
+  }
+
+  openCreateBlogSheet(): void {
+    this.seedCreateForm();
+    this.createBlogError.set(null);
+    this.createBlogSheetOpen.set(true);
+  }
+
+  closeCreateBlogSheet(): void {
+    this.createBlogSheetOpen.set(false);
+    this.createBlogError.set(null);
   }
 
   toggleBlogEntry(entry: BlogEntry): void {
@@ -676,6 +689,7 @@ export class MarketplacePanelComponent implements OnInit {
           this.createBody.set('');
           this.creatingBlog.set(false);
           this.selectedBlogNumber.set(created.blogNumber);
+          this.closeCreateBlogSheet();
         },
         error: () => {
           this.creatingBlog.set(false);
