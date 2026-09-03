@@ -1,1 +1,27 @@
-<div #mapContainer class="map-canvas" role="presentation"></div>
+@if (loadState() === 'loading') {
+  <div class="map-status" role="status" aria-live="polite">
+    <div class="map-status__card">
+      <span class="map-status__spinner" aria-hidden="true"></span>
+      <p class="map-status__title">Loading map</p>
+      <p class="map-status__copy">Finding your place on the city.</p>
+    </div>
+  </div>
+}
+
+@if (loadState() === 'error') {
+  <div class="map-status map-status--error" role="alert">
+    <div class="map-status__card">
+      <span class="map-status__glyph" aria-hidden="true"></span>
+      <p class="map-status__title">Map couldn’t load</p>
+      <p class="map-status__copy">Check your connection, then try again.</p>
+      <button type="button" class="map-status__retry" (click)="retry()">Retry</button>
+    </div>
+  </div>
+}
+
+<div
+  #mapContainer
+  class="map-canvas"
+  [class.map-canvas--hidden]="loadState() !== 'ready'"
+  role="presentation"
+></div>
