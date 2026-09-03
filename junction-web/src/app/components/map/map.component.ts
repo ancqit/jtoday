@@ -18,6 +18,8 @@ export interface MapTarget {
   zoom?: number;
 }
 
+type BasemapKind = 'physical' | 'others';
+
 /**
  * CARTO Voyager — requires a free basemap API key since 2025/26.
  * Request: https://carto.com/basemaps/apikey/
@@ -35,6 +37,14 @@ const OSM_TILE_URL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 const OSM_ATTRIBUTION =
   '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 
+/** OpenTopoMap — terrain / physical geography (no API key). */
+const PHYSICAL_TILE_URL = 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png';
+const PHYSICAL_ATTRIBUTION =
+  'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)';
+
+const TRANSPARENT_TILE =
+  'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+
 @Component({
   selector: 'app-map',
   templateUrl: './map.component.html',
@@ -50,6 +60,11 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   private map: L.Map | null = null;
   private marker: L.Marker | null = null;
   private zoomControl: L.Control.Zoom | null = null;
+  private basemapControl: L.Control | null = null;
+  private baseLayer: L.TileLayer | null = null;
+  private attributionControl: L.Control.Attribution | null = null;
+  private currentAttribution = '';
+  private activeBasemap: BasemapKind = 'others';
   private lastFlyKey: string | null = null;
   private readonly host = inject(ElementRef<HTMLElement>);
   private readonly leafletApiKey = (environment.leafletApiKey || '').trim();
@@ -84,32 +99,13 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       keyboard: false,
     });
 
-    const useCarto = Boolean(this.leafletApiKey);
-    L.control
-      .attribution({ prefix: false, position: 'bottomright' })
-      .addAttribution(useCarto ? CARTO_ATTRIBUTION : OSM_ATTRIBUTION)
-      .addTo(this.map);
+    this.attributionControl = L.control.attribution({ prefix: false, position: 'bottomright' });
+    this.attributionControl.addTo(this.map);
 
-    if (useCarto) {
-      // Never request CARTO without ?key= — that paints the “API key required” watermark.
-      L.tileLayer(cartoTileUrl(this.leafletApiKey), {
-        attribution: '',
-        subdomains: 'abcd',
-        maxZoom: 20,
-        errorTileUrl:
-          'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
-      }).addTo(this.map);
-    } else {
-      L.tileLayer(OSM_TILE_URL, {
-        attribution: '',
-        subdomains: 'abc',
-        maxZoom: 19,
-        errorTileUrl:
-          'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
-      }).addTo(this.map);
-    }
-
+    this.setBasemap('others');
+    // Zoom first so it sits at the bottom of bottomright; basemap control stacks above it.
     this.ensureZoomControl();
+    this.ensureBasemapControl();
     this.applyInteractionState(this.interactive());
 
     const initialTarget = this.target();
@@ -120,6 +116,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.marker?.remove();
+    this.basemapControl?.remove();
     this.zoomControl?.remove();
     this.map?.remove();
   }
@@ -132,13 +129,135 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     this.zoomControl.addTo(this.map);
   }
 
+  private ensureBasemapControl(): void {
+    if (!this.map || this.basemapControl) {
+      return;
+    }
+
+    const component = this;
+    const BasemapControl = L.Control.extend({
+      onAdd() {
+        const root = L.DomUtil.create('div', 'junction-basemap-control leaflet-bar');
+        root.setAttribute('role', 'group');
+        root.setAttribute('aria-label', 'Map style');
+
+        const physicalBtn = L.DomUtil.create(
+          'button',
+          'junction-basemap-control__btn',
+          root,
+        ) as HTMLButtonElement;
+        physicalBtn.type = 'button';
+        physicalBtn.textContent = 'Physical';
+        physicalBtn.setAttribute('aria-pressed', 'false');
+        physicalBtn.dataset['basemap'] = 'physical';
+
+        const othersBtn = L.DomUtil.create(
+          'button',
+          'junction-basemap-control__btn',
+          root,
+        ) as HTMLButtonElement;
+        othersBtn.type = 'button';
+        othersBtn.textContent = 'Others';
+        othersBtn.setAttribute('aria-pressed', 'true');
+        othersBtn.dataset['basemap'] = 'others';
+
+        L.DomEvent.disableClickPropagation(root);
+        L.DomEvent.disableScrollPropagation(root);
+
+        const onClick = (kind: BasemapKind) => (event: Event) => {
+          L.DomEvent.stop(event);
+          component.setBasemap(kind);
+          component.syncBasemapButtons(root);
+        };
+
+        L.DomEvent.on(physicalBtn, 'click', onClick('physical'));
+        L.DomEvent.on(othersBtn, 'click', onClick('others'));
+
+        component.syncBasemapButtons(root);
+        return root;
+      },
+    });
+
+    this.basemapControl = new BasemapControl({ position: 'bottomright' });
+    this.basemapControl.addTo(this.map);
+  }
+
+  private syncBasemapButtons(root: HTMLElement): void {
+    const buttons = root.querySelectorAll<HTMLButtonElement>('.junction-basemap-control__btn');
+    buttons.forEach((btn) => {
+      const kind = btn.dataset['basemap'] as BasemapKind | undefined;
+      const active = kind === this.activeBasemap;
+      btn.classList.toggle('is-active', active);
+      btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+  }
+
+  private setBasemap(kind: BasemapKind): void {
+    if (!this.map) {
+      return;
+    }
+
+    this.activeBasemap = kind;
+    if (this.baseLayer) {
+      this.map.removeLayer(this.baseLayer);
+      this.baseLayer = null;
+    }
+
+    if (kind === 'physical') {
+      this.replaceAttribution(PHYSICAL_ATTRIBUTION);
+      this.baseLayer = L.tileLayer(PHYSICAL_TILE_URL, {
+        attribution: '',
+        subdomains: 'abc',
+        maxZoom: 17,
+        errorTileUrl: TRANSPARENT_TILE,
+      });
+    } else {
+      const useCarto = Boolean(this.leafletApiKey);
+      this.replaceAttribution(useCarto ? CARTO_ATTRIBUTION : OSM_ATTRIBUTION);
+      this.baseLayer = useCarto
+        ? L.tileLayer(cartoTileUrl(this.leafletApiKey), {
+            attribution: '',
+            subdomains: 'abcd',
+            maxZoom: 20,
+            errorTileUrl: TRANSPARENT_TILE,
+          })
+        : L.tileLayer(OSM_TILE_URL, {
+            attribution: '',
+            subdomains: 'abc',
+            maxZoom: 19,
+            errorTileUrl: TRANSPARENT_TILE,
+          });
+    }
+
+    this.baseLayer.addTo(this.map);
+
+    const controlEl = this.map
+      .getContainer()
+      .querySelector('.junction-basemap-control') as HTMLElement | null;
+    if (controlEl) {
+      this.syncBasemapButtons(controlEl);
+    }
+  }
+
+  private replaceAttribution(next: string): void {
+    if (!this.attributionControl) {
+      return;
+    }
+    if (this.currentAttribution) {
+      this.attributionControl.removeAttribution(this.currentAttribution);
+    }
+    this.currentAttribution = next;
+    this.attributionControl.addAttribution(next);
+  }
+
   private applyInteractionState(enabled: boolean): void {
     if (!this.map) {
       return;
     }
 
-    // Always keep +/- zoom; only gate freehand exploration (pan / gesture zoom).
+    // Always keep +/- zoom and basemap filters; only gate freehand exploration.
     this.ensureZoomControl();
+    this.ensureBasemapControl();
 
     const handlers: Array<{ enable: () => void; disable: () => void } | undefined> = [
       this.map.dragging,

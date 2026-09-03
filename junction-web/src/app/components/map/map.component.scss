@@ -27,11 +27,48 @@
   z-index: 2;
 }
 
-:host ::ng-deep .leaflet-control-zoom {
+:host ::ng-deep .leaflet-control-zoom,
+:host ::ng-deep .junction-basemap-control {
   border: 0 !important;
   box-shadow: 0 8px 18px rgba(15, 23, 42, 0.16);
   overflow: hidden;
   border-radius: 0.55rem;
+}
+
+:host ::ng-deep .junction-basemap-control {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0.45rem !important;
+}
+
+:host ::ng-deep .junction-basemap-control__btn {
+  appearance: none;
+  margin: 0;
+  padding: 0 0.55rem;
+  min-width: 4.75rem;
+  height: 1.85rem;
+  border: 0;
+  border-bottom: 1px solid rgba(25, 75, 49, 0.12);
+  background: rgba(255, 252, 245, 0.96);
+  color: var(--forest, #194b31);
+  font: 600 0.68rem/1 'DM Sans', system-ui, sans-serif;
+  letter-spacing: 0.02em;
+  text-align: center;
+  cursor: pointer;
+}
+
+:host ::ng-deep .junction-basemap-control__btn:last-child {
+  border-bottom: 0;
+}
+
+:host ::ng-deep .junction-basemap-control__btn:hover {
+  background: #fff;
+  color: var(--forest-mid, #17633e);
+}
+
+:host ::ng-deep .junction-basemap-control__btn.is-active {
+  background: var(--forest, #194b31);
+  color: var(--gold, #f3d782);
 }
 
 :host ::ng-deep .leaflet-control-zoom a {
