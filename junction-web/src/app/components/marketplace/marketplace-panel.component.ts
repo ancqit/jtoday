@@ -1,5 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { Component, computed, effect, inject, OnInit, output, signal } from '@angular/core';
+import { jsPDF } from 'jspdf';
 import { AuthorizedImageComponent } from '../authorized-image/authorized-image.component';
 import { ProductGalleryModalComponent } from '../product-gallery-modal/product-gallery-modal.component';
 import { ProfileModalComponent } from '../profile-modal/profile-modal.component';
@@ -23,6 +24,11 @@ import { OrderStore } from '../../stores/order.store';
 type MarketplaceView = 'shops' | 'products' | 'cart' | 'receipt';
 type ShopsLayout = 'card' | 'list';
 type ProductsLayout = 'card' | 'list';
+
+interface InvoiceValidityRow {
+  label: string;
+  ok: boolean;
+}
 
 @Component({
   selector: 'app-marketplace-panel',
@@ -373,7 +379,96 @@ export class MarketplacePanelComponent implements OnInit {
   }
 
   saveReceiptPdf(): void {
-    window.print();
+    const order = this.completedOrder();
+    if (!order) {
+      return;
+    }
+
+    const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+    const margin = 40;
+    let y = margin;
+    const line = (text: string, opts?: { bold?: boolean; size?: number }) => {
+      doc.setFont('helvetica', opts?.bold ? 'bold' : 'normal');
+      doc.setFontSize(opts?.size ?? 10);
+      doc.text(text, margin, y);
+      y += (opts?.size ?? 10) + 6;
+    };
+
+    line('TAX INVOICE', { bold: true, size: 16 });
+    line('Issued for Junction Today · assessed against CGST Rules, 2017 — Rule 46', { size: 9 });
+    y += 4;
+    line(`Invoice No: ${order.orderNumber || order.id.slice(0, 12).toUpperCase()}`, { bold: true });
+    line(`Date of issue: ${new Date(order.createdAt).toLocaleDateString('en-IN')}`);
+    y += 6;
+    line('Supplier (shop)', { bold: true });
+    line(order.shopName);
+    line(order.junctionLabel);
+    line(`GSTIN: ${this.invoiceGstin(order)}`);
+    y += 6;
+    line('Recipient (buyer)', { bold: true });
+    line(order.customerName);
+    line(order.junctionLabel);
+    line('Payment: Pay at store');
+    y += 8;
+    line('Description / Qty / Rate / Taxable', { bold: true });
+    for (const item of order.items) {
+      line(
+        `${item.productName}  |  HSN: —  |  Qty ${item.quantity}  |  ${this.formatMoney(item.unitPrice, item.currency)}  |  ${this.formatMoney(item.unitPrice * item.quantity, item.currency)}`,
+      );
+    }
+    y += 8;
+    line(`Taxable value: ${this.formatMoney(order.subtotal, order.currency)}`, { bold: true });
+    line(`Tax (CGST/SGST or IGST): ${this.formatMoney(order.taxAmount, order.currency)}`);
+    line(`Total: ${this.formatMoney(order.totalAmount, order.currency)}`, { bold: true, size: 12 });
+    y += 10;
+    line('Official validity check (Rule 46)', { bold: true });
+    for (const row of this.invoiceValidity(order)) {
+      line(`${row.ok ? '[OK]' : '[MISSING]'} ${row.label}`, { size: 9 });
+    }
+    y += 6;
+    const summary = this.invoiceValiditySummary(order);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    const wrapped = doc.splitTextToSize(summary, 515);
+    doc.text(wrapped, margin, y);
+
+    const fileName = `junction-invoice-${order.orderNumber || order.id.slice(0, 8)}.pdf`;
+    doc.save(fileName);
+  }
+
+  invoiceGstin(order: SavedOrder): string {
+    const shop = this.shops().find((item) => item.id === order.shopId);
+    if (shop?.gst_verified) {
+      return 'Verified on shop profile (GSTIN on owner record)';
+    }
+    return 'Not on invoice — supplier GSTIN missing';
+  }
+
+  invoiceValidity(order: SavedOrder): InvoiceValidityRow[] {
+    const shop = this.shops().find((item) => item.id === order.shopId);
+    return [
+      { label: 'Supplier name & address / Junction', ok: Boolean(order.shopName?.trim() && order.junctionLabel?.trim()) },
+      { label: 'Supplier GSTIN (Rule 46(a))', ok: Boolean(shop?.gst_verified) },
+      { label: 'Consecutive invoice / order number', ok: Boolean(order.orderNumber || order.id) },
+      { label: 'Date of issue', ok: Boolean(order.createdAt) },
+      { label: 'Recipient name', ok: Boolean(order.customerName?.trim()) },
+      { label: 'Description of goods', ok: order.items.length > 0 },
+      { label: 'Quantity of goods', ok: order.items.every((item) => item.quantity > 0) },
+      { label: 'Taxable value', ok: order.subtotal >= 0 },
+      { label: 'Rate / amount of tax', ok: order.taxAmount >= 0 },
+      { label: 'HSN / SAC codes', ok: false },
+      { label: 'Place of supply (inter-State)', ok: Boolean(order.junctionLabel?.trim()) },
+      { label: 'Signature / digital signature', ok: false },
+    ];
+  }
+
+  invoiceValiditySummary(order: SavedOrder): string {
+    const rows = this.invoiceValidity(order);
+    const missing = rows.filter((row) => !row.ok).length;
+    if (missing === 0) {
+      return 'This PDF meets the Rule 46 particulars available on Junction Today.';
+    }
+    return `Not a complete GST tax invoice yet: ${missing} Rule 46 particulars are missing or provisional. Treat as a Junction order bill until supplier GSTIN, HSN, and authorised signature are present.`;
   }
 
   formatMoney(amount: number, currency: string): string {
