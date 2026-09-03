@@ -1,0 +1,115 @@
+:host {
+  display: block;
+  position: relative;
+  min-width: min(100%, 14rem);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: path(rect(0 0 0 0));
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+.searchable-select__trigger {
+  appearance: none;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  min-height: 2.75rem;
+  padding: 0.55rem 0.9rem;
+  border: 1px solid rgba(25, 75, 49, 0.18);
+  border-radius: 0.85rem;
+  background: rgba(255, 252, 245, 0.96);
+  color: var(--forest, #194b31);
+  font: 600 0.92rem/1.2 'DM Sans', system-ui, sans-serif;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+  cursor: pointer;
+  text-align: left;
+}
+
+.searchable-select__value {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.searchable-select__chevron {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+  opacity: 0.55;
+  flex: none;
+}
+
+.searchable-select.is-open .searchable-select__chevron {
+  transform: rotate(-135deg);
+  margin-top: 0.25rem;
+}
+
+.searchable-select__panel {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 0.35rem);
+  left: 0;
+  right: 0;
+  max-height: 16rem;
+  overflow: auto;
+  padding: 0.45rem;
+  border-radius: 0.95rem;
+  border: 1px solid rgba(25, 75, 49, 0.14);
+  background: rgba(255, 252, 245, 0.98);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.16);
+}
+
+.searchable-select__search input {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 2.4rem;
+  margin-bottom: 0.35rem;
+  padding: 0.45rem 0.7rem;
+  border: 1px solid rgba(25, 75, 49, 0.16);
+  border-radius: 0.65rem;
+  background: #fff;
+  color: var(--forest, #194b31);
+  font: 500 0.88rem/1.2 'DM Sans', system-ui, sans-serif;
+}
+
+.searchable-select__option {
+  appearance: none;
+  width: 100%;
+  display: block;
+  padding: 0.7rem 0.75rem;
+  border: 0;
+  border-radius: 0.55rem;
+  background: transparent;
+  color: var(--forest, #194b31);
+  font: 550 0.9rem/1.25 'DM Sans', system-ui, sans-serif;
+  text-align: left;
+  cursor: pointer;
+}
+
+.searchable-select__option:hover,
+.searchable-select__option.is-active {
+  background: rgba(25, 75, 49, 0.08);
+}
+
+.searchable-select__option.is-active {
+  font-weight: 700;
+  color: var(--forest-mid, #17633e);
+}
+
+.searchable-select__empty {
+  margin: 0.4rem 0.55rem 0.55rem;
+  color: rgba(25, 75, 49, 0.55);
+  font: 500 0.82rem/1.3 'DM Sans', system-ui, sans-serif;
+}

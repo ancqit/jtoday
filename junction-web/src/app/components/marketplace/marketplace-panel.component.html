@@ -279,26 +279,16 @@
             </div>
           }
         } @else {
-        @if (visibleShopTypes().length > 0) {
-          <div class="filter-chip-row" role="group" aria-label="Filter shops by type">
-            <button
-              type="button"
-              class="filter-chip"
-              [class.active]="!activeShopType()"
-              (click)="setShopTypeFilter(null)"
-            >
-              All
-            </button>
-            @for (type of visibleShopTypes(); track type.value) {
-              <button
-                type="button"
-                class="filter-chip"
-                [class.active]="activeShopType() === type.value"
-                (click)="setShopTypeFilter(type.value)"
-              >
-                {{ type.label }}
-              </button>
-            }
+        @if (shopTypeFilterOptions().length > 0) {
+          <div class="catalog-filter-bar">
+            <app-searchable-select
+              [options]="shopTypeFilterOptions()"
+              [value]="activeShopType()"
+              [allLabel]="'All shops'"
+              [placeholder]="'Search shop type…'"
+              [ariaLabel]="'Filter shops by type'"
+              (valueChange)="setShopTypeFilter($event)"
+            />
           </div>
         }
 
@@ -313,7 +303,7 @@
         @if (shopsLayout() === 'card') {
           <div class="card-grid shop-card-grid">
             @for (shop of filteredShops(); track shop.id) {
-              <article class="shop-card pro-shop-card" (click)="selectShop(shop)">
+              <article class="shop-card regal-shop-card" (click)="selectShop(shop)">
                 <button
                   type="button"
                   class="shop-card-media-button"
@@ -328,6 +318,7 @@
                   </div>
                 </button>
                 <div class="shop-card-content">
+                  <p class="shop-type-eyebrow">{{ shop.shop_type_label || shop.shop_type || 'Shop' }}</p>
                   <h3 class="shop-name">{{ shop.name }}</h3>
                   @if (shop.gst_verified || shop.digilocker_verified) {
                     <div class="shop-badges" aria-label="Verification badges">
@@ -370,7 +361,7 @@
         } @else {
           <div class="shop-list">
             @for (shop of filteredShops(); track shop.id) {
-              <article class="shop-row pro-shop-row" (click)="selectShop(shop)">
+              <article class="shop-row regal-shop-card" (click)="selectShop(shop)">
                 <button
                   type="button"
                   class="shop-row-media-button"
@@ -385,6 +376,7 @@
                   </div>
                 </button>
                 <div class="shop-row-main">
+                  <p class="shop-type-eyebrow">{{ shop.shop_type_label || shop.shop_type || 'Shop' }}</p>
                   <h3 class="shop-name">{{ shop.name }}</h3>
                   @if (shop.gst_verified || shop.digilocker_verified) {
                     <div class="shop-badges" aria-label="Verification badges">
@@ -431,35 +423,31 @@
           <p class="status-message">This shop has no products listed yet.</p>
         }
 
-        @if (productCategories().length > 0 || productTags().length > 0) {
-          <div class="filter-chip-row" role="group" aria-label="Filter products">
-            <button
-              type="button"
-              class="filter-chip"
-              [class.active]="!activeProductCategory() && !activeProductTag()"
-              (click)="setProductCategoryFilter(null)"
-            >
-              All
-            </button>
-            @for (category of productCategories(); track category) {
-              <button
-                type="button"
-                class="filter-chip"
-                [class.active]="activeProductCategory() === category"
-                (click)="setProductCategoryFilter(category)"
-              >
-                {{ category }}
-              </button>
+        @if (productCategoryFilterOptions().length > 0 || productTags().length > 0) {
+          <div class="catalog-filter-bar catalog-filter-bar--products">
+            @if (productCategoryFilterOptions().length > 0) {
+              <app-searchable-select
+                [options]="productCategoryFilterOptions()"
+                [value]="activeProductCategory()"
+                [allLabel]="'All categories'"
+                [placeholder]="'Search category…'"
+                [ariaLabel]="'Filter products by category'"
+                (valueChange)="setProductCategoryFilter($event)"
+              />
             }
-            @for (tag of productTags(); track tag) {
-              <button
-                type="button"
-                class="filter-chip filter-chip-tag"
-                [class.active]="activeProductTag() === tag"
-                (click)="setProductTagFilter(tag)"
-              >
-                {{ tag }}
-              </button>
+            @if (productTags().length > 0) {
+              <div class="filter-chip-row" role="group" aria-label="Filter products by tag">
+                @for (tag of productTags(); track tag) {
+                  <button
+                    type="button"
+                    class="filter-chip filter-chip-tag"
+                    [class.active]="activeProductTag() === tag"
+                    (click)="setProductTagFilter(activeProductTag() === tag ? null : tag)"
+                  >
+                    {{ tag }}
+                  </button>
+                }
+              </div>
             }
           </div>
         }
@@ -490,30 +478,34 @@
         @if (productsLayout() === 'card') {
           <div class="card-grid product-card-grid">
             @for (product of filteredProducts(); track product.id) {
-              <article class="product-card compact-product-card">
+              <article class="product-card regal-product-card">
                 <button
                   type="button"
                   class="product-media-button"
-                  [disabled]="productImageSources(product).length === 0"
+                  [disabled]="!productPrimaryImage(product)"
                   (click)="openProductGallery(product)"
                   [attr.aria-label]="'View photos of ' + product.name"
                 >
                   <div class="product-media">
-                    <app-authorized-image
-                      [src]="productImageSource(product)"
-                      [alt]="product.name"
-                    />
+                    @if (productPrimaryImage(product); as image) {
+                      @if (image.kind === 'cdn') {
+                        <img [src]="image.src" [alt]="product.name" loading="lazy" />
+                      } @else {
+                        <app-authorized-image [src]="image.src" [alt]="product.name" />
+                      }
+                    }
                   </div>
-                  @if (productImageSources(product).length > 1) {
-                    <span class="product-photo-count">{{ productImageSources(product).length }}</span>
+                  @if (productImageRefs(product).length > 1) {
+                    <span class="product-photo-count">{{ productImageRefs(product).length }}</span>
                   }
                 </button>
                 <div class="product-copy">
+                  <p class="product-category-eyebrow">{{ product.category || 'Product' }}</p>
                   <h3>{{ product.name }}</h3>
                   @if (product.description?.trim()) {
                     <p class="product-description">{{ product.description }}</p>
                   }
-                  <p class="product-meta">{{ product.category }} · {{ product.unit }}</p>
+                  <p class="product-meta">{{ product.unit }}</p>
                   <p class="product-price">{{ formatMoney(product.price, product.currency) }}</p>
                 </div>
                 <div class="product-add-row">
@@ -542,25 +534,29 @@
         } @else {
           <div class="product-list">
             @for (product of filteredProducts(); track product.id) {
-              <article class="product-row compact-product-row">
+              <article class="product-row regal-product-row">
                 <button
                   type="button"
                   class="product-row-media"
-                  [disabled]="productImageSources(product).length === 0"
+                  [disabled]="!productPrimaryImage(product)"
                   (click)="openProductGallery(product)"
                   [attr.aria-label]="'View photos of ' + product.name"
                 >
-                  <app-authorized-image
-                    [src]="productImageSource(product)"
-                    [alt]="product.name"
-                  />
+                  @if (productPrimaryImage(product); as image) {
+                    @if (image.kind === 'cdn') {
+                      <img [src]="image.src" [alt]="product.name" loading="lazy" />
+                    } @else {
+                      <app-authorized-image [src]="image.src" [alt]="product.name" />
+                    }
+                  }
                 </button>
                 <div class="product-row-copy">
+                  <p class="product-category-eyebrow">{{ product.category || 'Product' }}</p>
                   <h3>{{ product.name }}</h3>
                   @if (product.description?.trim()) {
                     <p class="product-description">{{ product.description }}</p>
                   }
-                  <p class="product-meta">{{ product.category }} · {{ product.unit }}</p>
+                  <p class="product-meta">{{ product.unit }}</p>
                   <p class="product-price">{{ formatMoney(product.price, product.currency) }}</p>
                 </div>
                 <div class="product-row-actions">
@@ -634,8 +630,10 @@
           >
             @if (placingOrder()) {
               Sending order to shop...
-            } @else {
+            } @else if (isVerifiedForOrders()) {
               Place order · pay at store
+            } @else {
+              Verify & place order
             }
           </button>
         </section>
@@ -747,7 +745,7 @@
 @if (galleryProduct(); as product) {
   <app-product-gallery-modal
     [productName]="product.name"
-    [imageSources]="productImageSources(product)"
+    [imageSources]="productImageRefs(product)"
     (closed)="closeProductGallery()"
   />
 }

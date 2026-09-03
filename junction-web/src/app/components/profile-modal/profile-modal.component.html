@@ -94,15 +94,15 @@
       <div class="profile-actions">
         <button type="button" class="btn-secondary" (click)="onDismiss()">Cancel</button>
         @if (!session.hasContactProfile()) {
-          <button type="button" class="btn-primary" [disabled]="saving() || sendingOtp()" (click)="onSaveContact()">
+          <button type="button" class="btn-primary" [disabled]="form.invalid || saving() || sendingOtp()" (click)="onSaveContact()">
             {{ saving() || sendingOtp() ? 'Saving...' : mode() === 'checkout' ? 'Save & send SMS' : 'Save contact' }}
           </button>
         } @else if (mode() === 'checkout' && profileLevel() !== 'authenticated') {
-          <button type="submit" class="btn-primary" [disabled]="saving() || sendingOtp() || !otpSessionInfo()">
+          <button type="submit" class="btn-primary" [disabled]="form.invalid || saving() || sendingOtp() || !otpSessionInfo()">
             {{ saving() ? 'Verifying...' : 'Verify & place order' }}
           </button>
         } @else if (mode() === 'settings') {
-          <button type="button" class="btn-primary" [disabled]="saving()" (click)="onSaveContact()">
+          <button type="button" class="btn-primary" [disabled]="form.invalid || saving()" (click)="onSaveContact()">
             {{ saving() ? 'Saving...' : 'Save contact' }}
           </button>
         }

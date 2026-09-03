@@ -3,13 +3,21 @@ import { Component, computed, effect, inject, OnInit, output, signal } from '@an
 import { AuthorizedImageComponent } from '../authorized-image/authorized-image.component';
 import { ProductGalleryModalComponent } from '../product-gallery-modal/product-gallery-modal.component';
 import { ProfileModalComponent } from '../profile-modal/profile-modal.component';
+import {
+  SearchableOption,
+  SearchableSelectComponent,
+} from '../searchable-select/searchable-select.component';
 import { ShopProfileModalComponent } from '../shop-profile-modal/shop-profile-modal.component';
 import { BlogComment, BlogEntry, BlogAuthorKind, BlogShopIdentity } from '../../models/blog.model';
 import { Product } from '../../models/product.model';
 import { SavedOrder } from '../../models/order.model';
 import { Shop } from '../../models/shop.model';
 import { ShopTypeInfo } from '../../models/shop-type.model';
-import { resolveProductImageSource, resolveProductImageSources } from '../../core/product-image.util';
+import {
+  ProductImageRef,
+  resolveProductImageRefs,
+  resolveProductImageSource,
+} from '../../core/product-image.util';
 import { resolveShopProfileImageSource } from '../../core/shop-image.util';
 import { formatShopHours } from '../../core/shop-hours.util';
 import { BlogService } from '../../services/blog.service';
@@ -36,6 +44,7 @@ interface InvoiceValidityRow {
     AuthorizedImageComponent,
     ProductGalleryModalComponent,
     ProfileModalComponent,
+    SearchableSelectComponent,
     ShopProfileModalComponent,
   ],
   templateUrl: './marketplace-panel.component.html',
@@ -111,8 +120,21 @@ export class MarketplacePanelComponent implements OnInit {
         .map((shop) => shop.shop_type?.trim())
         .filter((value): value is string => Boolean(value)),
     );
-    return this.shopTypes().filter((type) => present.has(type.value));
+    const seen = new Set<string>();
+    const unique: ShopTypeInfo[] = [];
+    for (const type of this.shopTypes()) {
+      if (!present.has(type.value) || seen.has(type.value)) {
+        continue;
+      }
+      seen.add(type.value);
+      unique.push(type);
+    }
+    return unique;
   });
+
+  readonly shopTypeFilterOptions = computed<SearchableOption[]>(() =>
+    this.visibleShopTypes().map((type) => ({ value: type.value, label: type.label })),
+  );
 
   readonly filteredShops = computed(() => {
     const type = this.activeShopType();
@@ -132,6 +154,13 @@ export class MarketplacePanelComponent implements OnInit {
     }
     return [...categories].sort((a, b) => a.localeCompare(b));
   });
+
+  readonly productCategoryFilterOptions = computed<SearchableOption[]>(() =>
+    this.productCategories().map((category) => ({ value: category, label: category })),
+  );
+
+  /** Local profile already OTP-verified — orders can proceed without another SMS. */
+  readonly isVerifiedForOrders = computed(() => Boolean(this.session.userProfile()?.authenticated));
 
   readonly productTags = computed(() => {
     const tags = new Set<string>();
@@ -330,17 +359,14 @@ export class MarketplacePanelComponent implements OnInit {
       return;
     }
 
-    if (!this.session.hasContactProfile()) {
-      this.checkoutProfileOpen.set(true);
+    // Local DB first: if this device already verified the shopper, go straight to order.
+    if (this.isVerifiedForOrders()) {
+      this.completeOrder();
       return;
     }
 
-    if (!profile.authenticated) {
-      this.checkoutProfileOpen.set(true);
-      return;
-    }
-
-    this.completeOrder();
+    // Otherwise collect / confirm contact, then SMS OTP.
+    this.checkoutProfileOpen.set(true);
   }
 
   closeCheckoutProfile(): void {
@@ -856,16 +882,20 @@ export class MarketplacePanelComponent implements OnInit {
     );
   }
 
+  productImageRefs(product: Product): ProductImageRef[] {
+    return resolveProductImageRefs(product);
+  }
+
+  productPrimaryImage(product: Product): ProductImageRef | null {
+    return this.productImageRefs(product)[0] ?? null;
+  }
+
   productImageSource(product: Product): string | null {
     return resolveProductImageSource(product);
   }
 
-  productImageSources(product: Product): string[] {
-    return resolveProductImageSources(product);
-  }
-
   openProductGallery(product: Product): void {
-    if (this.productImageSources(product).length === 0) {
+    if (this.productImageRefs(product).length === 0) {
       return;
     }
 

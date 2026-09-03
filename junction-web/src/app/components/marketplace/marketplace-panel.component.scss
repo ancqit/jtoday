@@ -831,10 +831,12 @@
 }
 
 .pro-shop-card,
-.pro-shop-row {
-  border: 1px solid rgba(226, 232, 240, 0.95);
-  background: #fff;
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
+.pro-shop-row,
+.regal-shop-card {
+  border: 1px solid rgba(25, 75, 49, 0.12);
+  background:
+    linear-gradient(180deg, rgba(255, 252, 245, 0.98), rgba(248, 250, 247, 0.96));
+  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.07);
   transition:
     transform 0.18s ease,
     box-shadow 0.18s ease,
@@ -842,15 +844,74 @@
 }
 
 .pro-shop-card:hover,
-.pro-shop-row:hover {
-  transform: translateY(-1px);
-  border-color: rgba(94, 234, 212, 0.85);
-  box-shadow: 0 14px 28px rgba(23, 99, 62, 0.1);
+.pro-shop-row:hover,
+.regal-shop-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(243, 215, 130, 0.85);
+  box-shadow: 0 18px 36px rgba(25, 75, 49, 0.14);
 }
 
 .pro-shop-card .shop-name,
-.pro-shop-row .shop-name {
+.pro-shop-row .shop-name,
+.regal-shop-card .shop-name {
   text-align: left;
+  font-size: 1.05rem;
+  letter-spacing: -0.01em;
+  color: var(--forest, #194b31);
+}
+
+.shop-type-eyebrow,
+.product-category-eyebrow {
+  margin: 0;
+  color: rgba(25, 75, 49, 0.62);
+  font: 600 0.68rem/1.2 'DM Sans', system-ui, sans-serif;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.catalog-filter-bar {
+  display: grid;
+  gap: 0.55rem;
+  margin-bottom: 0.85rem;
+}
+
+.catalog-filter-bar--products {
+  margin-top: 0.15rem;
+}
+
+.regal-product-card,
+.regal-product-row {
+  border: 1px solid rgba(25, 75, 49, 0.1);
+  background: rgba(255, 252, 245, 0.98);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.06);
+}
+
+.regal-product-card .product-media,
+.regal-product-row .product-row-media {
+  border-radius: 0.9rem;
+  overflow: hidden;
+  background: linear-gradient(145deg, #e8efe6, #f7f1e4);
+}
+
+.regal-product-card .product-media img,
+.regal-product-row .product-row-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.regal-product-card .product-price,
+.regal-product-row .product-price {
+  color: var(--forest, #194b31);
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.regal-product-card .primary-button,
+.regal-product-row .primary-button {
+  min-height: 2.75rem;
+  font-size: 0.95rem;
 }
 
 .shop-card-body {

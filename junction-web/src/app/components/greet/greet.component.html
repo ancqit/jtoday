@@ -84,7 +84,7 @@
         }
       </div>
 
-      <button type="submit" class="submit-button" [disabled]="submitting()">
+      <button type="submit" class="submit-button" [disabled]="form.invalid || submitting()">
         @if (submitting()) {
           {{ 'greet.saving' | t }}
         } @else {

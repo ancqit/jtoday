@@ -1,0 +1,50 @@
+<div class="searchable-select" [class.is-open]="open()">
+  <button
+    type="button"
+    class="searchable-select__trigger"
+    [attr.aria-expanded]="open()"
+    [attr.aria-label]="ariaLabel()"
+    (click)="toggle()"
+  >
+    <span class="searchable-select__value">{{ selectedLabel() }}</span>
+    <span class="searchable-select__chevron" aria-hidden="true"></span>
+  </button>
+
+  @if (open()) {
+    <div class="searchable-select__panel" role="listbox">
+      <label class="searchable-select__search">
+        <span class="sr-only">Search</span>
+        <input
+          type="search"
+          [placeholder]="placeholder()"
+          [value]="query()"
+          (input)="onQueryInput($event)"
+          autocomplete="off"
+        />
+      </label>
+      <button
+        type="button"
+        class="searchable-select__option"
+        [class.is-active]="!value()"
+        role="option"
+        (click)="pick(null)"
+      >
+        {{ allLabel() }}
+      </button>
+      @for (option of filteredOptions(); track option.value) {
+        <button
+          type="button"
+          class="searchable-select__option"
+          [class.is-active]="value() === option.value"
+          role="option"
+          (click)="pick(option.value)"
+        >
+          {{ option.label }}
+        </button>
+      }
+      @if (filteredOptions().length === 0) {
+        <p class="searchable-select__empty">No matches</p>
+      }
+    </div>
+  }
+</div>
