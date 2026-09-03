@@ -278,12 +278,6 @@
               }
             </div>
           }
-
-          <div class="blog-create-footer">
-            <button type="button" class="primary-button blog-create-trigger" (click)="openCreateBlogSheet()">
-              Create a blog
-            </button>
-          </div>
         } @else {
         @if (visibleShopTypes().length > 0) {
           <div class="filter-chip-row" role="group" aria-label="Filter shops by type">
@@ -649,37 +643,96 @@
 
       @if (view() === 'receipt' && completedOrder(); as order) {
         <section class="receipt-card printable-receipt">
-          <h3>Junction Today Bill</h3>
-          <p>Order #{{ order.orderNumber || order.id.slice(0, 8) }}</p>
-          <p>{{ order.createdAt | date: 'medium' }}</p>
-          <p>{{ order.customerName }}</p>
-          <p>{{ order.junctionLabel }}</p>
-          <p>{{ order.shopName }}</p>
-          <p class="receipt-payment">Payment: Pay at store</p>
+          <header class="invoice-masthead">
+            <div>
+              <p class="invoice-kicker">Tax invoice · CGST Rule 46</p>
+              <h3>Junction Today Bill</h3>
+            </div>
+            <div class="invoice-meta">
+              <p><strong>Invoice no.</strong> {{ order.orderNumber || order.id.slice(0, 12).toUpperCase() }}</p>
+              <p><strong>Date</strong> {{ order.createdAt | date: 'dd/MM/yyyy' }}</p>
+              <p><strong>Time</strong> {{ order.createdAt | date: 'shortTime' }}</p>
+            </div>
+          </header>
+
+          <div class="invoice-parties">
+            <div>
+              <p class="invoice-party-label">Supplier (shop)</p>
+              <p class="invoice-party-name">{{ order.shopName }}</p>
+              <p>{{ order.junctionLabel }}</p>
+              <p>GSTIN: {{ invoiceGstin(order) }}</p>
+            </div>
+            <div>
+              <p class="invoice-party-label">Recipient (buyer)</p>
+              <p class="invoice-party-name">{{ order.customerName }}</p>
+              <p>{{ order.junctionLabel }}</p>
+              <p>Payment: Pay at store</p>
+            </div>
+          </div>
+
           @if (order.shopNotified) {
             <p class="receipt-notice">The shop has been notified of your order.</p>
           }
 
-          <div class="receipt-lines">
-            @for (item of order.items; track item.productId) {
-              <div class="bill-row">
-                <span>{{ item.productName }} × {{ item.quantity }}</span>
-                <span>{{ formatMoney(item.unitPrice * item.quantity, item.currency) }}</span>
-              </div>
-            }
+          <table class="invoice-table">
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th>HSN</th>
+                <th>Qty</th>
+                <th>Rate</th>
+                <th>Taxable</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of order.items; track item.productId) {
+                <tr>
+                  <td>{{ item.productName }}</td>
+                  <td>—</td>
+                  <td>{{ item.quantity }}</td>
+                  <td>{{ formatMoney(item.unitPrice, item.currency) }}</td>
+                  <td>{{ formatMoney(item.unitPrice * item.quantity, item.currency) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+
+          <div class="invoice-totals">
+            <div class="bill-row"><span>Taxable value</span><span>{{ formatMoney(order.subtotal, order.currency) }}</span></div>
+            <div class="bill-row"><span>Tax (CGST/SGST or IGST)</span><span>{{ formatMoney(order.taxAmount, order.currency) }}</span></div>
+            <div class="bill-row total"><span>Total</span><span>{{ formatMoney(order.totalAmount, order.currency) }}</span></div>
           </div>
 
-          <div class="bill-row"><span>Subtotal</span><span>{{ formatMoney(order.subtotal, order.currency) }}</span></div>
-          <div class="bill-row"><span>Tax</span><span>{{ formatMoney(order.taxAmount, order.currency) }}</span></div>
-          <div class="bill-row total"><span>Total</span><span>{{ formatMoney(order.totalAmount, order.currency) }}</span></div>
+          <section class="invoice-validity" aria-label="GST invoice validity check">
+            <h4>Official validity check (Rule 46)</h4>
+            <ul>
+              @for (row of invoiceValidity(order); track row.label) {
+                <li [class.ok]="row.ok" [class.miss]="!row.ok">
+                  <span>{{ row.ok ? '✓' : '✗' }}</span>
+                  {{ row.label }}
+                </li>
+              }
+            </ul>
+            <p class="invoice-validity-note">
+              {{ invoiceValiditySummary(order) }}
+            </p>
+          </section>
         </section>
 
         <button type="button" class="primary-button" (click)="saveReceiptPdf()">
           Save bill as PDF
         </button>
-        <p class="hint-message">Use your browser print dialog and choose “Save as PDF”.</p>
+        <p class="hint-message">Download a Rule 46–aligned tax invoice PDF. A compliance checklist is shown on the bill.</p>
       }
     </div>
+
+    @if (view() === 'shops' && blogOpen()) {
+      <footer class="blog-create-footer">
+        <button type="button" class="primary-button blog-create-trigger" (click)="openCreateBlogSheet()">
+          Create a blog
+        </button>
+      </footer>
+    }
   </section>
 </div>
 
