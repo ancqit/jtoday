@@ -48,7 +48,14 @@ const PHYSICAL_ATTRIBUTION =
 const TRANSPARENT_TILE =
   'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 
-const FIRST_TILE_TIMEOUT_MS = 12_000;
+async function loadLeaflet(): Promise<LeafletNS> {
+  const mod = await import('leaflet');
+  const candidate = (mod as { default?: LeafletNS }).default ?? (mod as LeafletNS);
+  if (typeof candidate?.map !== 'function') {
+    throw new Error('Leaflet module did not export map()');
+  }
+  return candidate;
+}
 
 @Component({
   selector: 'app-map',
@@ -113,12 +120,13 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     this.teardownMap();
 
     try {
-      const L = await import('leaflet');
+      const L = await loadLeaflet();
       if (this.destroyed || generation !== this.bootGeneration) {
         return;
       }
 
       this.L = L;
+      // Keep the canvas in layout (opacity only) so Leaflet can measure size while loading.
       this.map = L.map(this.mapContainer.nativeElement, {
         center: [20.5937, 78.9629],
         zoom: 4,
@@ -141,73 +149,25 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       this.ensureBasemapControl();
       this.applyInteractionState(this.interactive());
 
-      await this.waitForFirstTiles(generation);
-
-      if (this.destroyed || generation !== this.bootGeneration) {
-        return;
-      }
-
+      // Ready as soon as the map shell exists — do not block on tiles (tile CDNs can 403/flake).
       this.loadState.set('ready');
 
-      // Invalidate size after revealing canvas — Leaflet measures while hidden otherwise.
       requestAnimationFrame(() => {
-        if (!this.destroyed && generation === this.bootGeneration) {
-          this.map?.invalidateSize();
+        if (this.destroyed || generation !== this.bootGeneration) {
+          return;
+        }
+        this.map?.invalidateSize();
+        const initialTarget = this.target();
+        if (initialTarget) {
+          this.flyToTarget(initialTarget);
         }
       });
-
-      const initialTarget = this.target();
-      if (initialTarget) {
-        this.flyToTarget(initialTarget);
-      }
     } catch {
       if (!this.destroyed && generation === this.bootGeneration) {
         this.teardownMap();
         this.loadState.set('error');
       }
     }
-  }
-
-  private waitForFirstTiles(generation: number): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (!this.baseLayer) {
-        reject(new Error('Missing base layer'));
-        return;
-      }
-
-      let settled = false;
-      const finish = (ok: boolean) => {
-        if (settled || this.destroyed || generation !== this.bootGeneration) {
-          return;
-        }
-        settled = true;
-        window.clearTimeout(timer);
-        this.baseLayer?.off('load', onLoad);
-        this.baseLayer?.off('tileerror', onTileError);
-        if (ok) {
-          resolve();
-        } else {
-          reject(new Error('Map tiles failed to load'));
-        }
-      };
-
-      const onLoad = () => finish(true);
-      let tileErrors = 0;
-      const onTileError = () => {
-        tileErrors += 1;
-        if (tileErrors >= 6) {
-          finish(false);
-        }
-      };
-
-      this.baseLayer.once('load', onLoad);
-      this.baseLayer.on('tileerror', onTileError);
-
-      const timer = window.setTimeout(() => {
-        // Slow networks: show the map anyway if Leaflet is up; tiles may still stream in.
-        finish(true);
-      }, FIRST_TILE_TIMEOUT_MS);
-    });
   }
 
   private teardownMap(): void {
