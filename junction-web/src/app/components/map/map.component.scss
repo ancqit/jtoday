@@ -13,8 +13,8 @@
   z-index: 0;
 }
 
-.map-canvas--hidden {
-  visibility: hidden;
+.map-canvas--dimmed {
+  opacity: 0.35;
   pointer-events: none;
 }
 
