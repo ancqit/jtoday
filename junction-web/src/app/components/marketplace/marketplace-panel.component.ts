@@ -1,6 +1,5 @@
 import { DatePipe } from '@angular/common';
 import { Component, computed, effect, inject, OnInit, output, signal } from '@angular/core';
-import { jsPDF } from 'jspdf';
 import { AuthorizedImageComponent } from '../authorized-image/authorized-image.component';
 import { ProductGalleryModalComponent } from '../product-gallery-modal/product-gallery-modal.component';
 import { ProfileModalComponent } from '../profile-modal/profile-modal.component';
@@ -378,12 +377,13 @@ export class MarketplacePanelComponent implements OnInit {
       });
   }
 
-  saveReceiptPdf(): void {
+  async saveReceiptPdf(): Promise<void> {
     const order = this.completedOrder();
     if (!order) {
       return;
     }
 
+    const { jsPDF } = await import('jspdf');
     const doc = new jsPDF({ unit: 'pt', format: 'a4' });
     const margin = 40;
     let y = margin;
