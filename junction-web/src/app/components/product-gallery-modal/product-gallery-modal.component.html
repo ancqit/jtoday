@@ -16,10 +16,13 @@
       }
 
       <div class="gallery-main">
-        <app-authorized-image
-          [src]="imageSources()[activeIndex()]"
-          [alt]="productName()"
-        />
+        @if (imageSources()[activeIndex()]; as image) {
+          @if (image.kind === 'cdn') {
+            <img [src]="image.src" [alt]="productName()" loading="lazy" />
+          } @else {
+            <app-authorized-image [src]="image.src" [alt]="productName()" />
+          }
+        }
       </div>
 
       @if (imageSources().length > 1) {
@@ -31,7 +34,7 @@
 
     @if (imageSources().length > 1) {
       <div class="gallery-thumbs" role="tablist" aria-label="Product images">
-        @for (source of imageSources(); track source; let index = $index) {
+        @for (source of imageSources(); track source.src; let index = $index) {
           <button
             type="button"
             class="gallery-thumb"
@@ -40,7 +43,11 @@
             [attr.aria-selected]="index === activeIndex()"
             (click)="selectImage(index)"
           >
-            <app-authorized-image [src]="source" [alt]="productName() + ' thumbnail ' + (index + 1)" />
+            @if (source.kind === 'cdn') {
+              <img [src]="source.src" [alt]="productName() + ' thumbnail ' + (index + 1)" loading="lazy" />
+            } @else {
+              <app-authorized-image [src]="source.src" [alt]="productName() + ' thumbnail ' + (index + 1)" />
+            }
           </button>
         }
       </div>

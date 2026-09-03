@@ -1,4 +1,5 @@
 import { Component, input, OnInit, output, signal } from '@angular/core';
+import { ProductImageRef } from '../../core/product-image.util';
 import { AuthorizedImageComponent } from '../authorized-image/authorized-image.component';
 
 @Component({
@@ -9,7 +10,7 @@ import { AuthorizedImageComponent } from '../authorized-image/authorized-image.c
 })
 export class ProductGalleryModalComponent implements OnInit {
   readonly productName = input.required<string>();
-  readonly imageSources = input.required<string[]>();
+  readonly imageSources = input.required<ProductImageRef[]>();
   readonly startIndex = input(0);
 
   readonly closed = output<void>();
