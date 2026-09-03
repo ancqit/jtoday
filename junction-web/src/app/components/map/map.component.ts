@@ -7,8 +7,9 @@ import {
   effect,
   inject,
   input,
+  signal,
 } from '@angular/core';
-import * as L from 'leaflet';
+import type * as Leaflet from 'leaflet';
 import { environment } from '../../../environments/environment';
 
 export interface MapTarget {
@@ -19,6 +20,8 @@ export interface MapTarget {
 }
 
 type BasemapKind = 'physical' | 'others';
+type MapLoadState = 'loading' | 'ready' | 'error';
+type LeafletNS = typeof import('leaflet');
 
 /**
  * CARTO Voyager — requires a free basemap API key since 2025/26.
@@ -45,6 +48,8 @@ const PHYSICAL_ATTRIBUTION =
 const TRANSPARENT_TILE =
   'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 
+const FIRST_TILE_TIMEOUT_MS = 12_000;
+
 @Component({
   selector: 'app-map',
   templateUrl: './map.component.html',
@@ -56,23 +61,27 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   /** When false (default for Junction Today), users cannot pan — zoom +/- still works. */
   readonly interactive = input(false);
   readonly target = input<MapTarget | null>(null);
+  readonly loadState = signal<MapLoadState>('loading');
 
-  private map: L.Map | null = null;
-  private marker: L.Marker | null = null;
-  private zoomControl: L.Control.Zoom | null = null;
-  private basemapControl: L.Control | null = null;
-  private baseLayer: L.TileLayer | null = null;
-  private attributionControl: L.Control.Attribution | null = null;
+  private map: Leaflet.Map | null = null;
+  private marker: Leaflet.Marker | null = null;
+  private zoomControl: Leaflet.Control.Zoom | null = null;
+  private basemapControl: Leaflet.Control | null = null;
+  private baseLayer: Leaflet.TileLayer | null = null;
+  private attributionControl: Leaflet.Control.Attribution | null = null;
   private currentAttribution = '';
   private activeBasemap: BasemapKind = 'others';
   private lastFlyKey: string | null = null;
+  private L: LeafletNS | null = null;
+  private destroyed = false;
+  private bootGeneration = 0;
   private readonly host = inject(ElementRef<HTMLElement>);
   private readonly leafletApiKey = (environment.leafletApiKey || '').trim();
 
   constructor() {
     effect(() => {
       const nextTarget = this.target();
-      if (!this.map || !nextTarget) {
+      if (!this.map || !nextTarget || this.loadState() !== 'ready') {
         return;
       }
       this.flyToTarget(nextTarget);
@@ -86,43 +95,139 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    this.map = L.map(this.mapContainer.nativeElement, {
-      center: [20.5937, 78.9629],
-      zoom: 4,
-      zoomControl: false,
-      attributionControl: false,
-      dragging: false,
-      touchZoom: false,
-      doubleClickZoom: false,
-      scrollWheelZoom: false,
-      boxZoom: false,
-      keyboard: false,
-    });
-
-    this.attributionControl = L.control.attribution({ prefix: false, position: 'bottomright' });
-    this.attributionControl.addTo(this.map);
-
-    this.setBasemap('others');
-    // Zoom first so it sits at the bottom of bottomright; basemap control stacks above it.
-    this.ensureZoomControl();
-    this.ensureBasemapControl();
-    this.applyInteractionState(this.interactive());
-
-    const initialTarget = this.target();
-    if (initialTarget) {
-      this.flyToTarget(initialTarget);
-    }
+    void this.bootstrapMap();
   }
 
   ngOnDestroy(): void {
+    this.destroyed = true;
+    this.teardownMap();
+  }
+
+  retry(): void {
+    void this.bootstrapMap();
+  }
+
+  private async bootstrapMap(): Promise<void> {
+    const generation = ++this.bootGeneration;
+    this.loadState.set('loading');
+    this.teardownMap();
+
+    try {
+      const L = await import('leaflet');
+      if (this.destroyed || generation !== this.bootGeneration) {
+        return;
+      }
+
+      this.L = L;
+      this.map = L.map(this.mapContainer.nativeElement, {
+        center: [20.5937, 78.9629],
+        zoom: 4,
+        zoomControl: false,
+        attributionControl: false,
+        dragging: false,
+        touchZoom: false,
+        doubleClickZoom: false,
+        scrollWheelZoom: false,
+        boxZoom: false,
+        keyboard: false,
+      });
+
+      this.attributionControl = L.control.attribution({ prefix: false, position: 'bottomright' });
+      this.attributionControl.addTo(this.map);
+
+      this.setBasemap('others');
+      // Zoom first so it sits at the bottom of bottomright; basemap control stacks above it.
+      this.ensureZoomControl();
+      this.ensureBasemapControl();
+      this.applyInteractionState(this.interactive());
+
+      await this.waitForFirstTiles(generation);
+
+      if (this.destroyed || generation !== this.bootGeneration) {
+        return;
+      }
+
+      this.loadState.set('ready');
+
+      // Invalidate size after revealing canvas — Leaflet measures while hidden otherwise.
+      requestAnimationFrame(() => {
+        if (!this.destroyed && generation === this.bootGeneration) {
+          this.map?.invalidateSize();
+        }
+      });
+
+      const initialTarget = this.target();
+      if (initialTarget) {
+        this.flyToTarget(initialTarget);
+      }
+    } catch {
+      if (!this.destroyed && generation === this.bootGeneration) {
+        this.teardownMap();
+        this.loadState.set('error');
+      }
+    }
+  }
+
+  private waitForFirstTiles(generation: number): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if (!this.baseLayer) {
+        reject(new Error('Missing base layer'));
+        return;
+      }
+
+      let settled = false;
+      const finish = (ok: boolean) => {
+        if (settled || this.destroyed || generation !== this.bootGeneration) {
+          return;
+        }
+        settled = true;
+        window.clearTimeout(timer);
+        this.baseLayer?.off('load', onLoad);
+        this.baseLayer?.off('tileerror', onTileError);
+        if (ok) {
+          resolve();
+        } else {
+          reject(new Error('Map tiles failed to load'));
+        }
+      };
+
+      const onLoad = () => finish(true);
+      let tileErrors = 0;
+      const onTileError = () => {
+        tileErrors += 1;
+        if (tileErrors >= 6) {
+          finish(false);
+        }
+      };
+
+      this.baseLayer.once('load', onLoad);
+      this.baseLayer.on('tileerror', onTileError);
+
+      const timer = window.setTimeout(() => {
+        // Slow networks: show the map anyway if Leaflet is up; tiles may still stream in.
+        finish(true);
+      }, FIRST_TILE_TIMEOUT_MS);
+    });
+  }
+
+  private teardownMap(): void {
     this.marker?.remove();
+    this.marker = null;
     this.basemapControl?.remove();
+    this.basemapControl = null;
     this.zoomControl?.remove();
+    this.zoomControl = null;
+    this.baseLayer = null;
+    this.attributionControl = null;
+    this.currentAttribution = '';
+    this.lastFlyKey = null;
     this.map?.remove();
+    this.map = null;
   }
 
   private ensureZoomControl(): void {
-    if (!this.map || this.zoomControl) {
+    const L = this.L;
+    if (!this.map || !L || this.zoomControl) {
       return;
     }
     this.zoomControl = L.control.zoom({ position: 'bottomright' });
@@ -130,7 +235,8 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   }
 
   private ensureBasemapControl(): void {
-    if (!this.map || this.basemapControl) {
+    const L = this.L;
+    if (!this.map || !L || this.basemapControl) {
       return;
     }
 
@@ -193,7 +299,8 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   }
 
   private setBasemap(kind: BasemapKind): void {
-    if (!this.map) {
+    const L = this.L;
+    if (!this.map || !L) {
       return;
     }
 
@@ -281,7 +388,8 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   }
 
   private flyToTarget(target: MapTarget): void {
-    if (!this.map) {
+    const L = this.L;
+    if (!this.map || !L) {
       return;
     }
 
@@ -307,7 +415,8 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  private createMarkerIcon(): L.DivIcon {
+  private createMarkerIcon(): Leaflet.DivIcon {
+    const L = this.L!;
     return L.divIcon({
       className: 'junction-marker',
       html: '<span class="junction-marker__pin" aria-hidden="true"></span>',
