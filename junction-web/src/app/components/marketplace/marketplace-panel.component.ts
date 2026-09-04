@@ -122,16 +122,19 @@ export class MarketplacePanelComponent implements OnInit {
   readonly shopTypeFilterOptions = computed<SearchableOption[]>(() => {
     const byValue = new Map<string, string>();
     for (const shop of this.shops()) {
-      const value = shop.shop_type?.trim();
+      const typeValue = shop.shop_type?.trim() || '';
+      const labelValue = shop.shop_type_label?.trim() || '';
+      // Prefer type as value; if only label exists, use label for both.
+      const value = typeValue || labelValue;
       if (!value) {
         continue;
       }
-      const label = shop.shop_type_label?.trim() || value;
+      const label = labelValue || value;
       if (!byValue.has(value)) {
         byValue.set(value, label);
       }
     }
-    // Prefer catalog labels when available.
+    // Prefer catalog labels when value matches.
     for (const type of this.shopTypes()) {
       if (byValue.has(type.value) && type.label?.trim()) {
         byValue.set(type.value, type.label.trim());
@@ -147,7 +150,10 @@ export class MarketplacePanelComponent implements OnInit {
     if (!type) {
       return this.shops();
     }
-    return this.shops().filter((shop) => shop.shop_type === type);
+    return this.shops().filter((shop) => {
+      const shopValue = shop.shop_type?.trim() || shop.shop_type_label?.trim() || '';
+      return shopValue === type;
+    });
   });
 
   readonly productCategories = computed(() => {

@@ -35,6 +35,20 @@
             </button>
           }
 
+          <button
+            type="button"
+            class="notice-board-button"
+            [class.active]="noticeBoardOpen()"
+            [attr.aria-expanded]="noticeBoardOpen()"
+            (click)="openNoticeBoard()"
+          >
+            @if (noticeBoardOpen()) {
+              {{ 'home.closeNoticeBoard' | t }}
+            } @else {
+              {{ 'noticeBoard.title' | t }}
+            }
+          </button>
+
           <a
             class="add-services-button"
             href="https://junction.website"
@@ -44,13 +58,17 @@
             {{ 'home.addServices' | t }}
           </a>
         </div>
-
-        <app-notice-board />
       </div>
 
       @if (marketplaceOpen()) {
         <div class="marketplace-slot">
           <app-marketplace-panel (closed)="closeMarketplace()" />
+        </div>
+      }
+
+      @if (noticeBoardOpen()) {
+        <div class="marketplace-slot notice-board-slot">
+          <app-notice-board (closed)="closeNoticeBoard()" />
         </div>
       }
     </div>

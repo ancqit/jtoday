@@ -29,6 +29,8 @@ export class HomeComponent {
 
   readonly hasCompletedWelcome = this.session.hasCompletedWelcome;
   readonly marketplaceOpen = signal(false);
+  /** Default open after welcome so today's notices are visible. */
+  readonly noticeBoardOpen = signal(true);
   readonly greetOpen = signal(false);
   private readonly previewTarget = signal<MapTarget | null>(null);
 
@@ -43,6 +45,7 @@ export class HomeComponent {
 
       if (this.lastLocationKey !== null && this.lastLocationKey !== locationKey) {
         this.marketplaceOpen.set(false);
+        this.noticeBoardOpen.set(true);
         this.cart.clear();
       }
 
@@ -79,6 +82,8 @@ export class HomeComponent {
   onGreetSubmitted(event: { name: string; city: City; locality: Locality }): void {
     this.session.completeWelcome(event.name, event.city, event.locality, 'locality');
     this.greetOpen.set(false);
+    this.marketplaceOpen.set(false);
+    this.noticeBoardOpen.set(true);
   }
 
   onLocationPreview(target: MapTarget): void {
@@ -103,6 +108,7 @@ export class HomeComponent {
     }
 
     this.session.updateServiceScope('locality');
+    this.noticeBoardOpen.set(false);
     this.marketplaceOpen.set(true);
   }
 
@@ -113,10 +119,25 @@ export class HomeComponent {
     }
 
     this.session.updateServiceScope('city');
+    this.noticeBoardOpen.set(false);
     this.marketplaceOpen.set(true);
+  }
+
+  openNoticeBoard(): void {
+    if (this.noticeBoardOpen()) {
+      this.noticeBoardOpen.set(false);
+      return;
+    }
+
+    this.marketplaceOpen.set(false);
+    this.noticeBoardOpen.set(true);
   }
 
   closeMarketplace(): void {
     this.marketplaceOpen.set(false);
+  }
+
+  closeNoticeBoard(): void {
+    this.noticeBoardOpen.set(false);
   }
 }

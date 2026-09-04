@@ -30,13 +30,9 @@
   align-items: center;
 }
 
-app-notice-board {
-  display: block;
-  width: 100%;
-}
-
 .services-toggle,
 .city-services-button,
+.notice-board-button,
 .add-services-button {
   padding: 0.55rem 0.95rem;
   border: 1px solid rgba(255, 255, 255, 0.6);
@@ -64,6 +60,8 @@ app-notice-board {
 .services-toggle.active,
 .city-services-button:hover,
 .city-services-button.active,
+.notice-board-button:hover,
+.notice-board-button.active,
 .add-services-button:hover {
   background: var(--glass-strong);
   border-color: rgba(243, 215, 130, 0.75);
@@ -73,7 +71,8 @@ app-notice-board {
   color: var(--ink);
 }
 
-.city-services-button.active {
+.city-services-button.active,
+.notice-board-button.active {
   color: var(--forest);
   border-color: rgba(243, 215, 130, 0.85);
   background: rgba(247, 233, 184, 0.92);
@@ -85,6 +84,18 @@ app-notice-board {
   padding: 0.65rem 1rem 1rem;
   padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
   pointer-events: auto;
+}
+
+.notice-board-slot {
+  display: flex;
+  flex-direction: column;
+}
+
+.notice-board-slot app-notice-board {
+  display: block;
+  flex: 1;
+  min-height: 0;
+  height: 100%;
 }
 
 .map-stage {
@@ -104,6 +115,7 @@ app-notice-board {
 
   .services-toggle,
   .city-services-button,
+  .notice-board-button,
   .add-services-button {
     flex: 1 1 0;
     text-align: center;

@@ -1,5 +1,4 @@
-import { DatePipe } from '@angular/common';
-import { Component, effect, inject, signal } from '@angular/core';
+import { Component, effect, inject, output, signal } from '@angular/core';
 import { catchError, map, of, switchMap } from 'rxjs';
 import { TranslatePipe } from '../../core/i18n/translate.pipe';
 import { Notice } from '../../models/notice.model';
@@ -7,17 +6,25 @@ import { CatalogService } from '../../services/catalog.service';
 import { NOTICE_BOARD_FIFO_MAX, NoticesService } from '../../services/notices.service';
 import { UserSessionService } from '../../services/user-session.service';
 
+interface ShopNoticeMeta {
+  name: string;
+  locality: string;
+  city: string;
+}
+
 export interface NoticeBoardItem {
   id: string;
   storeId: string;
   shopName: string;
+  locality: string;
+  city: string;
   message: string;
   updatedAt: string;
 }
 
 @Component({
   selector: 'app-notice-board',
-  imports: [DatePipe, TranslatePipe],
+  imports: [TranslatePipe],
   templateUrl: './notice-board.component.html',
   styleUrl: './notice-board.component.scss',
 })
@@ -26,8 +33,7 @@ export class NoticeBoardComponent {
   private readonly catalog = inject(CatalogService);
   private readonly session = inject(UserSessionService);
 
-  /** Default open so recent shop notices are visible under Shops/Services. */
-  readonly open = signal(true);
+  readonly closed = output<void>();
   readonly loading = signal(false);
   readonly error = signal(false);
   readonly items = signal<NoticeBoardItem[]>([]);
@@ -55,8 +61,8 @@ export class NoticeBoardComponent {
     });
   }
 
-  toggle(): void {
-    this.open.update((value) => !value);
+  closePanel(): void {
+    this.closed.emit();
   }
 
   private loadNotices(): void {
@@ -76,7 +82,16 @@ export class NoticeBoardComponent {
     shops$
       .pipe(
         switchMap((shops) => {
-          const shopNames = new Map(shops.map((shop) => [shop.id, shop.name] as const));
+          const shopMeta = new Map<string, ShopNoticeMeta>(
+            shops.map((shop) => [
+              shop.id,
+              {
+                name: shop.name?.trim() || '',
+                locality: shop.locality?.trim() || '',
+                city: shop.city?.trim() || '',
+              },
+            ]),
+          );
           const localIds = new Set(shops.map((shop) => shop.id));
 
           return this.notices.listTodayFifo(NOTICE_BOARD_FIFO_MAX).pipe(
@@ -86,14 +101,14 @@ export class NoticeBoardComponent {
                 local.length > 0
                   ? this.notices.toFifoQueue(local, NOTICE_BOARD_FIFO_MAX)
                   : all;
-              return this.toBoardItems(queue, shopNames);
+              return this.toBoardItems(queue, shopMeta);
             }),
             catchError(() =>
               this.notices.getTodayForShops([...localIds]).pipe(
                 map((byShop) =>
                   this.toBoardItems(
                     this.notices.toFifoQueue(Object.values(byShop), NOTICE_BOARD_FIFO_MAX),
-                    shopNames,
+                    shopMeta,
                   ),
                 ),
                 catchError(() => of([] as NoticeBoardItem[])),
@@ -116,14 +131,19 @@ export class NoticeBoardComponent {
 
   private toBoardItems(
     notices: Notice[],
-    shopNames: Map<string, string>,
+    shopMeta: Map<string, ShopNoticeMeta>,
   ): NoticeBoardItem[] {
-    return notices.map((notice) => ({
-      id: notice.id,
-      storeId: notice.store_id,
-      shopName: shopNames.get(notice.store_id)?.trim() || '',
-      message: notice.message.trim(),
-      updatedAt: notice.updated_at || notice.created_at,
-    }));
+    return notices.map((notice) => {
+      const meta = shopMeta.get(notice.store_id);
+      return {
+        id: notice.id,
+        storeId: notice.store_id,
+        shopName: meta?.name || '',
+        locality: meta?.locality || '',
+        city: meta?.city || '',
+        message: notice.message.trim(),
+        updatedAt: notice.updated_at || notice.created_at,
+      };
+    });
   }
 }
