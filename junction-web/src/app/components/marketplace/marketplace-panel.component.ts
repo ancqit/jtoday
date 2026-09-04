@@ -121,25 +121,33 @@ export class MarketplacePanelComponent implements OnInit {
   /** Categories derived from currently loaded shops (deduped). */
   readonly shopTypeFilterOptions = computed<SearchableOption[]>(() => {
     const byValue = new Map<string, string>();
+    const catalogByValue = new Map(
+      this.shopTypes().map((type) => [type.value.toLowerCase(), type] as const),
+    );
+    const catalogByLabel = new Map(
+      this.shopTypes().map((type) => [type.label.trim().toLowerCase(), type] as const),
+    );
+
     for (const shop of this.shops()) {
-      const typeValue = shop.shop_type?.trim() || '';
-      const labelValue = shop.shop_type_label?.trim() || '';
-      // Prefer type as value; if only label exists, use label for both.
-      const value = typeValue || labelValue;
-      if (!value) {
+      const rawType = shop.shop_type?.trim() || '';
+      const rawLabel = shop.shop_type_label?.trim() || '';
+      if (!rawType && !rawLabel) {
         continue;
       }
-      const label = labelValue || value;
+
+      // Normalize to catalog value when the shop stored a label or mismatched casing.
+      const fromCatalog =
+        (rawType && catalogByValue.get(rawType.toLowerCase())) ||
+        (rawLabel && catalogByLabel.get(rawLabel.toLowerCase())) ||
+        (rawType && catalogByLabel.get(rawType.toLowerCase())) ||
+        null;
+      const value = fromCatalog?.value || rawType || rawLabel;
+      const label = fromCatalog?.label || rawLabel || rawType;
       if (!byValue.has(value)) {
         byValue.set(value, label);
       }
     }
-    // Prefer catalog labels when value matches.
-    for (const type of this.shopTypes()) {
-      if (byValue.has(type.value) && type.label?.trim()) {
-        byValue.set(type.value, type.label.trim());
-      }
-    }
+
     return [...byValue.entries()]
       .map(([value, label]) => ({ value, label }))
       .sort((a, b) => a.label.localeCompare(b.label));
@@ -150,9 +158,11 @@ export class MarketplacePanelComponent implements OnInit {
     if (!type) {
       return this.shops();
     }
+    const needle = type.trim().toLowerCase();
     return this.shops().filter((shop) => {
-      const shopValue = shop.shop_type?.trim() || shop.shop_type_label?.trim() || '';
-      return shopValue === type;
+      const shopValue = shop.shop_type?.trim().toLowerCase() || '';
+      const shopLabel = shop.shop_type_label?.trim().toLowerCase() || '';
+      return shopValue === needle || shopLabel === needle;
     });
   });
 

@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { forkJoin, map, Observable, of } from 'rxjs';
+import { forkJoin, map, Observable, of, shareReplay } from 'rxjs';
 import { NoticesApi } from '../core/notices.api';
 import { Notice } from '../models/notice.model';
 
@@ -10,17 +10,23 @@ export const NOTICE_BOARD_FIFO_MAX = 20;
 export class NoticesService {
   private readonly noticesApi = inject(NoticesApi);
 
-  /** junctionBack: GET /notices (public) — all today's notices. */
-  listToday(): Observable<Notice[]> {
-    return this.noticesApi.listToday();
+  /** Cached global today feed — shared across consumers until the page reloads. */
+  private todayFeed$: Observable<Notice[]> | null = null;
+
+  /** junctionBack: GET /notices (public) — all today's notices, junction-agnostic. */
+  listToday(forceRefresh = false): Observable<Notice[]> {
+    if (!this.todayFeed$ || forceRefresh) {
+      this.todayFeed$ = this.noticesApi.listToday().pipe(shareReplay({ bufferSize: 1, refCount: false }));
+    }
+    return this.todayFeed$;
   }
 
   /**
    * Today's notices as a FIFO queue (oldest → newest), capped at `max`.
    * When over capacity, oldest entries are dropped first.
    */
-  listTodayFifo(max: number = NOTICE_BOARD_FIFO_MAX): Observable<Notice[]> {
-    return this.listToday().pipe(map((notices) => this.toFifoQueue(notices, max)));
+  listTodayFifo(max: number = NOTICE_BOARD_FIFO_MAX, forceRefresh = false): Observable<Notice[]> {
+    return this.listToday(forceRefresh).pipe(map((notices) => this.toFifoQueue(notices, max)));
   }
 
   /** junctionBack: GET /notices/today?store_id= (public, no session JWT) */
