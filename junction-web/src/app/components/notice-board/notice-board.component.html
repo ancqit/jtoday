@@ -21,15 +21,15 @@
             <p class="notice-board-shop">
               {{ item.shopName || ('noticeBoard.shopFallback' | t) }}
             </p>
-            @if (item.locality || item.city) {
-              <p class="notice-board-place">
-                @if (item.locality && item.city) {
-                  {{ item.locality }}, {{ item.city }}
-                } @else {
-                  {{ item.locality || item.city }}
-                }
-              </p>
-            }
+            <p class="notice-board-place">
+              @if (item.locality && item.city) {
+                {{ item.locality }}, {{ item.city }}
+              } @else if (item.locality || item.city) {
+                {{ item.locality || item.city }}
+              } @else {
+                {{ 'noticeBoard.placeUnknown' | t }}
+              }
+            </p>
           </li>
         }
       </ul>
