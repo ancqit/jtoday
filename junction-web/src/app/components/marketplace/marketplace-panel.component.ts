@@ -118,27 +118,29 @@ export class MarketplacePanelComponent implements OnInit {
   private loadedJunctionKey: string | null = null;
   private loadedBlogJunctionKey: string | null = null;
 
-  readonly visibleShopTypes = computed(() => {
-    const present = new Set(
-      this.shops()
-        .map((shop) => shop.shop_type?.trim())
-        .filter((value): value is string => Boolean(value)),
-    );
-    const seen = new Set<string>();
-    const unique: ShopTypeInfo[] = [];
-    for (const type of this.shopTypes()) {
-      if (!present.has(type.value) || seen.has(type.value)) {
+  /** Categories derived from currently loaded shops (deduped). */
+  readonly shopTypeFilterOptions = computed<SearchableOption[]>(() => {
+    const byValue = new Map<string, string>();
+    for (const shop of this.shops()) {
+      const value = shop.shop_type?.trim();
+      if (!value) {
         continue;
       }
-      seen.add(type.value);
-      unique.push(type);
+      const label = shop.shop_type_label?.trim() || value;
+      if (!byValue.has(value)) {
+        byValue.set(value, label);
+      }
     }
-    return unique;
+    // Prefer catalog labels when available.
+    for (const type of this.shopTypes()) {
+      if (byValue.has(type.value) && type.label?.trim()) {
+        byValue.set(type.value, type.label.trim());
+      }
+    }
+    return [...byValue.entries()]
+      .map(([value, label]) => ({ value, label }))
+      .sort((a, b) => a.label.localeCompare(b.label));
   });
-
-  readonly shopTypeFilterOptions = computed<SearchableOption[]>(() =>
-    this.visibleShopTypes().map((type) => ({ value: type.value, label: type.label })),
-  );
 
   readonly filteredShops = computed(() => {
     const type = this.activeShopType();

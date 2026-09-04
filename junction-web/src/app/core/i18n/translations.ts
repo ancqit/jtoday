@@ -53,6 +53,9 @@ export const TRANSLATIONS: Record<AppLang, TranslationDict> = {
     'enquiry.createError': 'पूछताछ दर्ज नहीं हो सकी। फिर कोशिश करें।',
     'enquiry.nameRequired': 'पूछताछ दर्ज करने से पहले नाम लिखें।',
     'enquiry.authorType': 'पूछताछ लेखक प्रकार',
+    'marketplace.shopCategory': 'दुकान श्रेणी',
+    'marketplace.allShopCategories': 'सभी श्रेणियाँ',
+    'marketplace.searchShopCategory': 'श्रेणी खोजें…',
   },
   en: {
     'greet.welcome': 'Welcome',
@@ -104,5 +107,8 @@ export const TRANSLATIONS: Record<AppLang, TranslationDict> = {
     'enquiry.createError': 'Unable to create enquiry. Try again.',
     'enquiry.nameRequired': 'Enter a name before creating an enquiry.',
     'enquiry.authorType': 'Enquiry author type',
+    'marketplace.shopCategory': 'Shop category',
+    'marketplace.allShopCategories': 'All categories',
+    'marketplace.searchShopCategory': 'Search category…',
   },
 };

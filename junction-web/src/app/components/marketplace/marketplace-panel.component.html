@@ -281,12 +281,16 @@
         } @else {
         @if (shopTypeFilterOptions().length > 0) {
           <div class="catalog-filter-bar">
+            <label class="catalog-filter-label" for="shop-category-filter">
+              {{ 'marketplace.shopCategory' | t }}
+            </label>
             <app-searchable-select
+              id="shop-category-filter"
               [options]="shopTypeFilterOptions()"
               [value]="activeShopType()"
-              [allLabel]="'All shops'"
-              [placeholder]="'Search shop type…'"
-              [ariaLabel]="'Filter shops by type'"
+              [allLabel]="'marketplace.allShopCategories' | t"
+              [placeholder]="'marketplace.searchShopCategory' | t"
+              [ariaLabel]="'marketplace.shopCategory' | t"
               (valueChange)="setShopTypeFilter($event)"
             />
           </div>
