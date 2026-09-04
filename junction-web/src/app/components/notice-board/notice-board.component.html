@@ -1,44 +1,38 @@
-<section class="notice-board" [class.is-open]="open()">
-  <button
-    type="button"
-    class="notice-board-toggle"
-    [attr.aria-expanded]="open()"
-    (click)="toggle()"
-  >
-    <span class="notice-board-title">{{ 'noticeBoard.title' | t }}</span>
-    <span class="notice-board-chevron" aria-hidden="true">{{ open() ? '▾' : '▸' }}</span>
-    <span class="sr-only">
-      {{ open() ? ('noticeBoard.collapse' | t) : ('noticeBoard.expand' | t) }}
-    </span>
-  </button>
+<section class="notice-board" role="dialog" aria-modal="true" [attr.aria-label]="'noticeBoard.title' | t">
+  <header class="notice-board-header">
+    <h2 class="notice-board-title">{{ 'noticeBoard.title' | t }}</h2>
+    <button type="button" class="notice-board-close" (click)="closePanel()" aria-label="Close notice board">
+      ✕
+    </button>
+  </header>
 
-  @if (open()) {
-    <div class="notice-board-body">
-      @if (loading()) {
-        <p class="notice-board-status">{{ 'noticeBoard.loading' | t }}</p>
-      } @else if (error()) {
-        <p class="notice-board-status notice-board-error">{{ 'noticeBoard.error' | t }}</p>
-      } @else if (items().length === 0) {
-        <p class="notice-board-status">{{ 'noticeBoard.empty' | t }}</p>
-      } @else {
-        <ul class="notice-board-list">
-          @for (item of items(); track item.id) {
-            <li class="notice-board-item">
-              <div class="notice-board-item-top">
-                <strong class="notice-board-shop">
-                  {{ item.shopName || ('noticeBoard.shopFallback' | t) }}
-                </strong>
-                @if (item.updatedAt) {
-                  <time class="notice-board-time" [attr.datetime]="item.updatedAt">
-                    {{ item.updatedAt | date: 'shortTime' }}
-                  </time>
+  <div class="notice-board-body">
+    @if (loading()) {
+      <p class="notice-board-status">{{ 'noticeBoard.loading' | t }}</p>
+    } @else if (error()) {
+      <p class="notice-board-status notice-board-error">{{ 'noticeBoard.error' | t }}</p>
+    } @else if (items().length === 0) {
+      <p class="notice-board-status">{{ 'noticeBoard.empty' | t }}</p>
+    } @else {
+      <ul class="notice-board-list">
+        @for (item of items(); track item.id) {
+          <li class="notice-board-item">
+            <p class="notice-board-message">{{ item.message }}</p>
+            <p class="notice-board-shop">
+              {{ item.shopName || ('noticeBoard.shopFallback' | t) }}
+            </p>
+            @if (item.locality || item.city) {
+              <p class="notice-board-place">
+                @if (item.locality && item.city) {
+                  {{ item.locality }}, {{ item.city }}
+                } @else {
+                  {{ item.locality || item.city }}
                 }
-              </div>
-              <p class="notice-board-message">{{ item.message }}</p>
-            </li>
-          }
-        </ul>
-      }
-    </div>
-  }
+              </p>
+            }
+          </li>
+        }
+      </ul>
+    }
+  </div>
 </section>
