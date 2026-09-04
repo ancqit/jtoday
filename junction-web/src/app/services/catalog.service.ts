@@ -42,4 +42,9 @@ export class CatalogService {
       switchMap(() => this.catalogApi.shopTypes()),
     );
   }
+
+  /** junctionBack: GET /shops (session JWT) — full public catalog for meta enrichment. */
+  getAllShops(): Observable<Shop[]> {
+    return this.session.ensureSession().pipe(switchMap(() => this.catalogApi.allShops()));
+  }
 }

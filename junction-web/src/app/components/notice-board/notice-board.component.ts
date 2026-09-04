@@ -1,7 +1,8 @@
 import { Component, OnInit, inject, output, signal } from '@angular/core';
-import { catchError, of } from 'rxjs';
+import { catchError, map, of, switchMap } from 'rxjs';
 import { TranslatePipe } from '../../core/i18n/translate.pipe';
 import { Notice } from '../../models/notice.model';
+import { CatalogService } from '../../services/catalog.service';
 import { NOTICE_BOARD_FIFO_MAX, NoticesService } from '../../services/notices.service';
 
 export interface NoticeBoardItem {
@@ -16,7 +17,8 @@ export interface NoticeBoardItem {
 
 /**
  * Global notice board: GET /notices (public), FIFO max 20.
- * Junction-agnostic — does not reload or filter when the user changes locality/city.
+ * Junction-agnostic. Shop name/place come from the notice payload when present,
+ * otherwise enriched from the shop catalog by store_id.
  */
 @Component({
   selector: 'app-notice-board',
@@ -26,6 +28,7 @@ export interface NoticeBoardItem {
 })
 export class NoticeBoardComponent implements OnInit {
   private readonly notices = inject(NoticesService);
+  private readonly catalog = inject(CatalogService);
 
   readonly closed = output<void>();
   readonly loading = signal(false);
@@ -51,8 +54,11 @@ export class NoticeBoardComponent implements OnInit {
     this.error.set(false);
 
     this.notices
-      .listTodayFifo(NOTICE_BOARD_FIFO_MAX)
-      .pipe(catchError(() => of(null)))
+      .listTodayFifo(NOTICE_BOARD_FIFO_MAX, true)
+      .pipe(
+        switchMap((notices) => this.enrichWithShopCatalog(notices)),
+        catchError(() => of(null)),
+      )
       .subscribe((result) => {
         this.loading.set(false);
         if (result === null) {
@@ -63,6 +69,36 @@ export class NoticeBoardComponent implements OnInit {
         }
         this.items.set(result.map((notice) => this.toBoardItem(notice)));
       });
+  }
+
+  /** Fill missing shop_name / city / locality from GET /shops by store_id. */
+  private enrichWithShopCatalog(notices: Notice[]) {
+    const needsLookup = notices.some(
+      (notice) =>
+        !notice.shop_name?.trim() || !notice.city?.trim() || !notice.locality?.trim(),
+    );
+    if (!needsLookup || notices.length === 0) {
+      return of(notices);
+    }
+
+    return this.catalog.getAllShops().pipe(
+      map((shops) => {
+        const byId = new Map(shops.map((shop) => [shop.id, shop]));
+        return notices.map((notice) => {
+          const shop = byId.get(notice.store_id);
+          if (!shop) {
+            return notice;
+          }
+          return {
+            ...notice,
+            shop_name: notice.shop_name?.trim() || shop.name?.trim() || null,
+            city: notice.city?.trim() || shop.city?.trim() || null,
+            locality: notice.locality?.trim() || shop.locality?.trim() || null,
+          };
+        });
+      }),
+      catchError(() => of(notices)),
+    );
   }
 
   private toBoardItem(notice: Notice): NoticeBoardItem {
