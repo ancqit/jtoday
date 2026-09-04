@@ -20,6 +20,8 @@ import {
 } from '../../core/product-image.util';
 import { resolveShopProfileImageSource } from '../../core/shop-image.util';
 import { formatShopHours } from '../../core/shop-hours.util';
+import { I18nService } from '../../core/i18n/i18n.service';
+import { TranslatePipe } from '../../core/i18n/translate.pipe';
 import { BlogService } from '../../services/blog.service';
 import { CatalogService } from '../../services/catalog.service';
 import { NoticesService } from '../../services/notices.service';
@@ -46,6 +48,7 @@ interface InvoiceValidityRow {
     ProfileModalComponent,
     SearchableSelectComponent,
     ShopProfileModalComponent,
+    TranslatePipe,
   ],
   templateUrl: './marketplace-panel.component.html',
   styleUrl: './marketplace-panel.component.scss',
@@ -55,6 +58,7 @@ export class MarketplacePanelComponent implements OnInit {
   private readonly blogsService = inject(BlogService);
   private readonly notices = inject(NoticesService);
   private readonly ordersService = inject(OrdersService);
+  private readonly i18n = inject(I18nService);
   readonly session = inject(UserSessionService);
   readonly cart = inject(CartStore);
   private readonly orders = inject(OrderStore);
@@ -114,27 +118,29 @@ export class MarketplacePanelComponent implements OnInit {
   private loadedJunctionKey: string | null = null;
   private loadedBlogJunctionKey: string | null = null;
 
-  readonly visibleShopTypes = computed(() => {
-    const present = new Set(
-      this.shops()
-        .map((shop) => shop.shop_type?.trim())
-        .filter((value): value is string => Boolean(value)),
-    );
-    const seen = new Set<string>();
-    const unique: ShopTypeInfo[] = [];
-    for (const type of this.shopTypes()) {
-      if (!present.has(type.value) || seen.has(type.value)) {
+  /** Categories derived from currently loaded shops (deduped). */
+  readonly shopTypeFilterOptions = computed<SearchableOption[]>(() => {
+    const byValue = new Map<string, string>();
+    for (const shop of this.shops()) {
+      const value = shop.shop_type?.trim();
+      if (!value) {
         continue;
       }
-      seen.add(type.value);
-      unique.push(type);
+      const label = shop.shop_type_label?.trim() || value;
+      if (!byValue.has(value)) {
+        byValue.set(value, label);
+      }
     }
-    return unique;
+    // Prefer catalog labels when available.
+    for (const type of this.shopTypes()) {
+      if (byValue.has(type.value) && type.label?.trim()) {
+        byValue.set(type.value, type.label.trim());
+      }
+    }
+    return [...byValue.entries()]
+      .map(([value, label]) => ({ value, label }))
+      .sort((a, b) => a.label.localeCompare(b.label));
   });
-
-  readonly shopTypeFilterOptions = computed<SearchableOption[]>(() =>
-    this.visibleShopTypes().map((type) => ({ value: type.value, label: type.label })),
-  );
 
   readonly filteredShops = computed(() => {
     const type = this.activeShopType();
@@ -791,7 +797,7 @@ export class MarketplacePanelComponent implements OnInit {
       this.createBlogError.set(
         this.createAuthorKind() === 'shop'
           ? 'Verify a shop phone before creating as a shop.'
-          : 'Enter a name before creating a blog.',
+          : this.i18n.t('enquiry.nameRequired'),
       );
       return;
     }
@@ -815,7 +821,7 @@ export class MarketplacePanelComponent implements OnInit {
         },
         error: () => {
           this.creatingBlog.set(false);
-          this.createBlogError.set('Unable to create blog. Try again.');
+          this.createBlogError.set(this.i18n.t('enquiry.createError'));
         },
       });
   }
@@ -984,7 +990,7 @@ export class MarketplacePanelComponent implements OnInit {
       },
       error: () => {
         this.blogsLoading.set(false);
-        this.blogsError.set('Unable to load blogs for your Junction.');
+        this.blogsError.set(this.i18n.t('enquiry.loadError'));
       },
     });
   }

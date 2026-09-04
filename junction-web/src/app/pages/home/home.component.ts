@@ -6,11 +6,19 @@ import { HeaderBarComponent } from '../../components/header-bar/header-bar.compo
 import { MapComponent, MapTarget } from '../../components/map/map.component';
 import { GreetComponent } from '../../components/greet/greet.component';
 import { MarketplacePanelComponent } from '../../components/marketplace/marketplace-panel.component';
+import { NoticeBoardComponent } from '../../components/notice-board/notice-board.component';
 import { CartStore } from '../../stores/cart.store';
 
 @Component({
   selector: 'app-home',
-  imports: [MapComponent, GreetComponent, HeaderBarComponent, MarketplacePanelComponent, TranslatePipe],
+  imports: [
+    MapComponent,
+    GreetComponent,
+    HeaderBarComponent,
+    MarketplacePanelComponent,
+    NoticeBoardComponent,
+    TranslatePipe,
+  ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
 })

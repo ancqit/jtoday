@@ -1,0 +1,44 @@
+<section class="notice-board" [class.is-open]="open()">
+  <button
+    type="button"
+    class="notice-board-toggle"
+    [attr.aria-expanded]="open()"
+    (click)="toggle()"
+  >
+    <span class="notice-board-title">{{ 'noticeBoard.title' | t }}</span>
+    <span class="notice-board-chevron" aria-hidden="true">{{ open() ? '▾' : '▸' }}</span>
+    <span class="sr-only">
+      {{ open() ? ('noticeBoard.collapse' | t) : ('noticeBoard.expand' | t) }}
+    </span>
+  </button>
+
+  @if (open()) {
+    <div class="notice-board-body">
+      @if (loading()) {
+        <p class="notice-board-status">{{ 'noticeBoard.loading' | t }}</p>
+      } @else if (error()) {
+        <p class="notice-board-status notice-board-error">{{ 'noticeBoard.error' | t }}</p>
+      } @else if (items().length === 0) {
+        <p class="notice-board-status">{{ 'noticeBoard.empty' | t }}</p>
+      } @else {
+        <ul class="notice-board-list">
+          @for (item of items(); track item.id) {
+            <li class="notice-board-item">
+              <div class="notice-board-item-top">
+                <strong class="notice-board-shop">
+                  {{ item.shopName || ('noticeBoard.shopFallback' | t) }}
+                </strong>
+                @if (item.updatedAt) {
+                  <time class="notice-board-time" [attr.datetime]="item.updatedAt">
+                    {{ item.updatedAt | date: 'shortTime' }}
+                  </time>
+                }
+              </div>
+              <p class="notice-board-message">{{ item.message }}</p>
+            </li>
+          }
+        </ul>
+      }
+    </div>
+  }
+</section>
