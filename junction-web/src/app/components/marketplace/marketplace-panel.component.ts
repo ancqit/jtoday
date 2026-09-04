@@ -1,5 +1,6 @@
 import { DatePipe } from '@angular/common';
-import { Component, computed, effect, inject, OnInit, output, signal } from '@angular/core';
+import { Component, computed, DestroyRef, effect, inject, OnInit, output, signal } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { AuthorizedImageComponent } from '../authorized-image/authorized-image.component';
 import { ProductGalleryModalComponent } from '../product-gallery-modal/product-gallery-modal.component';
 import { ProfileModalComponent } from '../profile-modal/profile-modal.component';
@@ -23,12 +24,12 @@ import { formatShopHours } from '../../core/shop-hours.util';
 import { I18nService } from '../../core/i18n/i18n.service';
 import { TranslatePipe } from '../../core/i18n/translate.pipe';
 import { BlogService } from '../../services/blog.service';
-import { CatalogService } from '../../services/catalog.service';
 import { NoticesService } from '../../services/notices.service';
 import { OrdersService } from '../../services/orders.service';
 import { UserSessionService } from '../../services/user-session.service';
 import { CartStore } from '../../stores/cart.store';
 import { OrderStore } from '../../stores/order.store';
+import { ShopsCatalogStore } from '../../stores/shops-catalog.store';
 
 type MarketplaceView = 'shops' | 'products' | 'cart' | 'receipt';
 type ShopsLayout = 'card' | 'list';
@@ -54,14 +55,19 @@ interface InvoiceValidityRow {
   styleUrl: './marketplace-panel.component.scss',
 })
 export class MarketplacePanelComponent implements OnInit {
-  private readonly catalog = inject(CatalogService);
+  private readonly shopsStore = inject(ShopsCatalogStore);
   private readonly blogsService = inject(BlogService);
   private readonly notices = inject(NoticesService);
   private readonly ordersService = inject(OrdersService);
   private readonly i18n = inject(I18nService);
+  private readonly destroyRef = inject(DestroyRef);
   readonly session = inject(UserSessionService);
   readonly cart = inject(CartStore);
   private readonly orders = inject(OrderStore);
+
+  private shopsSub?: Subscription;
+  private productsSub?: Subscription;
+  private typesSub?: Subscription;
 
   readonly closed = output<void>();
 
@@ -212,6 +218,12 @@ export class MarketplacePanelComponent implements OnInit {
   });
 
   constructor() {
+    this.destroyRef.onDestroy(() => {
+      this.shopsSub?.unsubscribe();
+      this.productsSub?.unsubscribe();
+      this.typesSub?.unsubscribe();
+    });
+
     effect(() => {
       const junctionKey = this.session.junctionKey();
       if (!junctionKey) {
@@ -231,7 +243,8 @@ export class MarketplacePanelComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.catalog.getShopTypes().subscribe({
+    this.typesSub?.unsubscribe();
+    this.typesSub = this.shopsStore.watchShopTypes().subscribe({
       next: (types) => this.shopTypes.set(types),
     });
     this.openPanel();
@@ -961,15 +974,22 @@ export class MarketplacePanelComponent implements OnInit {
       return;
     }
 
-    this.loading.set(true);
+    const locality =
+      this.session.serviceScope() === 'city' ? null : profile.locality.name;
+    const cached = this.shopsStore
+      .getShopsSnapshot(profile.city.name, locality)
+      .filter((shop) => shop.is_open);
+    if (cached.length > 0) {
+      this.shops.set(cached);
+      this.loading.set(false);
+      this.loadShopNotices(cached);
+    } else {
+      this.loading.set(true);
+    }
     this.error.set(null);
 
-    const shops$ =
-      this.session.serviceScope() === 'city'
-        ? this.catalog.getShopsByCity(profile.city.name)
-        : this.catalog.getShops(profile.city.name, profile.locality.name);
-
-    shops$.subscribe({
+    this.shopsSub?.unsubscribe();
+    this.shopsSub = this.shopsStore.watchShops(profile.city.name, locality).subscribe({
       next: (shops) => {
         const openShops = shops.filter((shop) => shop.is_open);
         this.shops.set(openShops);
@@ -978,7 +998,9 @@ export class MarketplacePanelComponent implements OnInit {
       },
       error: () => {
         this.loading.set(false);
-        this.error.set('Unable to load services for your Junction.');
+        if (this.shops().length === 0) {
+          this.error.set('Unable to load services for your Junction.');
+        }
       },
     });
   }
@@ -1027,17 +1049,28 @@ export class MarketplacePanelComponent implements OnInit {
   }
 
   private loadProducts(shopId: string): void {
-    this.loading.set(true);
+    const cached = this.shopsStore
+      .getProductsSnapshot(shopId)
+      .filter((product) => product.status === 'active');
+    if (cached.length > 0) {
+      this.products.set(cached);
+      this.loading.set(false);
+    } else {
+      this.loading.set(true);
+    }
     this.error.set(null);
 
-    this.catalog.getProducts(shopId).subscribe({
+    this.productsSub?.unsubscribe();
+    this.productsSub = this.shopsStore.watchProducts(shopId).subscribe({
       next: (products) => {
         this.products.set(products.filter((product) => product.status === 'active'));
         this.loading.set(false);
       },
       error: () => {
         this.loading.set(false);
-        this.error.set('Unable to load products for this shop.');
+        if (this.products().length === 0) {
+          this.error.set('Unable to load products for this shop.');
+        }
       },
     });
   }
