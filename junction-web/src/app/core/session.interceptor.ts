@@ -8,8 +8,8 @@ import { SessionService } from './session.service';
 /** junctionBack routes that accept the junction.today session JWT. */
 const SESSION_PROTECTED_PATHS = ['/session', '/locations/', '/shops', '/products', '/orders'] as const;
 
-function isPublicNoticesTodayRequest(url: string, method: string): boolean {
-  return method === 'GET' && url.includes('/notices/today');
+function isPublicNoticesRequest(url: string, method: string): boolean {
+  return method === 'GET' && url.includes('/notices');
 }
 
 function isPublicBlogRequest(url: string): boolean {
@@ -47,7 +47,7 @@ export const sessionInterceptor: HttpInterceptorFn = (request, next) => {
     isApiRequest(request.url) &&
     !isSessionCreateRequest(request.url, request.method) &&
     !request.context.get(SKIP_SESSION_AUTH) &&
-    !isPublicNoticesTodayRequest(request.url, request.method) &&
+    !isPublicNoticesRequest(request.url, request.method) &&
     !isPublicBlogRequest(request.url) &&
     !isPublicCatalogAuthRequest(request.url)
   ) {
@@ -63,7 +63,7 @@ export const sessionInterceptor: HttpInterceptorFn = (request, next) => {
         !isApiRequest(request.url) ||
         isSessionCreateRequest(request.url, request.method) ||
         request.context.get(SKIP_SESSION_AUTH) ||
-        isPublicNoticesTodayRequest(request.url, request.method) ||
+        isPublicNoticesRequest(request.url, request.method) ||
         isPublicBlogRequest(request.url) ||
         isPublicCatalogAuthRequest(request.url)
       ) {

@@ -69,7 +69,7 @@
               [attr.aria-pressed]="blogOpen()"
               (click)="toggleBlogPanel()"
             >
-              Blog
+              {{ 'enquiry.toggle' | t }}
             </button>
           </div>
           @if (!blogOpen()) {
@@ -98,11 +98,11 @@
 
         @if (blogOpen()) {
           @if (blogsLoading()) {
-            <p class="status-message">Loading blogs...</p>
+            <p class="status-message">{{ 'enquiry.loading' | t }}</p>
           } @else if (blogsError()) {
             <p class="error-message">{{ blogsError() }}</p>
           } @else if (blogs().length === 0) {
-            <p class="status-message">No blogs for this Junction yet.</p>
+            <p class="status-message">{{ 'enquiry.empty' | t }}</p>
           } @else {
             @if (commentError()) {
               <p class="error-message">{{ commentError() }}</p>
@@ -727,7 +727,7 @@
     @if (view() === 'shops' && blogOpen()) {
       <footer class="blog-create-footer">
         <button type="button" class="primary-button blog-create-trigger" (click)="openCreateBlogSheet()">
-          Create a blog
+          {{ 'enquiry.create' | t }}
         </button>
       </footer>
     }
@@ -774,8 +774,8 @@
     >
       <div class="action-sheet-group">
         <header class="action-sheet-header">
-          <h3 id="blog-create-sheet-title">Create a blog</h3>
-          <p>Junction and name are filled from your profile — change them if needed.</p>
+          <h3 id="blog-create-sheet-title">{{ 'enquiry.createTitle' | t }}</h3>
+          <p>{{ 'enquiry.createHint' | t }}</p>
         </header>
 
         <form class="action-sheet-form" (submit)="$event.preventDefault(); submitCreateBlog()">
@@ -792,7 +792,7 @@
             placeholder="Locality, City"
           />
           <label class="blog-comment-label">Post as</label>
-          <div class="blog-author-toggle" role="group" aria-label="Blog author type">
+          <div class="blog-author-toggle" role="group" [attr.aria-label]="'enquiry.authorType' | t">
             <button
               type="button"
               [class.active]="createAuthorKind() === 'person'"
@@ -849,11 +849,11 @@
             maxlength="8000"
             [value]="createBody()"
             (input)="onCreateBodyInput($event)"
-            placeholder="What happened at this Junction?"
+            [placeholder]="'enquiry.bodyPlaceholder' | t"
             [disabled]="creatingBlog()"
           ></textarea>
           <button type="submit" class="action-sheet-button action-sheet-button-primary" [disabled]="creatingBlog()">
-            {{ creatingBlog() ? 'Creating…' : 'Create a blog' }}
+            {{ creatingBlog() ? ('enquiry.creating' | t) : ('enquiry.create' | t) }}
           </button>
         </form>
       </div>

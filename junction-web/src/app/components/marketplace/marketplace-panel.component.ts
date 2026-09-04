@@ -20,6 +20,8 @@ import {
 } from '../../core/product-image.util';
 import { resolveShopProfileImageSource } from '../../core/shop-image.util';
 import { formatShopHours } from '../../core/shop-hours.util';
+import { I18nService } from '../../core/i18n/i18n.service';
+import { TranslatePipe } from '../../core/i18n/translate.pipe';
 import { BlogService } from '../../services/blog.service';
 import { CatalogService } from '../../services/catalog.service';
 import { NoticesService } from '../../services/notices.service';
@@ -46,6 +48,7 @@ interface InvoiceValidityRow {
     ProfileModalComponent,
     SearchableSelectComponent,
     ShopProfileModalComponent,
+    TranslatePipe,
   ],
   templateUrl: './marketplace-panel.component.html',
   styleUrl: './marketplace-panel.component.scss',
@@ -55,6 +58,7 @@ export class MarketplacePanelComponent implements OnInit {
   private readonly blogsService = inject(BlogService);
   private readonly notices = inject(NoticesService);
   private readonly ordersService = inject(OrdersService);
+  private readonly i18n = inject(I18nService);
   readonly session = inject(UserSessionService);
   readonly cart = inject(CartStore);
   private readonly orders = inject(OrderStore);
@@ -791,7 +795,7 @@ export class MarketplacePanelComponent implements OnInit {
       this.createBlogError.set(
         this.createAuthorKind() === 'shop'
           ? 'Verify a shop phone before creating as a shop.'
-          : 'Enter a name before creating a blog.',
+          : this.i18n.t('enquiry.nameRequired'),
       );
       return;
     }
@@ -815,7 +819,7 @@ export class MarketplacePanelComponent implements OnInit {
         },
         error: () => {
           this.creatingBlog.set(false);
-          this.createBlogError.set('Unable to create blog. Try again.');
+          this.createBlogError.set(this.i18n.t('enquiry.createError'));
         },
       });
   }
@@ -984,7 +988,7 @@ export class MarketplacePanelComponent implements OnInit {
       },
       error: () => {
         this.blogsLoading.set(false);
-        this.blogsError.set('Unable to load blogs for your Junction.');
+        this.blogsError.set(this.i18n.t('enquiry.loadError'));
       },
     });
   }

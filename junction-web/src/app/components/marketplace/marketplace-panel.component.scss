@@ -1448,53 +1448,144 @@
     padding: 0.7rem;
   }
 
-  .shops-toolbar {
-    margin-bottom: 0.55rem;
+  .shops-toolbar,
+  .products-toolbar {
+    margin-bottom: 0.65rem;
+    gap: 0.65rem;
+    align-items: stretch;
   }
 
+  .layout-toggle {
+    align-self: stretch;
+    padding: 0.2rem;
+    border-radius: 0.75rem;
+  }
+
+  .layout-toggle-option {
+    min-width: 3.25rem;
+    min-height: 2.35rem;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.9rem;
+    border-radius: 0.6rem;
+  }
+
+  .shop-row.regal-shop-card,
   .pro-shop-row {
     flex-direction: column;
     align-items: stretch;
-    gap: 0.55rem;
+    gap: 0.65rem;
+    padding: 0.85rem 0.9rem;
+  }
+
+  .shop-row-media-button {
+    align-self: flex-start;
+  }
+
+  .shop-row-media {
+    width: 3.5rem;
+    height: 3.5rem;
+  }
+
+  .shop-row-main {
+    width: 100%;
+    gap: 0.35rem;
+  }
+
+  .shop-row .shop-name,
+  .pro-shop-row .shop-name {
+    font-size: 1.05rem;
+    line-height: 1.3;
+  }
+
+  .shop-detail-label,
+  .shop-row-hours-wrap .shop-detail-label,
+  .shop-row-phone-wrap .shop-detail-label,
+  .shop-row-notice-wrap .shop-detail-label {
+    font-size: 0.9rem;
+    letter-spacing: 0.04em;
+  }
+
+  .shop-detail-value,
+  .shop-phone-value,
+  .shop-row-hours-wrap .shop-detail-value,
+  .shop-row-phone-wrap .shop-detail-value,
+  .shop-row-notice-wrap .shop-detail-value {
+    font-size: 0.95rem;
+    line-height: 1.4;
+  }
+
+  .shop-row-hours-wrap,
+  .shop-row-phone-wrap,
+  .shop-row-notice-wrap {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    text-align: left;
+    padding: 0.55rem 0.65rem;
+  }
+
+  .shop-row .shop-hours {
+    white-space: normal;
   }
 
   .product-card-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .compact-product-row {
-    grid-template-columns: 3rem minmax(0, 1fr);
+  .compact-product-row,
+  .product-row.regal-product-row {
+    grid-template-columns: minmax(0, 1fr);
     grid-template-areas:
-      'media copy'
-      'actions actions';
+      'media'
+      'copy'
+      'actions';
+    gap: 0.7rem;
+    padding: 0.85rem 0.9rem;
+    align-items: stretch;
   }
 
   .product-row-media {
     grid-area: media;
+    width: 4.5rem;
+    height: 4.5rem;
   }
 
   .product-row-copy {
     grid-area: copy;
   }
 
+  .product-row-copy h3 {
+    font-size: 1.02rem;
+    line-height: 1.3;
+  }
+
+  .product-row-copy .product-meta,
+  .product-row-copy .product-description {
+    font-size: 0.9rem;
+  }
+
+  .product-row-copy .product-price {
+    font-size: 1.05rem;
+  }
+
   .product-row-actions {
     grid-area: actions;
-    justify-content: flex-end;
-  }
-
-  .shop-row-hours-wrap {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.55rem;
     width: 100%;
-    text-align: left;
+    justify-content: stretch;
   }
 
-  .shop-row-notice-wrap {
-    width: 100%;
-    max-width: none;
-    text-align: left;
+  .product-row-actions .product-qty-field span,
+  .product-qty-field span {
+    font-size: 0.9rem;
   }
 
-  .shop-row .shop-hours {
-    white-space: normal;
+  .product-row-actions .product-add-button,
+  .product-add-button {
+    min-height: 2.75rem;
+    font-size: 0.95rem;
   }
 
   .cart-line {
