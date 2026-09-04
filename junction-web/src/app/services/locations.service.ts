@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable, map, shareReplay } from 'rxjs';
+import { Observable, map, shareReplay, tap } from 'rxjs';
 import { GeocodingService } from '../core/geocoding.service';
 import {
   resolveCityCoordinates,
@@ -21,6 +21,8 @@ export class LocationsService {
   private readonly locationsApi = inject(LocationsApi);
   private readonly geocoding = inject(GeocodingService);
   private cities$?: Observable<City[]>;
+  /** Cached localities Observable per city key (slugified name). */
+  private readonly localitiesByCity = new Map<string, Observable<Locality[]>>();
 
   preloadCities(): void {
     if (this.cities$) {
@@ -46,19 +48,35 @@ export class LocationsService {
     return this.cities$!;
   }
 
-  getLocalities(cityName: string): Observable<Locality[]> {
-    const cityId = slugifyLocationName(cityName);
+  getLocalities(cityName: string, forceRefresh = false): Observable<Locality[]> {
+    const cacheKey = slugifyLocationName(cityName);
+    if (forceRefresh) {
+      this.localitiesByCity.delete(cacheKey);
+    }
 
-    return this.locationsApi.localities(cityName).pipe(
-      map((names) =>
-        names.map((name) => ({
-          id: slugifyLocationName(name),
-          cityId,
-          name,
-          ...resolveLocalityCoordinates(cityName, name),
-        })),
-      ),
-    );
+    let cached = this.localitiesByCity.get(cacheKey);
+    if (!cached) {
+      const cityId = cacheKey;
+      cached = this.locationsApi.localities(cityName).pipe(
+        map((names) =>
+          names.map((name) => ({
+            id: slugifyLocationName(name),
+            cityId,
+            name,
+            ...resolveLocalityCoordinates(cityName, name),
+          })),
+        ),
+        shareReplay({ bufferSize: 1, refCount: false }),
+      );
+      this.localitiesByCity.set(cacheKey, cached);
+    }
+
+    return cached;
+  }
+
+  /** Drop cached localities for a city so the next getLocalities refetches. */
+  invalidateLocalities(cityName: string): void {
+    this.localitiesByCity.delete(slugifyLocationName(cityName));
   }
 
   resolveCityTarget(cityName: string): Observable<MapLocationTarget> {
@@ -107,6 +125,10 @@ export class LocationsService {
   addJunction(cityName: string, localityName: string): Observable<{ city: City; locality: Locality }> {
     return this.locationsApi.addJunction(cityName, localityName).pipe(
       map((response) => this.mapAddJunctionResponse(response)),
+      tap((result) => {
+        // New locality was added — clear that city's localities cache.
+        this.invalidateLocalities(result.city.name);
+      }),
     );
   }
 
